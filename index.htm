@@ -2,102 +2,137 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <!-- Mobil cihazlarda düzgün görünmesi ve PWA uyumu için viewport ayarı -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>İş Formları PWA</title>
+    <title>İş Formları</title>
     
     <style>
-        /* --- TASARIM AYARLARI (CSS) --- */
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --bg: #f3f4f6;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg: #f8fafc;
             --surface: #ffffff;
-            --text: #1f2937;
-            --border: #e5e7eb;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
         }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding: 15px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 20px 15px; -webkit-font-smoothing: antialiased; }
         
-        .container { max-width: 600px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 20px; padding: 10px 0; }
-        h1 { font-size: 1.5rem; color: var(--primary); }
+        .container { max-width: 500px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
         
-        .card { background: var(--surface); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .card h2 { font-size: 1.2rem; margin-bottom: 15px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; color: #374151; }
+        .card { background: var(--surface); padding: 25px 20px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01); margin-bottom: 25px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: #4b5563; }
-        input[type="text"], input[type="file"] { 
-            width: 100%; padding: 12px; border: 1px solid var(--border); 
-            border-radius: 8px; font-size: 1rem; outline: none; background: #f9fafb;
+        /* MODERN YÜZEN ETİKET (FLOATING LABEL) TASARIMI */
+        .form-floating { position: relative; margin-bottom: 20px; }
+        .form-floating input {
+            width: 100%; padding: 16px 14px 10px; border: 2px solid var(--border);
+            border-radius: 12px; background: transparent; outline: none; 
+            font-size: 1rem; color: var(--text-main); transition: border-color 0.2s;
         }
-        input[type="text"]:focus { border-color: var(--primary); background: #fff; }
-        
-        button { 
-            width: 100%; background: var(--primary); color: white; border: none; 
-            padding: 14px; font-size: 1rem; font-weight: 600; border-radius: 8px; 
-            cursor: pointer; transition: background 0.3s; margin-top: 5px;
+        .form-floating input:focus { border-color: var(--primary); }
+        .form-floating label {
+            position: absolute; top: 50%; left: 14px; transform: translateY(-50%);
+            color: var(--text-muted); pointer-events: none; transition: 0.2s ease all;
+            background: var(--surface); padding: 0 4px; font-size: 1rem;
         }
-        button:hover { background: var(--primary-dark); }
-        button:disabled { background: #9ca3af; cursor: not-allowed; }
-        
-        #sonuclar { margin-top: 15px; }
-        .sonuc-karti { background: var(--bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .sonuc-karti h4 { margin: 0 0 5px 0; color: #111827; }
-        .sonuc-karti p { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
-        .sonuc-karti img { width: 100%; border-radius: 8px; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        /* İnputa tıklandığında veya içi doluyken etiketi yukarı kaydır */
+        .form-floating input:focus ~ label,
+        .form-floating input:not(:placeholder-shown) ~ label {
+            top: 0; font-size: 0.8rem; color: var(--primary); font-weight: 600;
+        }
+
+        /* MODERN DOSYA YÜKLEME ALANI */
+        .file-upload { position: relative; margin-bottom: 20px; }
+        .file-upload input[type="file"] { display: none; }
+        .file-upload-label {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px 20px; border: 2px dashed #cbd5e1; border-radius: 12px;
+            cursor: pointer; color: var(--text-muted); transition: all 0.2s ease;
+            background-color: #f8fafc; text-align: center;
+        }
+        .file-upload-label:hover { border-color: var(--primary); background-color: #eff6ff; color: var(--primary); }
+        .file-upload-label svg { width: 32px; height: 32px; margin-bottom: 10px; opacity: 0.7; }
+        .file-name-display { font-size: 0.85rem; margin-top: 8px; color: var(--primary); font-weight: 500; display: none; }
+
+        /* BUTONLAR */
+        button {
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.1s, background 0.3s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        button:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; transform: none; }
+
+        /* ARAMA SONUÇLARI */
+        .sonuc-karti { background: var(--bg); padding: 16px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border); }
+        .sonuc-karti h4 { margin: 0 0 6px 0; font-size: 1.1rem; color: var(--text-main); }
+        .sonuc-karti p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+        .sonuc-karti img { width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>📋 İş Formları Yönetimi</h1>
+        <h1>İş Formları</h1>
     </header>
 
-    <!-- FORM EKLEME KARTI -->
+    <!-- FORM EKLEME -->
     <div class="card">
-        <h2>Yeni İş Formu Ekle</h2>
+        <div class="card-title">📝 Yeni Kayıt Oluştur</div>
         <form id="isFormu">
-            <div class="form-group">
+            <!-- Yüzen etiket için placeholder=" " boşluk olmalı -->
+            <div class="form-floating">
+                <input type="text" id="firmaAdi" placeholder=" " required>
                 <label for="firmaAdi">Firma Adı</label>
-                <input type="text" id="firmaAdi" placeholder="Örn: ABC İnşaat" required>
             </div>
-            <div class="form-group">
+            
+            <div class="form-floating">
+                <input type="text" id="sehir" placeholder=" " required>
                 <label for="sehir">Şehir</label>
-                <input type="text" id="sehir" placeholder="Örn: İstanbul" required>
             </div>
-            <div class="form-group">
-                <label for="fotoGirdisi">Form Fotoğrafı (Kamera / Galeri)</label>
+            
+            <div class="file-upload">
+                <label for="fotoGirdisi" class="file-upload-label" id="fotoLabel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Form Fotoğrafı Çek veya Seç</span>
+                    <div class="file-name-display" id="dosyaAdi"></div>
+                </label>
                 <input type="file" id="fotoGirdisi" accept="image/*" required>
             </div>
-            <button type="submit" id="ekleButonu">Formu Kaydet</button>
+
+            <button type="submit" id="ekleButonu" class="btn-primary">Formu Kaydet</button>
         </form>
     </div>
 
-    <!-- FORMLARDA ARAMA KARTI -->
+    <!-- ARAMA -->
     <div class="card">
-        <h2>Kayıtlı Formlarda Ara</h2>
-        <div class="form-group">
-            <label for="aramaKutusu">Şehir veya Firma Adı Yazın</label>
-            <input type="text" id="aramaKutusu" placeholder="Aranacak kelimeyi girin...">
+        <div class="card-title">🔍 Form Ara</div>
+        <div class="form-floating">
+            <input type="text" id="aramaKutusu" placeholder=" ">
+            <label for="aramaKutusu">Şehir veya Firma Adı</label>
         </div>
-        <button type="button" id="aramaButonu" style="background: #10b981;">Formu Bul</button>
+        <button type="button" id="aramaButonu" class="btn-success">Bul</button>
         
-        <!-- Arama sonuçları bu alanın içine gelecek -->
         <div id="sonuclar"></div>
     </div>
 </div>
 
-<!-- --- FİREBASE VE UYGULAMA MANTIĞI (JAVASCRIPT) --- -->
 <script type="module">
-    // 1. Firebase Modüllerini İçe Aktar
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    // 2. Kendi Firebase Config Ayarların
     const firebaseConfig = {
         apiKey: "AIzaSyC2OWlHtSGY-2Xk6CKDfekCaDXD8k-erDs",
         authDomain: "isform-b284d.firebaseapp.com",
@@ -107,11 +142,23 @@
         appId: "1:601360853063:web:ec6fa97a46f3d00cfaa962"
     };
 
-    // Firebase'i Başlat
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- FOTOĞRAF KÜÇÜLTME FONKSİYONU ---
+    // Seçilen dosyanın adını ekranda gösterme efekti
+    const fotoGirdisi = document.getElementById('fotoGirdisi');
+    const dosyaAdiGosterge = document.getElementById('dosyaAdi');
+    
+    fotoGirdisi.addEventListener('change', function(e) {
+        if(e.target.files.length > 0) {
+            dosyaAdiGosterge.textContent = "Seçildi: " + e.target.files[0].name;
+            dosyaAdiGosterge.style.display = "block";
+            document.getElementById('fotoLabel').style.borderColor = "#3b82f6";
+            document.getElementById('fotoLabel').style.backgroundColor = "#eff6ff";
+        }
+    });
+
+    // Fotoğraf Sıkıştırma
     function compressImage(file, callback) {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -120,37 +167,29 @@
             img.src = event.target.result;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 800; // Genişlik 800px'e sabitlenir (Okunabilirlik için ideal)
-                let scaleSize = 1;
-                
-                if (img.width > MAX_WIDTH) {
-                    scaleSize = MAX_WIDTH / img.width;
-                }
+                const MAX_WIDTH = 800; 
+                let scaleSize = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
                 
                 canvas.width = img.width * scaleSize;
                 canvas.height = img.height * scaleSize;
                 
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Kaliteyi %60 yaparak Base64 çıktısı al (Veritabanı dostu)
-                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); 
-                callback(compressedBase64);
+                callback(canvas.toDataURL('image/jpeg', 0.6));
             }
         }
     }
 
-    // --- FORM EKLEME İŞLEMİ ---
+    // Form Ekleme
     document.getElementById('isFormu').addEventListener('submit', async (e) => {
         e.preventDefault();
         const ekleButonu = document.getElementById('ekleButonu');
         ekleButonu.disabled = true;
-        ekleButonu.innerText = "Yükleniyor, lütfen bekleyin...";
+        ekleButonu.innerHTML = "⏳ Yükleniyor...";
         
-        // Aramada kolaylık olması için verileri tamamen küçük harfe çevirip kaydediyoruz
         const firmaAdi = document.getElementById('firmaAdi').value.trim().toLowerCase();
         const sehir = document.getElementById('sehir').value.trim().toLowerCase();
-        const fotoDosyasi = document.getElementById('fotoGirdisi').files[0];
+        const fotoDosyasi = fotoGirdisi.files[0];
 
         compressImage(fotoDosyasi, async (compressedPhoto) => {
             try {
@@ -160,64 +199,59 @@
                     fotograf: compressedPhoto,
                     tarih: new Date().toISOString()
                 });
-                alert("İş formu başarıyla eklendi! 🎉");
+                alert("Başarıyla eklendi! 🎉");
+                
+                // Formu sıfırladıktan sonra görsel arayüzü de sıfırla
                 document.getElementById('isFormu').reset();
+                dosyaAdiGosterge.style.display = "none";
+                document.getElementById('fotoLabel').style.borderColor = "#cbd5e1";
+                document.getElementById('fotoLabel').style.backgroundColor = "#f8fafc";
             } catch (error) {
                 console.error("Hata:", error);
-                alert("Kaydedilirken bir hata oluştu. Lütfen bağlantınızı kontrol edin.");
+                alert("Kaydedilirken hata oluştu.");
             } finally {
                 ekleButonu.disabled = false;
-                ekleButonu.innerText = "Formu Kaydet";
+                ekleButonu.innerHTML = "Formu Kaydet";
             }
         });
     });
 
-    // --- ARAMA İŞLEMİ ---
+    // Arama İşlemi
     document.getElementById('aramaButonu').addEventListener('click', async () => {
         const aramaKelimesi = document.getElementById('aramaKutusu').value.trim().toLowerCase();
         const sonuclarDiv = document.getElementById('sonuclar');
         
         if (!aramaKelimesi) {
-            alert("Lütfen aramak için bir şehir veya firma adı yazın.");
+            alert("Lütfen şehir veya firma adı yazın.");
             return;
         }
 
-        sonuclarDiv.innerHTML = "<p style='text-align:center;'>Baktığınız form aranıyor... 🔍</p>";
+        sonuclarDiv.innerHTML = "<p style='text-align:center; color:#64748b; margin-top:15px;'>⏳ Aranıyor...</p>";
         
         try {
             const formlarRef = collection(db, "formlar");
             
-            // 1. Önce Şehre Göre Ara
-            const sehirSorgusu = query(formlarRef, where("sehir", "==", aramaKelimesi));
-            let querySnapshot = await getDocs(sehirSorgusu);
-            
-            // 2. Şehirde bulunamadıysa Firma Adına Göre Ara
+            let querySnapshot = await getDocs(query(formlarRef, where("sehir", "==", aramaKelimesi)));
             if (querySnapshot.empty) {
-                const firmaSorgusu = query(formlarRef, where("firmaAdi", "==", aramaKelimesi));
-                querySnapshot = await getDocs(firmaSorgusu);
+                querySnapshot = await getDocs(query(formlarRef, where("firmaAdi", "==", aramaKelimesi)));
             }
 
-            sonuclarDiv.innerHTML = ""; // Yükleniyor yazısını temizle
+            sonuclarDiv.innerHTML = ""; 
 
             if (querySnapshot.empty) {
-                sonuclarDiv.innerHTML = "<p style='color:#ef4444; text-align:center;'>Bu kriterlere uygun iş formu bulunamadı.</p>";
+                sonuclarDiv.innerHTML = "<p style='color:#ef4444; text-align:center; margin-top:15px;'>Kayıt bulunamadı.</p>";
                 return;
             }
 
-            // Sonuçları ekrana bas
             querySnapshot.forEach((doc) => {
                 const veri = doc.data();
-                const tarihFormatli = new Date(veri.tarih).toLocaleDateString('tr-TR', {
-                    day: 'numeric', month: 'long', year: 'numeric', hour:'2-digit', minute:'2-digit'
-                });
+                const tarih = new Date(veri.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
                 
                 const kart = document.createElement('div');
                 kart.className = 'sonuc-karti';
-                
-                // CSS ile metinleri görselde okunaklı hale getirip (Büyük harf) ekrana basıyoruz
                 kart.innerHTML = `
                     <h4>${veri.firmaAdi.toUpperCase()} - ${veri.sehir.toUpperCase()}</h4>
-                    <p>🕒 Eklenme Tarihi: ${tarihFormatli}</p>
+                    <p>🕒 ${tarih}</p>
                     <a href="${veri.fotograf}" target="_blank">
                         <img src="${veri.fotograf}" alt="İş Formu">
                     </a>
@@ -227,7 +261,7 @@
 
         } catch (error) {
             console.error("Arama Hatası:", error);
-            sonuclarDiv.innerHTML = "<p style='color:#ef4444; text-align:center;'>Arama sırasında bir hata oluştu.</p>";
+            sonuclarDiv.innerHTML = "<p style='color:#ef4444; text-align:center; margin-top:15px;'>Arama hatası.</p>";
         }
     });
 </script>
