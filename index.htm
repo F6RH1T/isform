@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <!-- Mobil cihazlarda düzgün görünmesi ve PWA uyumu için viewport ayarı -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>İş Formları PWA</title>
+    
+    <style>
+        /* --- TASARIM AYARLARI (CSS) --- */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f3f4f6;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --border: #e5e7eb;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; }
+        
+        .container { max-width: 600px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 20px; padding: 10px 0; }
+        h1 { font-size: 1.5rem; color: var(--primary); }
+        
+        .card { background: var(--surface); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card h2 { font-size: 1.2rem; margin-bottom: 15px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; color: #374151; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: #4b5563; }
+        input[type="text"], input[type="file"] { 
+            width: 100%; padding: 12px; border: 1px solid var(--border); 
+            border-radius: 8px; font-size: 1rem; outline: none; background: #f9fafb;
+        }
+        input[type="text"]:focus { border-color: var(--primary); background: #fff; }
+        
+        button { 
+            width: 100%; background: var(--primary); color: white; border: none; 
+            padding: 14px; font-size: 1rem; font-weight: 600; border-radius: 8px; 
+            cursor: pointer; transition: background 0.3s; margin-top: 5px;
+        }
+        button:hover { background: var(--primary-dark); }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        
+        #sonuclar { margin-top: 15px; }
+        .sonuc-karti { background: var(--bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .sonuc-karti h4 { margin: 0 0 5px 0; color: #111827; }
+        .sonuc-karti p { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+        .sonuc-karti img { width: 100%; border-radius: 8px; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📋 İş Formları Yönetimi</h1>
+    </header>
+
+    <!-- FORM EKLEME KARTI -->
+    <div class="card">
+        <h2>Yeni İş Formu Ekle</h2>
+        <form id="isFormu">
+            <div class="form-group">
+                <label for="firmaAdi">Firma Adı</label>
+                <input type="text" id="firmaAdi" placeholder="Örn: ABC İnşaat" required>
+            </div>
+            <div class="form-group">
+                <label for="sehir">Şehir</label>
+                <input type="text" id="sehir" placeholder="Örn: İstanbul" required>
+            </div>
+            <div class="form-group">
+                <label for="fotoGirdisi">Form Fotoğrafı (Kamera / Galeri)</label>
+                <input type="file" id="fotoGirdisi" accept="image/*" required>
+            </div>
+            <button type="submit" id="ekleButonu">Formu Kaydet</button>
+        </form>
+    </div>
+
+    <!-- FORMLARDA ARAMA KARTI -->
+    <div class="card">
+        <h2>Kayıtlı Formlarda Ara</h2>
+        <div class="form-group">
+            <label for="aramaKutusu">Şehir veya Firma Adı Yazın</label>
+            <input type="text" id="aramaKutusu" placeholder="Aranacak kelimeyi girin...">
+        </div>
+        <button type="button" id="aramaButonu" style="background: #10b981;">Formu Bul</button>
+        
+        <!-- Arama sonuçları bu alanın içine gelecek -->
+        <div id="sonuclar"></div>
+    </div>
+</div>
+
+<!-- --- FİREBASE VE UYGULAMA MANTIĞI (JAVASCRIPT) --- -->
+<script type="module">
+    // 1. Firebase Modüllerini İçe Aktar
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // 2. Kendi Firebase Config Ayarların
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2OWlHtSGY-2Xk6CKDfekCaDXD8k-erDs",
+        authDomain: "isform-b284d.firebaseapp.com",
+        projectId: "isform-b284d",
+        storageBucket: "isform-b284d.firebasestorage.app",
+        messagingSenderId: "601360853063",
+        appId: "1:601360853063:web:ec6fa97a46f3d00cfaa962"
+    };
+
+    // Firebase'i Başlat
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- FOTOĞRAF KÜÇÜLTME FONKSİYONU ---
+    function compressImage(file, callback) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = event => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; // Genişlik 800px'e sabitlenir (Okunabilirlik için ideal)
+                let scaleSize = 1;
+                
+                if (img.width > MAX_WIDTH) {
+                    scaleSize = MAX_WIDTH / img.width;
+                }
+                
+                canvas.width = img.width * scaleSize;
+                canvas.height = img.height * scaleSize;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Kaliteyi %60 yaparak Base64 çıktısı al (Veritabanı dostu)
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); 
+                callback(compressedBase64);
+            }
+        }
+    }
+
+    // --- FORM EKLEME İŞLEMİ ---
+    document.getElementById('isFormu').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const ekleButonu = document.getElementById('ekleButonu');
+        ekleButonu.disabled = true;
+        ekleButonu.innerText = "Yükleniyor, lütfen bekleyin...";
+        
+        // Aramada kolaylık olması için verileri tamamen küçük harfe çevirip kaydediyoruz
+        const firmaAdi = document.getElementById('firmaAdi').value.trim().toLowerCase();
+        const sehir = document.getElementById('sehir').value.trim().toLowerCase();
+        const fotoDosyasi = document.getElementById('fotoGirdisi').files[0];
+
+        compressImage(fotoDosyasi, async (compressedPhoto) => {
+            try {
+                await addDoc(collection(db, "formlar"), {
+                    firmaAdi: firmaAdi,
+                    sehir: sehir,
+                    fotograf: compressedPhoto,
+                    tarih: new Date().toISOString()
+                });
+                alert("İş formu başarıyla eklendi! 🎉");
+                document.getElementById('isFormu').reset();
+            } catch (error) {
+                console.error("Hata:", error);
+                alert("Kaydedilirken bir hata oluştu. Lütfen bağlantınızı kontrol edin.");
+            } finally {
+                ekleButonu.disabled = false;
+                ekleButonu.innerText = "Formu Kaydet";
+            }
+        });
+    });
+
+    // --- ARAMA İŞLEMİ ---
+    document.getElementById('aramaButonu').addEventListener('click', async () => {
+        const aramaKelimesi = document.getElementById('aramaKutusu').value.trim().toLowerCase();
+        const sonuclarDiv = document.getElementById('sonuclar');
+        
+        if (!aramaKelimesi) {
+            alert("Lütfen aramak için bir şehir veya firma adı yazın.");
+            return;
+        }
+
+        sonuclarDiv.innerHTML = "<p style='text-align:center;'>Baktığınız form aranıyor... 🔍</p>";
+        
+        try {
+            const formlarRef = collection(db, "formlar");
+            
+            // 1. Önce Şehre Göre Ara
+            const sehirSorgusu = query(formlarRef, where("sehir", "==", aramaKelimesi));
+            let querySnapshot = await getDocs(sehirSorgusu);
+            
+            // 2. Şehirde bulunamadıysa Firma Adına Göre Ara
+            if (querySnapshot.empty) {
+                const firmaSorgusu = query(formlarRef, where("firmaAdi", "==", aramaKelimesi));
+                querySnapshot = await getDocs(firmaSorgusu);
+            }
+
+            sonuclarDiv.innerHTML = ""; // Yükleniyor yazısını temizle
+
+            if (querySnapshot.empty) {
+                sonuclarDiv.innerHTML = "<p style='color:#ef4444; text-align:center;'>Bu kriterlere uygun iş formu bulunamadı.</p>";
+                return;
+            }
+
+            // Sonuçları ekrana bas
+            querySnapshot.forEach((doc) => {
+                const veri = doc.data();
+                const tarihFormatli = new Date(veri.tarih).toLocaleDateString('tr-TR', {
+                    day: 'numeric', month: 'long', year: 'numeric', hour:'2-digit', minute:'2-digit'
+                });
+                
+                const kart = document.createElement('div');
+                kart.className = 'sonuc-karti';
+                
+                // CSS ile metinleri görselde okunaklı hale getirip (Büyük harf) ekrana basıyoruz
+                kart.innerHTML = `
+                    <h4>${veri.firmaAdi.toUpperCase()} - ${veri.sehir.toUpperCase()}</h4>
+                    <p>🕒 Eklenme Tarihi: ${tarihFormatli}</p>
+                    <a href="${veri.fotograf}" target="_blank">
+                        <img src="${veri.fotograf}" alt="İş Formu">
+                    </a>
+                `;
+                sonuclarDiv.appendChild(kart);
+            });
+
+        } catch (error) {
+            console.error("Arama Hatası:", error);
+            sonuclarDiv.innerHTML = "<p style='color:#ef4444; text-align:center;'>Arama sırasında bir hata oluştu.</p>";
+        }
+    });
+</script>
+</body>
+</html>
