@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ENORPA İş Formları</title>
     
-    <!-- HEIC Fotoğrafları JPEG'e Çeviren Kütüphane Eklendi -->
-    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <!-- Daha stabil olan UNPKG CDN Linki ile değiştirildi -->
+    <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
     <style>
         :root {
@@ -123,7 +123,6 @@
                             <span>Fotoğraf Seç (Çoklu Seçilebilir)</span>
                             <div class="file-name-display" id="dosyaAdi" style="display:none;"></div>
                         </label>
-                        <!-- accept kısmına HEIC eklendi -->
                         <input type="file" id="fotoGirdisi" accept="image/*,.heic,.heif" multiple required>
                     </div>
                     <button type="submit" id="ekleButonu" class="btn btn-primary">Formları Kaydet</button>
@@ -216,7 +215,7 @@
         
         signInWithEmailAndPassword(auth, email, pass).catch(err => {
             loginError.style.display = 'block';
-            alert("Firebase Hatası: " + err.code + "\n\nLütfen e-posta ve şifrenizi kontrol edin.");
+            alert("Firebase Hatası: " + err.code);
         });
     });
 
@@ -258,30 +257,33 @@
         }
     });
 
-    // GÜNCELLENMİŞ SIKIŞTIRMA (HEIC DESTEKLİ)
+    // GELİŞMİŞ HEIC DÖNÜŞTÜRÜCÜ
     const compressImage = async (file) => {
-        // Eğer dosya HEIC veya HEIF ise heic2any ile JPEG'e dönüştür
-        if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif') || file.type === 'image/heic') {
+        let islenenDosya = file;
+        
+        // Eğer dosya HEIC/HEIF ise dönüştürme yap
+        if (islenenDosya.name.toLowerCase().endsWith('.heic') || islenenDosya.name.toLowerCase().endsWith('.heif') || islenenDosya.type === 'image/heic') {
             try {
+                if (typeof heic2any === "undefined") {
+                    throw new Error("Kütüphane bağlantısı sağlanamadı. Sayfayı yenileyin.");
+                }
+                
                 const convertedBlob = await heic2any({
-                    blob: file,
-                    toType: "image/jpeg",
-                    quality: 0.8 // Dönüştürme esnasında hafif sıkıştır
+                    blob: islenenDosya,
+                    toType: "image/jpeg" // quality parametresi çökmeleri önlemek için kaldırıldı
                 });
                 
-                // heic2any bazen birden fazla kare (array) döndürebilir, ilkini alıyoruz
-                file = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                islenenDosya = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
             } catch (error) {
                 console.error("HEIC Dönüştürme Hatası:", error);
-                alert("HEIC formatlı bu fotoğraf dönüştürülemedi. Lütfen standart bir format (JPEG/PNG) deneyin.");
+                alert("Hata Detayı: " + (error.message || "Bilinmeyen kütüphane hatası."));
                 throw error;
             }
         }
 
-        // Standart okuma ve Canvas işlemleri (JPEG veya dönüştürülmüş dosya için)
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(islenenDosya);
             reader.onload = event => {
                 const img = new Image();
                 img.src = event.target.result;
@@ -293,7 +295,9 @@
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                     resolve(canvas.toDataURL('image/jpeg', 0.6));
                 }
+                img.onerror = () => reject("Görsel oluşturulamadı.");
             }
+            reader.onerror = () => reject("Dosya okunamadı.");
         });
     };
 
@@ -308,7 +312,7 @@
 
         try {
             for (let i = 0; i < dosyalar.length; i++) {
-                ekleButonu.innerHTML = `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})...<br><small style="font-size:10px;">(HEIC ise dönüştürülüyor)</small>`;
+                ekleButonu.innerHTML = `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})...<br><small style="font-size:11px;">(HEIC Dönüşümü Uzun Sürebilir)</small>`;
                 const compressedPhoto = await compressImage(dosyalar[i]);
                 await addDoc(collection(db, "formlar"), {
                     firmaAdi: firmaAdi, sehir: sehir, fotograf: compressedPhoto, tarih: new Date().toISOString()
@@ -320,7 +324,6 @@
             fotoLabel.classList.remove('active');
         } catch (error) { 
             console.error(error);
-            // Hata mesajını özelleştirdik
         } finally {
             ekleButonu.disabled = false;
             ekleButonu.innerHTML = "Formları Kaydet";
