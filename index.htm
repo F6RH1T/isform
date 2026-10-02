@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ENORPA İş Formları</title>
     
+    <!-- HEIC Fotoğrafları JPEG'e Çeviren Kütüphane Eklendi -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
     <style>
         :root {
-            --primary: #f26522; /* ENORPA Turuncusu */
+            --primary: #f26522; 
             --primary-hover: #d95318;
             --bg: #f4f5f7; 
             --surface: #ffffff;
-            --text-main: #343435; /* ENORPA Koyu Grisi */
+            --text-main: #343435; 
             --text-muted: #64748b;
             --border: #e2e8f0; 
             --danger: #ef4444;
@@ -19,17 +22,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; }
         
-        /* GİRİŞ EKRANI */
         #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .login-card { background: var(--surface); padding: 40px 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
         .login-logo { width: 100%; max-width: 250px; margin-bottom: 30px; }
         .login-card input { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid var(--border); border-radius: 10px; font-size: 1rem; outline: none; }
         .login-card input:focus { border-color: var(--primary); }
         
-        /* ANA UYGULAMA */
         #mainApp { display: none; padding-bottom: 70px; }
         
-        /* ÜST BİLGİ */
         header { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; }
         header img { height: 35px; } 
         .logout-btn { background: none; border: none; color: var(--danger); font-weight: 600; font-size: 0.9rem; cursor: pointer; }
@@ -75,7 +75,6 @@
         .nav-item svg { width: 24px; height: 24px; margin-bottom: 4px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .nav-item.active { color: var(--primary); }
 
-        /* GÖRSEL BÜYÜTME MODALI */
         #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; padding: 20px; backdrop-filter: blur(5px); }
         #imageModal img { max-width: 100%; max-height: 75vh; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.5); object-fit: contain; }
         .modal-close { position: absolute; top: 15px; right: 20px; color: white; font-size: 45px; cursor: pointer; line-height: 1; font-weight: bold; }
@@ -84,7 +83,6 @@
 </head>
 <body>
 
-<!-- GİRİŞ EKRANI -->
 <div id="loginScreen">
     <div class="login-card">
         <img src="images-removebg-preview.png" alt="ENORPA Logo" class="login-logo" onerror="this.style.display='none'">
@@ -96,7 +94,6 @@
     </div>
 </div>
 
-<!-- ANA UYGULAMA -->
 <div id="mainApp">
     <header>
         <img src="images-removebg-preview.png" alt="ENORPA Logo" onerror="this.style.display='none'">
@@ -116,7 +113,7 @@
                     <div class="form-floating select-wrapper">
                         <select id="sehir" required>
                             <option value="" disabled selected>Lütfen bir şehir seçin</option>
-                            <option value="adana">Adana</option><option value="adiyaman">Adıyaman</option><option value="afyonkarahisar">Afyonkarahisar</option><option value="agri">Ağrı</option><option value="aksaray">Aksaray</option><option value="amasya">Amasya</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="ardahan">Ardahan</option><option value="artvin">Artvin</option><option value="aydin">Aydın</option><option value="balikesir">Balıkesir</option><option value="bartin">Bartın</option><option value="batman">Batman</option><option value="bayburt">Bayburt</option><option value="bilecik">Bilecik</option><option value="bingol">Bingöl</option><option value="bitlis">Bitlis</option><option value="bolu">Bolu</option><option value="burdur">Burdur</option><option value="bursa">Bursa</option><option value="canakkale">Çanakkale</option><option value="cankiri">Çankırı</option><option value="corum">Çorum</option><option value="denizli">Denizli</option><option value="diyarbakir">Diyarbakır</option><option value="duzce">Düzce</option><option value="edirne">Edirne</option><option value="elazig">Elazığ</option><option value="erzincan">Erzincan</option><option value="erzurum">Erzurum</option><option value="eskisehir">Eskişehir</option><option value="gaziantep">Gaziantep</option><option value="giresun">Giresun</option><option value="gumushane">Gümüşhane</option><option value="hakkari">Hakkari</option><option value="hatay">Hatay</option><option value="igdir">Iğdır</option><option value="isparta">Isparta</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="kahramanmaras">Kahramanmaraş</option><option value="karabuk">Karabük</option><option value="karaman">Karaman</option><option value="kars">Kars</option><option value="kastamonu">Kastamonu</option><option value="kayseri">Kayseri</option><option value="kilis">Kilis</option><option value="kirikkale">Kırıkkale</option><option value="kirklareli">Kırklareli</option><option value="kirsehir">Kırşehir</option><option value="kocaeli">Kocaeli</option><option value="konya">Konya</option><option value="kutahya">Kütahya</option><option value="malatya">Malatya</option><option value="manisa">Manisa</option><option value="mardin">Mardin</option><option value="mersin">Mersin</option><option value="mugla">Muğla</option><option value="mus">Muş</option><option value="nevsehir">Nevşehir</option><option value="nigde">Niğde</option><option value="ordu">Ordu</option><option value="osmaniye">Osmaniye</option><option value="rize">Rize</option><option value="sakarya">Sakarya</option><option value="samsun">Samsun</option><option value="sanliurfa">Şanlıurfa</option><option value="siirt">Siirt</option><option value="sinop">Sinop</option><option value="sirnak">Şırnak</option><option value="sivas">Sivas</option><option value="tekirdag">Tekirdağ</option><option value="tokat">Tokat</option><option value="trabzon">Trabzon</option><option value="tunceli">Tunceli</option><option value="usak">Uşak</option><option value="van">Van</option><option value="yalova">Yalova</option><option value="yozgat">Yozgat</option><option value="zonguldak">Zonguldak</option>
+                            <option value="adana">Adana</option><option value="adiyaman">Adıyaman</option><option value="afyonkarahisar">Afyonkarahisar</option><option value="agri">Ağrı</option><option value="aksaray">Aksaray</option><option value="amasya">Amasya</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="ardahan">Ardahan</option><option value="artvin">Artvin</option><option value="aydin">Aydın</option><option value="balikesir">Balıkesir</option><option value="bartin">Bartın</option><option value="batman">Batman</option><option value="bayburt">Bayburt</option><option value="bilecik">Bilecik</option><option value="bingol">Bingöl</option><option value="bitlis">Bitlis</option><option value="bolu">Bolu</option><option value="burdur">Burdur</option><option value="bursa">Bursa</option><option value="canakkale">Çanakkale</option><option value="cankiri">Çankırı</option><option value="corum">Çorum</option><option value="denizli">Denizli</option><option value="diyarbakir">Diyarbakır</option><option value="duzce">Düzce</option><option value="edirne">Edirne</option><option value="elazig">Elazığ</option><option value="erzincan">Erzincan</option><option value="erzurum">Erzurum</option><option value="eskisehir">Eskişehir</option><option value="gaziantep">Gaziantep</option><option value="giresun">Giresun</option><option value="gumushane">Gümüşhane</option><option value="hakkari">Hakkari</option><option value="hatay">Hatay</option><option value="igdir">Iğdır</option><option value="isparta">Isparta</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="kahramanmaras">Kahramanmaraş</option><option value="karabuk">Karabük</option><option value="karaman">Karaman</option><option value="kars">Kars</option><option value="kastamonu">Kastamonu</option><option value="kayseri">Kayseri</option><option value="kilis">Kilis</option><option value="kirikkale">Kırikkale</option><option value="kirklareli">Kırklareli</option><option value="kirsehir">Kırşehir</option><option value="kocaeli">Kocaeli</option><option value="konya">Konya</option><option value="kutahya">Kütahya</option><option value="malatya">Malatya</option><option value="manisa">Manisa</option><option value="mardin">Mardin</option><option value="mersin">Mersin</option><option value="mugla">Muğla</option><option value="mus">Muş</option><option value="nevsehir">Nevşehir</option><option value="nigde">Niğde</option><option value="ordu">Ordu</option><option value="osmaniye">Osmaniye</option><option value="rize">Rize</option><option value="sakarya">Sakarya</option><option value="samsun">Samsun</option><option value="sanliurfa">Şanlıurfa</option><option value="siirt">Siirt</option><option value="sinop">Sinop</option><option value="sirnak">Şırnak</option><option value="sivas">Sivas</option><option value="tekirdag">Tekirdağ</option><option value="tokat">Tokat</option><option value="trabzon">Trabzon</option><option value="tunceli">Tunceli</option><option value="usak">Uşak</option><option value="van">Van</option><option value="yalova">Yalova</option><option value="yozgat">Yozgat</option><option value="zonguldak">Zonguldak</option>
                         </select>
                         <label for="sehir">Şehir</label>
                     </div>
@@ -126,7 +123,8 @@
                             <span>Fotoğraf Seç (Çoklu Seçilebilir)</span>
                             <div class="file-name-display" id="dosyaAdi" style="display:none;"></div>
                         </label>
-                        <input type="file" id="fotoGirdisi" accept="image/*" multiple required>
+                        <!-- accept kısmına HEIC eklendi -->
+                        <input type="file" id="fotoGirdisi" accept="image/*,.heic,.heif" multiple required>
                     </div>
                     <button type="submit" id="ekleButonu" class="btn btn-primary">Formları Kaydet</button>
                 </form>
@@ -202,7 +200,6 @@
     const mainApp = document.getElementById('mainApp');
     const loginError = document.getElementById('loginError');
 
-    // Oturum Kontrolü
     onAuthStateChanged(auth, (user) => {
         if (user) {
             loginScreen.style.display = 'none';
@@ -213,7 +210,6 @@
         }
     });
 
-    // Giriş İşlemi
     document.getElementById('loginBtn').addEventListener('click', () => {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
@@ -224,10 +220,8 @@
         });
     });
 
-    // Çıkış İşlemi
     document.getElementById('logoutBtn').addEventListener('click', () => { signOut(auth); });
 
-    // Görsel Büyütme (Lightbox)
     window.resmiBuyut = function(srcData) {
         document.getElementById('modalImage').src = srcData;
         document.getElementById('downloadLink').href = srcData;
@@ -235,7 +229,6 @@
     };
     window.modaliKapat = function() { document.getElementById('imageModal').style.display = 'none'; };
 
-    // Kayıt Silme
     window.formSil = async function(docId) {
         if (confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) {
             try {
@@ -246,7 +239,6 @@
         }
     };
 
-    // Alt Menü Navigasyonu
     window.sekmeyiDegistir = function(sekmeAdi) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -254,7 +246,6 @@
         event.currentTarget.classList.add('active');
     };
 
-    // Fotoğraf Seçimi UI Güncelleme
     const fotoGirdisi = document.getElementById('fotoGirdisi');
     const dosyaAdiGosterge = document.getElementById('dosyaAdi');
     const fotoLabel = document.getElementById('fotoLabel');
@@ -267,8 +258,27 @@
         }
     });
 
-    // Fotoğraf Sıkıştırma (1MB Firestore Sınırı İçin)
-    const compressImage = (file) => {
+    // GÜNCELLENMİŞ SIKIŞTIRMA (HEIC DESTEKLİ)
+    const compressImage = async (file) => {
+        // Eğer dosya HEIC veya HEIF ise heic2any ile JPEG'e dönüştür
+        if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif') || file.type === 'image/heic') {
+            try {
+                const convertedBlob = await heic2any({
+                    blob: file,
+                    toType: "image/jpeg",
+                    quality: 0.8 // Dönüştürme esnasında hafif sıkıştır
+                });
+                
+                // heic2any bazen birden fazla kare (array) döndürebilir, ilkini alıyoruz
+                file = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+            } catch (error) {
+                console.error("HEIC Dönüştürme Hatası:", error);
+                alert("HEIC formatlı bu fotoğraf dönüştürülemedi. Lütfen standart bir format (JPEG/PNG) deneyin.");
+                throw error;
+            }
+        }
+
+        // Standart okuma ve Canvas işlemleri (JPEG veya dönüştürülmüş dosya için)
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -287,7 +297,6 @@
         });
     };
 
-    // Form Gönderme
     document.getElementById('isFormu').addEventListener('submit', async (e) => {
         e.preventDefault();
         const ekleButonu = document.getElementById('ekleButonu');
@@ -299,7 +308,7 @@
 
         try {
             for (let i = 0; i < dosyalar.length; i++) {
-                ekleButonu.innerHTML = `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})`;
+                ekleButonu.innerHTML = `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})...<br><small style="font-size:10px;">(HEIC ise dönüştürülüyor)</small>`;
                 const compressedPhoto = await compressImage(dosyalar[i]);
                 await addDoc(collection(db, "formlar"), {
                     firmaAdi: firmaAdi, sehir: sehir, fotograf: compressedPhoto, tarih: new Date().toISOString()
@@ -309,16 +318,17 @@
             document.getElementById('isFormu').reset();
             dosyaAdiGosterge.style.display = "none";
             fotoLabel.classList.remove('active');
-        } catch (error) { alert("Hata oluştu!"); } finally {
+        } catch (error) { 
+            console.error(error);
+            // Hata mesajını özelleştirdik
+        } finally {
             ekleButonu.disabled = false;
             ekleButonu.innerHTML = "Formları Kaydet";
         }
     });
 
-    // Arama Fonksiyonu
     document.getElementById('aramaButonu').addEventListener('click', async () => {
         let aramaKelimesi = document.getElementById('aramaKutusu').value.trim().toLowerCase();
-        // Türkçe karakterleri arama kolaylığı için İngilizceye çevir
         aramaKelimesi = aramaKelimesi.replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c');
         const sonuclarDiv = document.getElementById('sonuclar');
         
@@ -326,7 +336,6 @@
         sonuclarDiv.innerHTML = "<p style='text-align:center;'>⏳ Aranıyor...</p>";
         
         try {
-            // Önce Şehir sonra Firma araması
             let snap = await getDocs(query(collection(db, "formlar"), where("sehir", "==", aramaKelimesi)));
             if (snap.empty) snap = await getDocs(query(collection(db, "formlar"), where("firmaAdi", "==", aramaKelimesi)));
             
@@ -349,7 +358,6 @@
         } catch (error) { sonuclarDiv.innerHTML = "<p style='text-align:center; color:red;'>Hata oluştu.</p>"; }
     });
 
-    // Canlı Akış Dinleyicisi
     onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), (snapshot) => {
         const canliAkanlarDiv = document.getElementById('canliAkanlar');
         canliAkanlarDiv.innerHTML = ""; 
