@@ -1,3 +1,7 @@
+import re
+
+# Read the previous HTML content
+html_content = """
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -123,6 +127,7 @@
                             <span>Fotoğraf Seç (Çoklu Seçilebilir)</span>
                             <div class="file-name-display" id="dosyaAdi" style="display:none;"></div>
                         </label>
+                        <!-- accept kısmına HEIC eklendi -->
                         <input type="file" id="fotoGirdisi" accept="image/*,.heic,.heif" multiple required>
                     </div>
                     <button type="submit" id="ekleButonu" class="btn btn-primary">Formları Kaydet</button>
@@ -199,6 +204,7 @@
     const mainApp = document.getElementById('mainApp');
     const loginError = document.getElementById('loginError');
 
+    // Oturum Kontrolü
     onAuthStateChanged(auth, (user) => {
         if (user) {
             loginScreen.style.display = 'none';
@@ -209,18 +215,21 @@
         }
     });
 
+    // Giriş İşlemi
     document.getElementById('loginBtn').addEventListener('click', () => {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
         
         signInWithEmailAndPassword(auth, email, pass).catch(err => {
             loginError.style.display = 'block';
-            alert("Firebase Hatası: " + err.code);
+            alert("Firebase Hatası: " + err.code + "\n\nLütfen e-posta ve şifrenizi kontrol edin.");
         });
     });
 
+    // Çıkış İşlemi
     document.getElementById('logoutBtn').addEventListener('click', () => { signOut(auth); });
 
+    // Görsel Büyütme (Lightbox)
     window.resmiBuyut = function(srcData) {
         document.getElementById('modalImage').src = srcData;
         document.getElementById('downloadLink').href = srcData;
@@ -228,6 +237,7 @@
     };
     window.modaliKapat = function() { document.getElementById('imageModal').style.display = 'none'; };
 
+    // Kayıt Silme
     window.formSil = async function(docId) {
         if (confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) {
             try {
@@ -238,6 +248,7 @@
         }
     };
 
+    // Alt Menü Navigasyonu
     window.sekmeyiDegistir = function(sekmeAdi) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -245,6 +256,7 @@
         event.currentTarget.classList.add('active');
     };
 
+    // Fotoğraf Seçimi UI Güncelleme
     const fotoGirdisi = document.getElementById('fotoGirdisi');
     const dosyaAdiGosterge = document.getElementById('dosyaAdi');
     const fotoLabel = document.getElementById('fotoLabel');
@@ -270,7 +282,7 @@
                 
                 const convertedBlob = await heic2any({
                     blob: islenenDosya,
-                    toType: "image/jpeg" // quality parametresi çökmeleri önlemek için kaldırıldı
+                    toType: "image/jpeg" 
                 });
                 
                 islenenDosya = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
@@ -301,6 +313,7 @@
         });
     };
 
+    // Form Gönderme
     document.getElementById('isFormu').addEventListener('submit', async (e) => {
         e.preventDefault();
         const ekleButonu = document.getElementById('ekleButonu');
@@ -330,8 +343,10 @@
         }
     });
 
+    // Arama Fonksiyonu
     document.getElementById('aramaButonu').addEventListener('click', async () => {
         let aramaKelimesi = document.getElementById('aramaKutusu').value.trim().toLowerCase();
+        // Türkçe karakterleri arama kolaylığı için İngilizceye çevir
         aramaKelimesi = aramaKelimesi.replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c');
         const sonuclarDiv = document.getElementById('sonuclar');
         
@@ -339,6 +354,7 @@
         sonuclarDiv.innerHTML = "<p style='text-align:center;'>⏳ Aranıyor...</p>";
         
         try {
+            // Önce Şehir sonra Firma araması
             let snap = await getDocs(query(collection(db, "formlar"), where("sehir", "==", aramaKelimesi)));
             if (snap.empty) snap = await getDocs(query(collection(db, "formlar"), where("firmaAdi", "==", aramaKelimesi)));
             
@@ -361,6 +377,7 @@
         } catch (error) { sonuclarDiv.innerHTML = "<p style='text-align:center; color:red;'>Hata oluştu.</p>"; }
     });
 
+    // Canlı Akış Dinleyicisi
     onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), (snapshot) => {
         const canliAkanlarDiv = document.getElementById('canliAkanlar');
         canliAkanlarDiv.innerHTML = ""; 
@@ -383,3 +400,12 @@
 </script>
 </body>
 </html>
+"""
+
+new_html = re.sub(
+    r'<option value="" disabled selected>Lütfen bir şehir seçin</option>',
+    '<option value="" disabled selected>Lütfen bir şehir seçin</option><option value="belirsiz">Belirsiz</option>',
+    html_content
+)
+
+print(new_html)
