@@ -62,7 +62,7 @@
         .btn-primary { background: var(--primary); }
         button:disabled { background: #94a3b8; cursor: not-allowed; }
 
-        /* YENİ LİSTE GÖRÜNÜMÜ CSS */
+        /* HIZLI LİSTE GÖRÜNÜMÜ CSS */
         .liste-karti { background: var(--surface); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
         .liste-karti:hover { border-color: var(--primary); }
         .liste-karti-bilgi { flex: 1; cursor: pointer; }
@@ -72,6 +72,8 @@
         .btn-gor { background: #eff6ff; color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
         .btn-gor:hover { background: var(--primary); color: white; }
         .btn-gor svg { width: 18px; height: 18px; }
+        
+        /* Silme butonu varsayılan olarak var ama yetkisizlerde gizlenecek */
         .btn-sil { background: #fee2e2; color: var(--danger); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
         .btn-sil:hover { background: var(--danger); color: white; }
         .btn-sil svg { width: 18px; height: 18px; }
@@ -81,6 +83,7 @@
         .nav-item svg { width: 24px; height: 24px; margin-bottom: 4px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .nav-item.active { color: var(--primary); }
 
+        /* GÖRSEL BÜYÜTME MODALI */
         #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; padding: 20px; backdrop-filter: blur(5px); }
         #imageModal img { max-width: 100%; max-height: 75vh; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.5); object-fit: contain; }
         .modal-close { position: absolute; top: 15px; right: 20px; color: white; font-size: 45px; cursor: pointer; line-height: 1; font-weight: bold; }
@@ -103,7 +106,10 @@
 <div id="mainApp">
     <header>
         <img src="images-removebg-preview.png" alt="ENORPA Logo" onerror="this.style.display='none'">
-        <button class="logout-btn" id="logoutBtn">Çıkış Yap</button>
+        <div style="display:flex; align-items:center; gap: 10px;">
+            <span id="kullaniciMailGosterge" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+            <button class="logout-btn" id="logoutBtn">Çıkış</button>
+        </div>
     </header>
 
     <div class="container">
@@ -189,6 +195,16 @@
     import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
+    // --------------------------------------------------------
+    // YÖNETİCİ MAİLLERİ (Sadece bu mailler SİL butonunu görebilir)
+    // --------------------------------------------------------
+    const yoneticiMailleri = [
+        "saha@enorpa.com", 
+        "servis@enorpa.com"
+    ]; 
+
+    let aktifKullaniciMail = ""; // Sisteme giren kişinin maili burada tutulacak
+
     const firebaseConfig = {
         apiKey: "AIzaSyC2OWlHtSGY-2Xk6CKDfekCaDXD8k-erDs",
         authDomain: "isform-b284d.firebaseapp.com",
@@ -206,16 +222,22 @@
     const mainApp = document.getElementById('mainApp');
     const loginError = document.getElementById('loginError');
 
+    // Oturum Kontrolü ve Yetki Ataması
     onAuthStateChanged(auth, (user) => {
         if (user) {
+            aktifKullaniciMail = user.email.toLowerCase(); // Giren maili kaydet
+            document.getElementById('kullaniciMailGosterge').innerText = aktifKullaniciMail;
+            
             loginScreen.style.display = 'none';
             mainApp.style.display = 'block';
         } else {
+            aktifKullaniciMail = "";
             loginScreen.style.display = 'flex';
             mainApp.style.display = 'none';
         }
     });
 
+    // Giriş İşlemi
     document.getElementById('loginBtn').addEventListener('click', () => {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
@@ -226,8 +248,10 @@
         });
     });
 
+    // Çıkış İşlemi
     document.getElementById('logoutBtn').addEventListener('click', () => { signOut(auth); });
 
+    // Görsel Büyütme (Lightbox)
     window.resmiBuyut = function(srcData) {
         document.getElementById('modalImage').src = srcData;
         document.getElementById('downloadLink').href = srcData;
@@ -235,7 +259,14 @@
     };
     window.modaliKapat = function() { document.getElementById('imageModal').style.display = 'none'; };
 
+    // Kayıt Silme İşlemi (Ekstra Güvenlik Önlemli)
     window.formSil = async function(docId) {
+        // Çöp kutusu sadece yöneticilerde görünecek ama yine de fonksiyonda bir güvenlik kontrolü yapalım
+        if (!yoneticiMailleri.includes(aktifKullaniciMail)) {
+            alert("Bu işlemi yapmaya yetkiniz yoktur!");
+            return;
+        }
+
         if (confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) {
             try {
                 await deleteDoc(doc(db, "formlar", docId));
@@ -245,6 +276,7 @@
         }
     };
 
+    // Alt Menü Navigasyonu
     window.sekmeyiDegistir = function(sekmeAdi) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -252,6 +284,7 @@
         event.currentTarget.classList.add('active');
     };
 
+    // Fotoğraf Seçimi UI Güncelleme
     const fotoGirdisi = document.getElementById('fotoGirdisi');
     const dosyaAdiGosterge = document.getElementById('dosyaAdi');
     const fotoLabel = document.getElementById('fotoLabel');
@@ -268,14 +301,11 @@
         let islenenDosya = file;
         if (islenenDosya.name.toLowerCase().endsWith('.heic') || islenenDosya.name.toLowerCase().endsWith('.heif') || islenenDosya.type === 'image/heic') {
             try {
-                if (typeof heic2any === "undefined") {
-                    throw new Error("Kütüphane bağlantısı sağlanamadı. Sayfayı yenileyin.");
-                }
+                if (typeof heic2any === "undefined") { throw new Error("Kütüphane bağlantısı sağlanamadı. Sayfayı yenileyin."); }
                 const convertedBlob = await heic2any({ blob: islenenDosya, toType: "image/jpeg" });
                 islenenDosya = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
             } catch (error) {
-                console.error("HEIC Dönüştürme Hatası:", error);
-                alert("Hata Detayı: " + (error.message || "Bilinmeyen kütüphane hatası."));
+                alert("HEIC Dönüştürme Hatası: " + (error.message || "Bilinmeyen kütüphane hatası."));
                 throw error;
             }
         }
@@ -299,6 +329,7 @@
         });
     };
 
+    // Form Gönderme
     document.getElementById('isFormu').addEventListener('submit', async (e) => {
         e.preventDefault();
         const ekleButonu = document.getElementById('ekleButonu');
@@ -328,6 +359,7 @@
         }
     });
 
+    // Arama Fonksiyonu
     document.getElementById('aramaButonu').addEventListener('click', async () => {
         let aramaKelimesi = document.getElementById('aramaKutusu').value.trim().toLowerCase();
         aramaKelimesi = aramaKelimesi.replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c');
@@ -343,10 +375,19 @@
             sonuclarDiv.innerHTML = ""; 
             if (snap.empty) return sonuclarDiv.innerHTML = "<p style='text-align:center; color:red;'>Kayıt bulunamadı.</p>";
 
-            // YENİ HIZLI LİSTE GÖRÜNÜMÜ
+            // Yetkiye göre silme butonu HTML'ini hazırlayalım
+            const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
+
             snap.forEach(doc => {
                 const v = doc.data();
                 const docId = doc.id;
+                
+                // Yalnızca adminlere özel çöp kutusu butonu
+                const silButonuHTML = isAdmin ? 
+                    `<button class="btn-sil" onclick="formSil('${docId}')" title="Formu Sil">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                     </button>` : "";
+
                 sonuclarDiv.innerHTML += `
                     <div class="liste-karti" id="kart-${docId}">
                         <div class="liste-karti-bilgi" onclick="resmiBuyut('${v.fotograf}')">
@@ -357,24 +398,30 @@
                             <button class="btn-gor" onclick="resmiBuyut('${v.fotograf}')" title="Fotoğrafı Gör">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             </button>
-                            <button class="btn-sil" onclick="formSil('${docId}')" title="Formu Sil">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
+                            ${silButonuHTML}
                         </div>
                     </div>`;
             });
         } catch (error) { sonuclarDiv.innerHTML = "<p style='text-align:center; color:red;'>Hata oluştu.</p>"; }
     });
 
+    // Canlı Akış Dinleyicisi
     onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), (snapshot) => {
         const canliAkanlarDiv = document.getElementById('canliAkanlar');
         canliAkanlarDiv.innerHTML = ""; 
         if (snapshot.empty) return canliAkanlarDiv.innerHTML = "<p style='text-align:center;'>Henüz eklenmiş form yok.</p>";
 
-        // CANLI AKIŞ HIZLI LİSTE GÖRÜNÜMÜ
+        const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
+
         snapshot.forEach(doc => {
             const v = doc.data();
             const docId = doc.id;
+            
+            const silButonuHTML = isAdmin ? 
+                `<button class="btn-sil" onclick="formSil('${docId}')" title="Formu Sil">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                 </button>` : "";
+
             canliAkanlarDiv.innerHTML += `
                 <div class="liste-karti" id="kart-${docId}">
                     <div class="liste-karti-bilgi" onclick="resmiBuyut('${v.fotograf}')">
@@ -385,9 +432,7 @@
                         <button class="btn-gor" onclick="resmiBuyut('${v.fotograf}')" title="Fotoğrafı Gör">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
-                        <button class="btn-sil" onclick="formSil('${docId}')" title="Formu Sil">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
+                        ${silButonuHTML}
                     </div>
                 </div>`;
         });
