@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ENORPA İş Formları</title>
     
-    <!-- Daha stabil olan UNPKG CDN Linki ile değiştirildi -->
+    <!-- HEIC Kütüphanesi -->
     <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
     <style>
@@ -62,13 +62,19 @@
         .btn-primary { background: var(--primary); }
         button:disabled { background: #94a3b8; cursor: not-allowed; }
 
-        .sonuc-karti { background: var(--surface); padding: 16px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--border); position: relative; }
-        .sonuc-karti h4 { margin: 0 0 6px 0; font-size: 1.1rem; padding-right: 35px; } 
-        .sonuc-karti p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; }
-        .sonuc-karti img { width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; cursor: zoom-in; } 
-        
-        .btn-delete { position: absolute; top: 12px; right: 12px; background: #fee2e2; color: var(--danger); border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
-        .btn-delete:hover { background: var(--danger); color: white; }
+        /* YENİ LİSTE GÖRÜNÜMÜ CSS */
+        .liste-karti { background: var(--surface); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
+        .liste-karti:hover { border-color: var(--primary); }
+        .liste-karti-bilgi { flex: 1; cursor: pointer; }
+        .liste-karti-bilgi h4 { margin: 0 0 4px 0; font-size: 1rem; color: var(--text-main); }
+        .liste-karti-bilgi p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .liste-karti-butonlar { display: flex; gap: 8px; }
+        .btn-gor { background: #eff6ff; color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+        .btn-gor:hover { background: var(--primary); color: white; }
+        .btn-gor svg { width: 18px; height: 18px; }
+        .btn-sil { background: #fee2e2; color: var(--danger); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+        .btn-sil:hover { background: var(--danger); color: white; }
+        .btn-sil svg { width: 18px; height: 18px; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.05); z-index: 100; border-top: 1px solid var(--border); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; width: 33%; -webkit-tap-highlight-color: transparent;}
@@ -112,8 +118,9 @@
                     </div>
                     <div class="form-floating select-wrapper">
                         <select id="sehir" required>
-                            <option value="" disabled selected>Lütfen bir şehir seçin</option><option value="belirsiz">Belirsiz</option>
-                            <option value="adana">Adana</option><option value="adiyaman">Adıyaman</option><option value="afyonkarahisar">Afyonkarahisar</option><option value="agri">Ağrı</option><option value="aksaray">Aksaray</option><option value="amasya">Amasya</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="ardahan">Ardahan</option><option value="artvin">Artvin</option><option value="aydin">Aydın</option><option value="balikesir">Balıkesir</option><option value="bartin">Bartın</option><option value="batman">Batman</option><option value="bayburt">Bayburt</option><option value="bilecik">Bilecik</option><option value="bingol">Bingöl</option><option value="bitlis">Bitlis</option><option value="bolu">Bolu</option><option value="burdur">Burdur</option><option value="bursa">Bursa</option><option value="canakkale">Çanakkale</option><option value="cankiri">Çankırı</option><option value="corum">Çorum</option><option value="denizli">Denizli</option><option value="diyarbakir">Diyarbakır</option><option value="duzce">Düzce</option><option value="edirne">Edirne</option><option value="elazig">Elazığ</option><option value="erzincan">Erzincan</option><option value="erzurum">Erzurum</option><option value="eskisehir">Eskişehir</option><option value="gaziantep">Gaziantep</option><option value="giresun">Giresun</option><option value="gumushane">Gümüşhane</option><option value="hakkari">Hakkari</option><option value="hatay">Hatay</option><option value="igdir">Iğdır</option><option value="isparta">Isparta</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="kahramanmaras">Kahramanmaraş</option><option value="karabuk">Karabük</option><option value="karaman">Karaman</option><option value="kars">Kars</option><option value="kastamonu">Kastamonu</option><option value="kayseri">Kayseri</option><option value="kilis">Kilis</option><option value="kirikkale">Kırikkale</option><option value="kirklareli">Kırklareli</option><option value="kirsehir">Kırşehir</option><option value="kocaeli">Kocaeli</option><option value="konya">Konya</option><option value="kutahya">Kütahya</option><option value="malatya">Malatya</option><option value="manisa">Manisa</option><option value="mardin">Mardin</option><option value="mersin">Mersin</option><option value="mugla">Muğla</option><option value="mus">Muş</option><option value="nevsehir">Nevşehir</option><option value="nigde">Niğde</option><option value="ordu">Ordu</option><option value="osmaniye">Osmaniye</option><option value="rize">Rize</option><option value="sakarya">Sakarya</option><option value="samsun">Samsun</option><option value="sanliurfa">Şanlıurfa</option><option value="siirt">Siirt</option><option value="sinop">Sinop</option><option value="sirnak">Şırnak</option><option value="sivas">Sivas</option><option value="tekirdag">Tekirdağ</option><option value="tokat">Tokat</option><option value="trabzon">Trabzon</option><option value="tunceli">Tunceli</option><option value="usak">Uşak</option><option value="van">Van</option><option value="yalova">Yalova</option><option value="yozgat">Yozgat</option><option value="zonguldak">Zonguldak</option>
+                            <option value="" disabled selected>Lütfen bir şehir seçin</option>
+                            <option value="belirsiz">Belirsiz</option>
+                            <option value="adana">Adana</option><option value="adiyaman">Adıyaman</option><option value="afyonkarahisar">Afyonkarahisar</option><option value="agri">Ağrı</option><option value="aksaray">Aksaray</option><option value="amasya">Amasya</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="ardahan">Ardahan</option><option value="artvin">Artvin</option><option value="aydin">Aydın</option><option value="balikesir">Balıkesir</option><option value="bartin">Bartın</option><option value="batman">Batman</option><option value="bayburt">Bayburt</option><option value="bilecik">Bilecik</option><option value="bingol">Bingöl</option><option value="bitlis">Bitlis</option><option value="bolu">Bolu</option><option value="burdur">Burdur</option><option value="bursa">Bursa</option><option value="canakkale">Çanakkale</option><option value="cankiri">Çankırı</option><option value="corum">Çorum</option><option value="denizli">Denizli</option><option value="diyarbakir">Diyarbakır</option><option value="duzce">Düzce</option><option value="edirne">Edirne</option><option value="elazig">Elazığ</option><option value="erzincan">Erzincan</option><option value="erzurum">Erzurum</option><option value="eskisehir">Eskişehir</option><option value="gaziantep">Gaziantep</option><option value="giresun">Giresun</option><option value="gumushane">Gümüşhane</option><option value="hakkari">Hakkari</option><option value="hatay">Hatay</option><option value="igdir">Iğdır</option><option value="isparta">Isparta</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="kahramanmaras">Kahramanmaraş</option><option value="karabuk">Karabük</option><option value="karaman">Karaman</option><option value="kars">Kars</option><option value="kastamonu">Kastamonu</option><option value="kayseri">Kayseri</option><option value="kilis">Kilis</option><option value="kirikkale">Kırıkkale</option><option value="kirklareli">Kırklareli</option><option value="kirsehir">Kırşehir</option><option value="kocaeli">Kocaeli</option><option value="konya">Konya</option><option value="kutahya">Kütahya</option><option value="malatya">Malatya</option><option value="manisa">Manisa</option><option value="mardin">Mardin</option><option value="mersin">Mersin</option><option value="mugla">Muğla</option><option value="mus">Muş</option><option value="nevsehir">Nevşehir</option><option value="nigde">Niğde</option><option value="ordu">Ordu</option><option value="osmaniye">Osmaniye</option><option value="rize">Rize</option><option value="sakarya">Sakarya</option><option value="samsun">Samsun</option><option value="sanliurfa">Şanlıurfa</option><option value="siirt">Siirt</option><option value="sinop">Sinop</option><option value="sirnak">Şırnak</option><option value="sivas">Sivas</option><option value="tekirdag">Tekirdağ</option><option value="tokat">Tokat</option><option value="trabzon">Trabzon</option><option value="tunceli">Tunceli</option><option value="usak">Uşak</option><option value="van">Van</option><option value="yalova">Yalova</option><option value="yozgat">Yozgat</option><option value="zonguldak">Zonguldak</option>
                         </select>
                         <label for="sehir">Şehir</label>
                     </div>
@@ -123,7 +130,6 @@
                             <span>Fotoğraf Seç (Çoklu Seçilebilir)</span>
                             <div class="file-name-display" id="dosyaAdi" style="display:none;"></div>
                         </label>
-                        <!-- accept kısmına HEIC eklendi -->
                         <input type="file" id="fotoGirdisi" accept="image/*,.heic,.heif" multiple required>
                     </div>
                     <button type="submit" id="ekleButonu" class="btn btn-primary">Formları Kaydet</button>
@@ -200,7 +206,6 @@
     const mainApp = document.getElementById('mainApp');
     const loginError = document.getElementById('loginError');
 
-    // Oturum Kontrolü
     onAuthStateChanged(auth, (user) => {
         if (user) {
             loginScreen.style.display = 'none';
@@ -211,7 +216,6 @@
         }
     });
 
-    // Giriş İşlemi
     document.getElementById('loginBtn').addEventListener('click', () => {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
@@ -222,10 +226,8 @@
         });
     });
 
-    // Çıkış İşlemi
     document.getElementById('logoutBtn').addEventListener('click', () => { signOut(auth); });
 
-    // Görsel Büyütme (Lightbox)
     window.resmiBuyut = function(srcData) {
         document.getElementById('modalImage').src = srcData;
         document.getElementById('downloadLink').href = srcData;
@@ -233,7 +235,6 @@
     };
     window.modaliKapat = function() { document.getElementById('imageModal').style.display = 'none'; };
 
-    // Kayıt Silme
     window.formSil = async function(docId) {
         if (confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) {
             try {
@@ -244,7 +245,6 @@
         }
     };
 
-    // Alt Menü Navigasyonu
     window.sekmeyiDegistir = function(sekmeAdi) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -252,7 +252,6 @@
         event.currentTarget.classList.add('active');
     };
 
-    // Fotoğraf Seçimi UI Güncelleme
     const fotoGirdisi = document.getElementById('fotoGirdisi');
     const dosyaAdiGosterge = document.getElementById('dosyaAdi');
     const fotoLabel = document.getElementById('fotoLabel');
@@ -265,22 +264,14 @@
         }
     });
 
-    // GELİŞMİŞ HEIC DÖNÜŞTÜRÜCÜ
     const compressImage = async (file) => {
         let islenenDosya = file;
-        
-        // Eğer dosya HEIC/HEIF ise dönüştürme yap
         if (islenenDosya.name.toLowerCase().endsWith('.heic') || islenenDosya.name.toLowerCase().endsWith('.heif') || islenenDosya.type === 'image/heic') {
             try {
                 if (typeof heic2any === "undefined") {
                     throw new Error("Kütüphane bağlantısı sağlanamadı. Sayfayı yenileyin.");
                 }
-                
-                const convertedBlob = await heic2any({
-                    blob: islenenDosya,
-                    toType: "image/jpeg" 
-                });
-                
+                const convertedBlob = await heic2any({ blob: islenenDosya, toType: "image/jpeg" });
                 islenenDosya = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
             } catch (error) {
                 console.error("HEIC Dönüştürme Hatası:", error);
@@ -288,7 +279,6 @@
                 throw error;
             }
         }
-
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(islenenDosya);
@@ -309,7 +299,6 @@
         });
     };
 
-    // Form Gönderme
     document.getElementById('isFormu').addEventListener('submit', async (e) => {
         e.preventDefault();
         const ekleButonu = document.getElementById('ekleButonu');
@@ -339,10 +328,8 @@
         }
     });
 
-    // Arama Fonksiyonu
     document.getElementById('aramaButonu').addEventListener('click', async () => {
         let aramaKelimesi = document.getElementById('aramaKutusu').value.trim().toLowerCase();
-        // Türkçe karakterleri arama kolaylığı için İngilizceye çevir
         aramaKelimesi = aramaKelimesi.replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c');
         const sonuclarDiv = document.getElementById('sonuclar');
         
@@ -350,46 +337,58 @@
         sonuclarDiv.innerHTML = "<p style='text-align:center;'>⏳ Aranıyor...</p>";
         
         try {
-            // Önce Şehir sonra Firma araması
             let snap = await getDocs(query(collection(db, "formlar"), where("sehir", "==", aramaKelimesi)));
             if (snap.empty) snap = await getDocs(query(collection(db, "formlar"), where("firmaAdi", "==", aramaKelimesi)));
             
             sonuclarDiv.innerHTML = ""; 
             if (snap.empty) return sonuclarDiv.innerHTML = "<p style='text-align:center; color:red;'>Kayıt bulunamadı.</p>";
 
+            // YENİ HIZLI LİSTE GÖRÜNÜMÜ
             snap.forEach(doc => {
                 const v = doc.data();
                 const docId = doc.id;
                 sonuclarDiv.innerHTML += `
-                    <div class="sonuc-karti" id="kart-${docId}">
-                        <button class="btn-delete" onclick="formSil('${docId}')" title="Formu Sil">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                        <h4>${v.firmaAdi.toUpperCase()} - ${v.sehir.toUpperCase()}</h4>
-                        <p>🕒 ${new Date(v.tarih).toLocaleDateString('tr-TR')}</p>
-                        <img src="${v.fotograf}" onclick="resmiBuyut(this.src)" title="Büyütmek için tıklayın">
+                    <div class="liste-karti" id="kart-${docId}">
+                        <div class="liste-karti-bilgi" onclick="resmiBuyut('${v.fotograf}')">
+                            <h4>${v.firmaAdi.toUpperCase()} - ${v.sehir.toUpperCase()}</h4>
+                            <p>🕒 ${new Date(v.tarih).toLocaleDateString('tr-TR')}</p>
+                        </div>
+                        <div class="liste-karti-butonlar">
+                            <button class="btn-gor" onclick="resmiBuyut('${v.fotograf}')" title="Fotoğrafı Gör">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                            <button class="btn-sil" onclick="formSil('${docId}')" title="Formu Sil">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
                     </div>`;
             });
         } catch (error) { sonuclarDiv.innerHTML = "<p style='text-align:center; color:red;'>Hata oluştu.</p>"; }
     });
 
-    // Canlı Akış Dinleyicisi
     onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), (snapshot) => {
         const canliAkanlarDiv = document.getElementById('canliAkanlar');
         canliAkanlarDiv.innerHTML = ""; 
         if (snapshot.empty) return canliAkanlarDiv.innerHTML = "<p style='text-align:center;'>Henüz eklenmiş form yok.</p>";
 
+        // CANLI AKIŞ HIZLI LİSTE GÖRÜNÜMÜ
         snapshot.forEach(doc => {
             const v = doc.data();
             const docId = doc.id;
             canliAkanlarDiv.innerHTML += `
-                <div class="sonuc-karti" id="kart-${docId}">
-                    <button class="btn-delete" onclick="formSil('${docId}')" title="Formu Sil">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
-                    <h4>${v.firmaAdi.toUpperCase()} - ${v.sehir.toUpperCase()}</h4>
-                    <p>🕒 ${new Date(v.tarih).toLocaleDateString('tr-TR', {day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'})}</p>
-                    <img src="${v.fotograf}" onclick="resmiBuyut(this.src)" title="Büyütmek için tıklayın" loading="lazy">
+                <div class="liste-karti" id="kart-${docId}">
+                    <div class="liste-karti-bilgi" onclick="resmiBuyut('${v.fotograf}')">
+                        <h4>${v.firmaAdi.toUpperCase()} - ${v.sehir.toUpperCase()}</h4>
+                        <p>🕒 ${new Date(v.tarih).toLocaleDateString('tr-TR', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
+                    </div>
+                    <div class="liste-karti-butonlar">
+                        <button class="btn-gor" onclick="resmiBuyut('${v.fotograf}')" title="Fotoğrafı Gör">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                        <button class="btn-sil" onclick="formSil('${docId}')" title="Formu Sil">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
                 </div>`;
         });
     });
