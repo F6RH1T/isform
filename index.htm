@@ -4,4299 +4,792 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ENORPA İş Formları</title>
-
+    
     <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
     <style>
-        :root {
-            --primary: #f26522;
-            --primary-hover: #d95318;
-            --bg: #f4f5f7;
-            --surface: #ffffff;
-            --text-main: #343435;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --danger: #ef4444;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* GİRİŞ EKRANI */
-        #loginScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .login-card {
-            background: var(--surface);
-            padding: 40px 30px 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            border-top: 6px solid var(--primary);
-        }
-
-        .login-logo {
-            width: 100%;
-            max-width: 220px;
-            margin-bottom: 15px;
-        }
-
-        .login-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 5px;
-        }
-
-        .login-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 25px;
-        }
-
-        .login-card input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 1rem;
-            outline: none;
-            transition: 0.2s;
-        }
-
-        .login-card input:focus {
-            border-color: var(--primary);
-        }
-
-        #mainApp {
-            display: none;
-            padding-bottom: 70px;
-        }
-
-        /* HEADER */
-        header {
-            background: var(--surface);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-brand img {
-            height: 32px;
-            object-fit: contain;
-        }
-
-        .header-title {
-            font-weight: 700;
-            color: var(--text-main);
-            font-size: 1.05rem;
-            letter-spacing: -0.3px;
-            border-left: 2px solid var(--border);
-            padding-left: 10px;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logout-btn {
-            background: #fee2e2;
-            border: none;
-            color: var(--danger);
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-
-        .logout-btn:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .optimize-btn {
-            display: none;
-            background: #fef3c7;
-            border: none;
-            color: #d97706;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-
-        .optimize-btn:hover {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 0 15px;
-        }
-
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .card {
-            background: var(--surface);
-            padding: 25px 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-floating {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .form-floating input,
-        .form-floating select {
-            width: 100%;
-            padding: 16px 14px 10px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 1rem;
-            outline: none;
-            background: transparent;
-            color: var(--text-main);
-        }
-
-        .form-floating input:focus,
-        .form-floating select:focus {
-            border-color: var(--primary);
-        }
-
-        .form-floating label {
-            position: absolute;
-            top: 50%;
-            left: 14px;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-            transition: 0.2s;
-            background: var(--surface);
-            padding: 0 4px;
-        }
-
-        .form-floating input:focus ~ label,
-        .form-floating input:not(:placeholder-shown) ~ label,
-        .form-floating select ~ label {
-            top: 0;
-            font-size: 0.8rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .form-floating select {
-            appearance: none;
-            -webkit-appearance: none;
-            cursor: pointer;
-        }
-
-        .select-wrapper::after {
-            content: "▼";
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            pointer-events: none;
-        }
-
-        /* OTOMATİK ARAMA */
-        .autocomplete-items {
-            position: absolute;
-            border: 1px solid var(--border);
-            border-bottom: none;
-            border-top: none;
-            z-index: 99;
-            top: 100%;
-            left: 0;
-            right: 0;
-            border-radius: 0 0 12px 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-            background: white;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-
-        .autocomplete-items div {
-            padding: 12px 15px;
-            cursor: pointer;
-            background-color: #fff;
-            border-bottom: 1px solid var(--border);
-            color: var(--text-main);
-            font-size: 0.95rem;
-        }
-
-        .autocomplete-items div:hover {
-            background-color: var(--bg);
-            color: var(--primary);
-            font-weight: 500;
-        }
-
-        .autocomplete-items strong {
-            color: var(--primary);
-        }
-
-        .autocomplete-category {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            display: block;
-            margin-top: 3px;
-        }
-
-        /* DOSYA */
-        .file-upload {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .file-upload input[type="file"] {
-            display: none;
-        }
-
-        .file-upload-label {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 30px 20px;
-            border: 2px dashed #cbd5e1;
-            border-radius: 12px;
-            cursor: pointer;
-            color: var(--text-muted);
-            background-color: #f8fafc;
-            text-align: center;
-            transition: 0.2s;
-        }
-
-        .file-upload-label:hover,
-        .file-upload-label.active {
-            border-color: var(--primary);
-            background-color: #fff0eb;
-            color: var(--primary);
-        }
-
-        .file-name-display {
-            font-size: 0.85rem;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-
-        /* BUTON */
-        button.btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: white;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
-
-        button.btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-        }
-
-        button:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-        }
-
-        /* LİSTE */
-        .liste-karti {
-            background: var(--surface);
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            transition: 0.2s;
-        }
-
-        .liste-karti:hover {
-            border-color: var(--primary);
-        }
-
-        .liste-karti-bilgi {
-            flex: 1;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .liste-karti-bilgi h4 {
-            margin: 0 0 4px 0;
-            font-size: 1rem;
-            color: var(--text-main);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .liste-karti-bilgi p {
-            margin: 0;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .liste-karti-bilgi .detay-satiri {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 3px;
-            font-size: 0.8rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .liste-karti-butonlar {
-            display: flex;
-            gap: 8px;
-            margin-left: 10px;
-        }
-
-        .btn-gor {
-            background: #eff6ff;
-            color: var(--primary);
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: 0.2s;
-            flex-shrink: 0;
-        }
-
-        .btn-gor:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-duzenle {
-            background: #fef9c3;
-            color: #ca8a04;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: 0.2s;
-            flex-shrink: 0;
-        }
-
-        .btn-duzenle:hover {
-            background: #eab308;
-            color: white;
-        }
-
-        .btn-sil {
-            background: #fee2e2;
-            color: var(--danger);
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: 0.2s;
-            flex-shrink: 0;
-        }
-
-        .btn-sil:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-gor svg,
-        .btn-sil svg,
-        .btn-duzenle svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* ALT MENÜ */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--surface);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 15px rgba(0,0,0,0.05);
-            z-index: 100;
-            border-top: 1px solid var(--border);
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 33%;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .nav-item svg {
-            width: 24px;
-            height: 24px;
-            margin-bottom: 4px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-        }
-
-        /* GÖRSEL MODAL */
-        #imageModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        #imageModal img {
-            max-width: 100%;
-            max-height: 75vh;
-            border-radius: 12px;
-            box-shadow: 0 4px 25px rgba(0,0,0,0.5);
-            object-fit: contain;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            color: white;
-            font-size: 45px;
-            cursor: pointer;
-            line-height: 1;
-            font-weight: bold;
-        }
-
-        .modal-btn {
-            margin-top: 25px;
-            background: var(--primary);
-            color: white;
-            padding: 14px 25px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            box-shadow: 0 4px 10px rgba(242, 101, 34, 0.3);
-        }
-
-        /* DÜZENLEME MODAL */
-        #editModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        .edit-card {
-            background: var(--surface);
-            padding: 30px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        .sonuc-bilgisi {
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--primary);
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            opacity: 0.6;
-        }
-
-        .empty-state img {
-            width: 150px;
-            margin-bottom: 15px;
-            filter: grayscale(100%);
-            opacity: 0.5;
-        }
-
-        .empty-state p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
+        :root { --primary: #f26522; --primary-hover: #d95318; --bg: #f4f5f7; --surface: #ffffff; --text-main: #343435; --text-muted: #64748b; --border: #e2e8f0; --danger: #ef4444; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+        
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .login-card { background: var(--surface); padding: 40px 30px 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); width: 100%; max-width: 400px; text-align: center; border-top: 6px solid var(--primary); }
+        .login-logo { width: 100%; max-width: 220px; margin-bottom: 15px; }
+        .login-title { font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
+        .login-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 25px; }
+        .login-card input { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; outline: none; transition: 0.2s; }
+        .login-card input:focus { border-color: var(--primary); }
+        
+        #mainApp { display: none; padding-bottom: 70px; }
+        
+        header { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; }
+        .header-brand { display: flex; align-items: center; gap: 10px; }
+        .header-brand img { height: 32px; object-fit: contain; }
+        .header-title { font-weight: 700; color: var(--text-main); font-size: 1.05rem; letter-spacing: -0.3px; border-left: 2px solid var(--border); padding-left: 10px; }
+        
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+        .logout-btn { background: #fee2e2; border: none; color: var(--danger); font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: 0.2s; }
+        .logout-btn:hover { background: var(--danger); color: white; }
+        .optimize-btn { display: none; background: #fef3c7; border: none; color: #d97706; font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: 0.2s; }
+        .optimize-btn:hover { background: #f59e0b; color: white; }
+
+        .container { max-width: 500px; margin: 20px auto; padding: 0 15px; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--surface); padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text-main); display:flex; align-items:center; gap:8px; }
+        
+        .form-floating { position: relative; margin-bottom: 20px; }
+        .form-floating input, .form-floating select { width: 100%; padding: 16px 14px 10px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; outline: none; background: transparent; color: var(--text-main); }
+        .form-floating input:focus, .form-floating select:focus { border-color: var(--primary); }
+        .form-floating label { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; transition: 0.2s; background: var(--surface); padding: 0 4px; }
+        .form-floating input:focus ~ label, .form-floating input:not(:placeholder-shown) ~ label, .form-floating select ~ label { top: 0; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+        .form-floating select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+        .select-wrapper::after { content: "▼"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: var(--text-muted); pointer-events: none; }
+
+        .autocomplete-items { position: absolute; border: 1px solid var(--border); border-bottom: none; border-top: none; z-index: 99; top: 100%; left: 0; right: 0; border-radius: 0 0 12px 12px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); background: white; max-height: 250px; overflow-y: auto; }
+        .autocomplete-items div { padding: 12px 15px; cursor: pointer; background-color: #fff; border-bottom: 1px solid var(--border); color: var(--text-main); font-size: 0.95rem; }
+        .autocomplete-items div:hover { background-color: var(--bg); color: var(--primary); font-weight: 500; }
+        .autocomplete-items strong { color: var(--primary); }
+        .autocomplete-category { font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 3px; }
+
+        .file-upload { position: relative; margin-bottom: 20px; }
+        .file-upload input[type="file"] { display: none; }
+        .file-upload-label { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 20px; border: 2px dashed #cbd5e1; border-radius: 12px; cursor: pointer; color: var(--text-muted); background-color: #f8fafc; text-align: center; transition: 0.2s; }
+        .file-upload-label:hover, .file-upload-label.active { border-color: var(--primary); background-color: #fff0eb; color: var(--primary); }
+        .file-name-display { font-size: 0.85rem; margin-top: 10px; font-weight: 600; }
+
+        button.btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; color: white; display: flex; justify-content: center; gap: 8px; transition: 0.2s; }
+        button.btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); }
+        button:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .liste-karti { background: var(--surface); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
+        .liste-karti:hover { border-color: var(--primary); }
+        .liste-karti-bilgi { flex: 1; cursor: pointer; overflow: hidden; }
+        .liste-karti-bilgi h4 { margin: 0 0 4px 0; font-size: 1rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .liste-karti-bilgi p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .liste-karti-bilgi .detay-satiri { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+        .liste-karti-butonlar { display: flex; gap: 8px; margin-left: 10px; }
+        
+        .btn-gor { background: #eff6ff; color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; }
+        .btn-gor:hover { background: var(--primary); color: white; }
+        .btn-duzenle { background: #fef9c3; color: #ca8a04; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; }
+        .btn-duzenle:hover { background: #eab308; color: white; }
+        .btn-sil { background: #fee2e2; color: var(--danger); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; }
+        .btn-sil:hover { background: var(--danger); color: white; }
+        .btn-gor svg, .btn-sil svg, .btn-duzenle svg { width: 18px; height: 18px; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.05); z-index: 100; border-top: 1px solid var(--border); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; width: 33%; -webkit-tap-highlight-color: transparent;}
+        .nav-item svg { width: 24px; height: 24px; margin-bottom: 4px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .nav-item.active { color: var(--primary); }
+
+        #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; padding: 20px; backdrop-filter: blur(5px); }
+        #imageModal img { max-width: 100%; max-height: 75vh; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.5); object-fit: contain; }
+        .modal-close { position: absolute; top: 15px; right: 20px; color: white; font-size: 45px; cursor: pointer; line-height: 1; font-weight: bold; }
+        .modal-btn { margin-top: 25px; background: var(--primary); color: white; padding: 14px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 10px rgba(242, 101, 34, 0.3); }
+        
+        #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
+        .edit-card { background: var(--surface); padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+        .sonuc-bilgisi { text-align: center; font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 15px; }
+        .empty-state { text-align: center; padding: 40px 20px; opacity: 0.6; }
+        .empty-state img { width: 150px; margin-bottom: 15px; filter: grayscale(100%); opacity: 0.5; }
+        .empty-state p { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
 
         @media(max-width:420px) {
-            .header-title {
-                display: none;
-            }
-
-            .optimize-btn {
-                font-size: 0.75rem;
-                padding: 7px 8px;
-            }
-
-            .logout-btn {
-                font-size: 0.75rem;
-                padding: 7px 9px;
-            }
+            .header-title { display: none; }
+            .optimize-btn { font-size: 0.75rem; padding: 7px 8px; }
+            .logout-btn { font-size: 0.75rem; padding: 7px 9px; }
         }
     </style>
 </head>
-
 <body>
 
-<!-- =========================================================
-     GİRİŞ
-========================================================= -->
-
 <div id="loginScreen">
-
     <div class="login-card">
-
-        <img
-            src="Adsız tasarım.png"
-            alt="ENORPA Logo"
-            class="login-logo"
-            onerror="this.style.display='none'"
-        >
-
-        <h2 class="login-title">
-            İş Formları Takip Sistemi
-        </h2>
-
-        <p class="login-subtitle">
-            Sisteme erişmek için bilgilerinizi giriniz
-        </p>
-
-        <input
-            type="email"
-            id="loginEmail"
-            placeholder="E-posta Adresi"
-            required
-        >
-
-        <input
-            type="password"
-            id="loginPassword"
-            placeholder="Şifre"
-            required
-        >
-
-        <button
-            id="loginBtn"
-            class="btn btn-primary"
-        >
-            Giriş Yap
-        </button>
-
-        <p
-            id="loginError"
-            style="
-                color:var(--danger);
-                font-size:0.85rem;
-                margin-top:15px;
-                display:none;
-            "
-        >
-            Giriş başarısız. Bilgileri kontrol edin.
-        </p>
-
+        <img src="Adsız tasarım.png" alt="ENORPA Logo" class="login-logo" onerror="this.style.display='none'">
+        <h2 class="login-title">İş Formları Takip Sistemi</h2>
+        <p class="login-subtitle">Sisteme erişmek için bilgilerinizi giriniz</p>
+        <input type="email" id="loginEmail" placeholder="E-posta Adresi" required>
+        <input type="password" id="loginPassword" placeholder="Şifre" required>
+        <button id="loginBtn" class="btn btn-primary">Giriş Yap</button>
+        <p id="loginError" style="color:var(--danger); font-size:0.85rem; margin-top:15px; display:none;">Giriş başarısız. Bilgileri kontrol edin.</p>
     </div>
-
 </div>
 
-
-<!-- =========================================================
-     ANA UYGULAMA
-========================================================= -->
-
 <div id="mainApp">
-
-    <!-- HEADER -->
-
     <header>
-
         <div class="header-brand">
-
-            <img
-                src="Adsız tasarım.png"
-                alt="ENORPA Logo"
-                onerror="this.style.display='none'"
-            >
-
-            <div class="header-title">
-                İş Formları
-            </div>
-
+            <img src="Adsız tasarım.png" alt="ENORPA Logo" onerror="this.style.display='none'">
+            <div class="header-title">İş Formları</div>
         </div>
-
         <div class="header-actions">
-
-            <button
-                class="optimize-btn"
-                id="btnOptimize"
-                onclick="eskiKayitlariOptimizeEt()"
-                title="Eski kayıtları yeni hızlı sisteme taşır"
-            >
-                ⚡ Optimizasyon
-            </button>
-
-            <button
-                class="logout-btn"
-                id="logoutBtn"
-            >
-                Çıkış
-            </button>
-
+            <button class="optimize-btn" id="btnOptimize" onclick="eskiKayitlariOptimizeEt()" title="Eski kayıtları yeni hızlı sisteme taşır">⚡ Optimizasyon</button>
+            <button class="logout-btn" id="logoutBtn">Çıkış</button>
         </div>
-
     </header>
 
-
     <div class="container">
-
-        <!-- =================================================
-             YENİ EKLE
-        ================================================== -->
-
-        <div
-            id="tab-ekle"
-            class="tab-content active"
-        >
-
+        <div id="tab-ekle" class="tab-content active">
             <div class="card">
-
-                <div class="card-title">
-                    📝 Yeni Kayıt Ekle
-                </div>
-
+                <div class="card-title">📝 Yeni Kayıt Ekle</div>
                 <form id="isFormu">
-
                     <div class="form-floating">
-
-                        <input
-                            type="text"
-                            id="firmaAdi"
-                            placeholder=" "
-                            required
-                            autocomplete="off"
-                        >
-
-                        <label for="firmaAdi">
-                            Firma Adı
-                        </label>
-
+                        <input type="text" id="firmaAdi" placeholder=" " required autocomplete="off">
+                        <label for="firmaAdi">Firma Adı</label>
                     </div>
-
-
                     <div class="form-floating select-wrapper">
-
                         <select id="sehir" required>
-
-                            <option
-                                value=""
-                                disabled
-                                selected
-                            >
-                                Lütfen bir şehir seçin
-                            </option>
-
-                            <option value="belirsiz">
-                                Belirsiz
-                            </option>
-
-                            <option value="adana">Adana</option>
-                            <option value="adiyaman">Adıyaman</option>
-                            <option value="afyonkarahisar">Afyonkarahisar</option>
-                            <option value="agri">Ağrı</option>
-                            <option value="aksaray">Aksaray</option>
-                            <option value="amasya">Amasya</option>
-                            <option value="ankara">Ankara</option>
-                            <option value="antalya">Antalya</option>
-                            <option value="ardahan">Ardahan</option>
-                            <option value="artvin">Artvin</option>
-                            <option value="aydin">Aydın</option>
-                            <option value="balikesir">Balıkesir</option>
-                            <option value="bartin">Bartın</option>
-                            <option value="batman">Batman</option>
-                            <option value="bayburt">Bayburt</option>
-                            <option value="bilecik">Bilecik</option>
-                            <option value="bingol">Bingöl</option>
-                            <option value="bitlis">Bitlis</option>
-                            <option value="bolu">Bolu</option>
-                            <option value="burdur">Burdur</option>
-                            <option value="bursa">Bursa</option>
-                            <option value="canakkale">Çanakkale</option>
-                            <option value="cankiri">Çankırı</option>
-                            <option value="corum">Çorum</option>
-                            <option value="denizli">Denizli</option>
-                            <option value="diyarbakir">Diyarbakır</option>
-                            <option value="duzce">Düzce</option>
-                            <option value="edirne">Edirne</option>
-                            <option value="elazig">Elazığ</option>
-                            <option value="erzincan">Erzincan</option>
-                            <option value="erzurum">Erzurum</option>
-                            <option value="eskisehir">Eskişehir</option>
-                            <option value="gaziantep">Gaziantep</option>
-                            <option value="giresun">Giresun</option>
-                            <option value="gumushane">Gümüşhane</option>
-                            <option value="hakkari">Hakkari</option>
-                            <option value="hatay">Hatay</option>
-                            <option value="igdir">Iğdır</option>
-                            <option value="isparta">Isparta</option>
-                            <option value="istanbul">İstanbul</option>
-                            <option value="izmir">İzmir</option>
-                            <option value="kahramanmaras">Kahramanmaraş</option>
-                            <option value="karabuk">Karabük</option>
-                            <option value="karaman">Karaman</option>
-                            <option value="kars">Kars</option>
-                            <option value="kastamonu">Kastamonu</option>
-                            <option value="kayseri">Kayseri</option>
-                            <option value="kilis">Kilis</option>
-                            <option value="kirikkale">Kırıkkale</option>
-                            <option value="kirklareli">Kırklareli</option>
-                            <option value="kirsehir">Kırşehir</option>
-                            <option value="kocaeli">Kocaeli</option>
-                            <option value="konya">Konya</option>
-                            <option value="kutahya">Kütahya</option>
-                            <option value="malatya">Malatya</option>
-                            <option value="manisa">Manisa</option>
-                            <option value="mardin">Mardin</option>
-                            <option value="mersin">Mersin</option>
-                            <option value="mugla">Muğla</option>
-                            <option value="mus">Muş</option>
-                            <option value="nevsehir">Nevşehir</option>
-                            <option value="nigde">Niğde</option>
-                            <option value="ordu">Ordu</option>
-                            <option value="osmaniye">Osmaniye</option>
-                            <option value="rize">Rize</option>
-                            <option value="sakarya">Sakarya</option>
-                            <option value="samsun">Samsun</option>
-                            <option value="sanliurfa">Şanlıurfa</option>
-                            <option value="siirt">Siirt</option>
-                            <option value="sinop">Sinop</option>
-                            <option value="sirnak">Şırnak</option>
-                            <option value="sivas">Sivas</option>
-                            <option value="tekirdag">Tekirdağ</option>
-                            <option value="tokat">Tokat</option>
-                            <option value="trabzon">Trabzon</option>
-                            <option value="tunceli">Tunceli</option>
-                            <option value="usak">Uşak</option>
-                            <option value="van">Van</option>
-                            <option value="yalova">Yalova</option>
-                            <option value="yozgat">Yozgat</option>
-                            <option value="zonguldak">Zonguldak</option>
-
+                            <option value="" disabled selected>Lütfen bir şehir seçin</option>
+                            <option value="belirsiz">Belirsiz</option>
+                            <option value="adana">Adana</option><option value="adiyaman">Adıyaman</option><option value="afyonkarahisar">Afyonkarahisar</option><option value="agri">Ağrı</option><option value="aksaray">Aksaray</option><option value="amasya">Amasya</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="ardahan">Ardahan</option><option value="artvin">Artvin</option><option value="aydin">Aydın</option><option value="balikesir">Balıkesir</option><option value="bartin">Bartın</option><option value="batman">Batman</option><option value="bayburt">Bayburt</option><option value="bilecik">Bilecik</option><option value="bingol">Bingöl</option><option value="bitlis">Bitlis</option><option value="bolu">Bolu</option><option value="burdur">Burdur</option><option value="bursa">Bursa</option><option value="canakkale">Çanakkale</option><option value="cankiri">Çankırı</option><option value="corum">Çorum</option><option value="denizli">Denizli</option><option value="diyarbakir">Diyarbakır</option><option value="duzce">Düzce</option><option value="edirne">Edirne</option><option value="elazig">Elazığ</option><option value="erzincan">Erzincan</option><option value="erzurum">Erzurum</option><option value="eskisehir">Eskişehir</option><option value="gaziantep">Gaziantep</option><option value="giresun">Giresun</option><option value="gumushane">Gümüşhane</option><option value="hakkari">Hakkari</option><option value="hatay">Hatay</option><option value="igdir">Iğdır</option><option value="isparta">Isparta</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="kahramanmaras">Kahramanmaraş</option><option value="karabuk">Karabük</option><option value="karaman">Karaman</option><option value="kars">Kars</option><option value="kastamonu">Kastamonu</option><option value="kayseri">Kayseri</option><option value="kilis">Kilis</option><option value="kirikkale">Kırıkkale</option><option value="kirklareli">Kırklareli</option><option value="kirsehir">Kırşehir</option><option value="kocaeli">Kocaeli</option><option value="konya">Konya</option><option value="kutahya">Kütahya</option><option value="malatya">Malatya</option><option value="manisa">Manisa</option><option value="mardin">Mardin</option><option value="mersin">Mersin</option><option value="mugla">Muğla</option><option value="mus">Muş</option><option value="nevsehir">Nevşehir</option><option value="nigde">Niğde</option><option value="ordu">Ordu</option><option value="osmaniye">Osmaniye</option><option value="rize">Rize</option><option value="sakarya">Sakarya</option><option value="samsun">Samsun</option><option value="sanliurfa">Şanlıurfa</option><option value="siirt">Siirt</option><option value="sinop">Sinop</option><option value="sirnak">Şırnak</option><option value="sivas">Sivas</option><option value="tekirdag">Tekirdağ</option><option value="tokat">Tokat</option><option value="trabzon">Trabzon</option><option value="tunceli">Tunceli</option><option value="usak">Uşak</option><option value="van">Van</option><option value="yalova">Yalova</option><option value="yozgat">Yozgat</option><option value="zonguldak">Zonguldak</option>
                         </select>
-
-                        <label for="sehir">
-                            Şehir
-                        </label>
-
+                        <label for="sehir">Şehir</label>
                     </div>
-
-
+                    
                     <div class="form-floating select-wrapper">
-
                         <select id="islemTipi" required>
-
-                            <option
-                                value=""
-                                disabled
-                                selected
-                            >
-                                Lütfen işlem tipi seçin
-                            </option>
-
-                            <option value="Bakım">
-                                Bakım
-                            </option>
-
-                            <option value="Arıza">
-                                Arıza
-                            </option>
-
-                            <option value="Kurulum">
-                                Kurulum
-                            </option>
-
-                            <option value="Keşif">
-                                Keşif
-                            </option>
-
-                            <option value="Diğer">
-                                Diğer
-                            </option>
-
+                            <option value="" disabled selected>Lütfen işlem tipi seçin</option>
+                            <option value="Bakım">Bakım</option>
+                            <option value="Arıza">Arıza</option>
+                            <option value="Kurulum">Kurulum</option>
+                            <option value="Keşif">Keşif</option>
+                            <option value="Diğer">Diğer</option>
                         </select>
-
-                        <label for="islemTipi">
-                            İşlem Tipi
-                        </label>
-
+                        <label for="islemTipi">İşlem Tipi</label>
                     </div>
-
 
                     <div class="file-upload">
-
-                        <label
-                            for="fotoGirdisi"
-                            class="file-upload-label"
-                            id="fotoLabel"
-                        >
-
-                            <svg
-                                viewBox="0 0 24 24"
-                                width="32"
-                                height="32"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-
-                            <span>
-                                Fotoğraf Seç / Çek (Çoklu)
-                            </span>
-
-                            <div
-                                class="file-name-display"
-                                id="dosyaAdi"
-                                style="display:none;"
-                            ></div>
-
+                        <label for="fotoGirdisi" class="file-upload-label" id="fotoLabel">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <span>Fotoğraf Seç / Çek (Çoklu)</span>
+                            <div class="file-name-display" id="dosyaAdi" style="display:none;"></div>
                         </label>
-
-                        <input
-                            type="file"
-                            id="fotoGirdisi"
-                            accept="image/*,.heic,.heif"
-                            capture="environment"
-                            multiple
-                            required
-                        >
-
+                        <input type="file" id="fotoGirdisi" accept="image/*,.heic,.heif" capture="environment" multiple required>
                     </div>
-
-
-                    <button
-                        type="submit"
-                        id="ekleButonu"
-                        class="btn btn-primary"
-                    >
-                        Formları Kaydet
-                    </button>
-
+                    <button type="submit" id="ekleButonu" class="btn btn-primary">Formları Kaydet</button>
                 </form>
-
             </div>
-
         </div>
 
-
-        <!-- =================================================
-             ARAMA
-        ================================================== -->
-
-        <div
-            id="tab-ara"
-            class="tab-content"
-        >
-
+        <!-- 2. SEKME: ARAMA -->
+        <div id="tab-ara" class="tab-content">
             <div class="card">
-
-                <div class="card-title">
-                    🔍 Kayıtlı Form Ara
+                <div class="card-title">🔍 Kayıtlı Form Ara</div>
+                <div class="form-floating autocomplete" style="position:relative;">
+                    <input type="text" id="aramaKutusu" placeholder=" " autocomplete="off">
+                    <label for="aramaKutusu">Firma, Şehir, İşlem Tipi veya Mail</label>
                 </div>
-
-                <div
-                    class="form-floating autocomplete"
-                    style="position:relative;"
-                >
-
-                    <input
-                        type="text"
-                        id="aramaKutusu"
-                        placeholder=" "
-                        autocomplete="off"
-                    >
-
-                    <label for="aramaKutusu">
-                        Firma, Şehir, İşlem Tipi veya Ekleyen Mail
-                    </label>
-
-                </div>
-
-                <button
-                    type="button"
-                    id="aramaButonu"
-                    class="btn btn-primary"
-                >
-                    Formları Bul
-                </button>
-
+                <button type="button" id="aramaButonu" class="btn btn-primary">Formları Bul</button>
             </div>
-
             <div id="sonuclar"></div>
-
         </div>
 
-
-        <!-- =================================================
-             CANLI AKIŞ
-        ================================================== -->
-
-        <div
-            id="tab-akis"
-            class="tab-content"
-        >
-
-            <div
-                class="card"
-                style="
-                    background:transparent;
-                    box-shadow:none;
-                    padding:0;
-                "
-            >
-
-                <div
-                    class="card-title"
-                    style="
-                        color:var(--primary);
-                        text-align:center;
-                    "
-                >
-                    📡 Son Eklenen Formlar
-                </div>
-
+        <!-- 3. SEKME: CANLI AKIŞ -->
+        <div id="tab-akis" class="tab-content">
+            <div class="card" style="background:transparent; box-shadow:none; padding:0;">
+                <div class="card-title" style="color:var(--primary); text-align:center;">📡 Son Eklenen Formlar</div>
                 <div id="canliAkanlar"></div>
-
             </div>
-
         </div>
-
     </div>
 
-
-    <!-- =================================================
-         FOTOĞRAF MODALI
-    ================================================== -->
-
+    <!-- MODALLAR -->
     <div id="imageModal">
-
-        <span
-            class="modal-close"
-            onclick="modaliKapat()"
-        >
-            &times;
-        </span>
-
-        <p
-            id="modalLoading"
-            style="
-                color:white;
-                font-size:1.2rem;
-                font-weight:bold;
-            "
-        >
-            ⏳ Fotoğraf İndiriliyor...
-        </p>
-
-        <img
-            id="modalImage"
-            src=""
-            style="display:none;"
-        >
-
-        <a
-            id="downloadLink"
-            href=""
-            download="ENORPA_Is_Formu.jpg"
-            class="modal-btn"
-            style="display:none;"
-        >
-            ⬇️ Fotoğrafı İndir / Kaydet
-        </a>
-
+        <span class="modal-close" onclick="modaliKapat()">&times;</span>
+        <p id="modalLoading" style="color:white; font-size:1.2rem; font-weight:bold;">⏳ Fotoğraf İndiriliyor...</p>
+        <img id="modalImage" src="" style="display:none;">
+        <a id="downloadLink" href="" download="ENORPA_Is_Formu.jpg" class="modal-btn" style="display:none;">⬇️ Fotoğrafı İndir / Kaydet</a>
     </div>
-
-
-    <!-- =================================================
-         DÜZENLEME MODALI
-    ================================================== -->
 
     <div id="editModal">
-
         <div class="edit-card">
-
-            <h3
-                style="
-                    margin-bottom:20px;
-                    color:var(--text-main);
-                    text-align:center;
-                "
-            >
-                ✏ Kaydı Düzenle
-            </h3>
-
-
+            <h3 style="margin-bottom:20px; color:var(--text-main); text-align:center;">✏ Kaydı Düzenle</h3>
             <div class="form-floating">
-
-                <input
-                    type="text"
-                    id="editFirmaAdi"
-                    placeholder=" "
-                    required
-                    autocomplete="off"
-                >
-
-                <label for="editFirmaAdi">
-                    Yeni Firma Adı
-                </label>
-
+                <input type="text" id="editFirmaAdi" placeholder=" " required autocomplete="off">
+                <label for="editFirmaAdi">Yeni Firma Adı</label>
             </div>
-
-
             <div class="form-floating select-wrapper">
-
                 <select id="editSehir" required>
-
-                    <option
-                        value=""
-                        disabled
-                        selected
-                    >
-                        Lütfen bir şehir seçin
-                    </option>
-
+                    <option value="" disabled selected>Lütfen bir şehir seçin</option>
                     <option value="belirsiz">Belirsiz</option>
-                    <option value="adana">Adana</option>
-                    <option value="adiyaman">Adıyaman</option>
-                    <option value="afyonkarahisar">Afyonkarahisar</option>
-                    <option value="agri">Ağrı</option>
-                    <option value="aksaray">Aksaray</option>
-                    <option value="amasya">Amasya</option>
-                    <option value="ankara">Ankara</option>
-                    <option value="antalya">Antalya</option>
-                    <option value="ardahan">Ardahan</option>
-                    <option value="artvin">Artvin</option>
-                    <option value="aydin">Aydın</option>
-                    <option value="balikesir">Balıkesir</option>
-                    <option value="bartin">Bartın</option>
-                    <option value="batman">Batman</option>
-                    <option value="bayburt">Bayburt</option>
-                    <option value="bilecik">Bilecik</option>
-                    <option value="bingol">Bingöl</option>
-                    <option value="bitlis">Bitlis</option>
-                    <option value="bolu">Bolu</option>
-                    <option value="burdur">Burdur</option>
-                    <option value="bursa">Bursa</option>
-                    <option value="canakkale">Çanakkale</option>
-                    <option value="cankiri">Çankırı</option>
-                    <option value="corum">Çorum</option>
-                    <option value="denizli">Denizli</option>
-                    <option value="diyarbakir">Diyarbakır</option>
-                    <option value="duzce">Düzce</option>
-                    <option value="edirne">Edirne</option>
-                    <option value="elazig">Elazığ</option>
-                    <option value="erzincan">Erzincan</option>
-                    <option value="erzurum">Erzurum</option>
-                    <option value="eskisehir">Eskişehir</option>
-                    <option value="gaziantep">Gaziantep</option>
-                    <option value="giresun">Giresun</option>
-                    <option value="gumushane">Gümüşhane</option>
-                    <option value="hakkari">Hakkari</option>
-                    <option value="hatay">Hatay</option>
-                    <option value="igdir">Iğdır</option>
-                    <option value="isparta">Isparta</option>
-                    <option value="istanbul">İstanbul</option>
-                    <option value="izmir">İzmir</option>
-                    <option value="kahramanmaras">Kahramanmaraş</option>
-                    <option value="karabuk">Karabük</option>
-                    <option value="karaman">Karaman</option>
-                    <option value="kars">Kars</option>
-                    <option value="kastamonu">Kastamonu</option>
-                    <option value="kayseri">Kayseri</option>
-                    <option value="kilis">Kilis</option>
-                    <option value="kirikkale">Kırıkkale</option>
-                    <option value="kirklareli">Kırklareli</option>
-                    <option value="kirsehir">Kırşehir</option>
-                    <option value="kocaeli">Kocaeli</option>
-                    <option value="konya">Konya</option>
-                    <option value="kutahya">Kütahya</option>
-                    <option value="malatya">Malatya</option>
-                    <option value="manisa">Manisa</option>
-                    <option value="mardin">Mardin</option>
-                    <option value="mersin">Mersin</option>
-                    <option value="mugla">Muğla</option>
-                    <option value="mus">Muş</option>
-                    <option value="nevsehir">Nevşehir</option>
-                    <option value="nigde">Niğde</option>
-                    <option value="ordu">Ordu</option>
-                    <option value="osmaniye">Osmaniye</option>
-                    <option value="rize">Rize</option>
-                    <option value="sakarya">Sakarya</option>
-                    <option value="samsun">Samsun</option>
-                    <option value="sanliurfa">Şanlıurfa</option>
-                    <option value="siirt">Siirt</option>
-                    <option value="sinop">Sinop</option>
-                    <option value="sirnak">Şırnak</option>
-                    <option value="sivas">Sivas</option>
-                    <option value="tekirdag">Tekirdağ</option>
-                    <option value="tokat">Tokat</option>
-                    <option value="trabzon">Trabzon</option>
-                    <option value="tunceli">Tunceli</option>
-                    <option value="usak">Uşak</option>
-                    <option value="van">Van</option>
-                    <option value="yalova">Yalova</option>
-                    <option value="yozgat">Yozgat</option>
-                    <option value="zonguldak">Zonguldak</option>
-
+                    <option value="adana">Adana</option><option value="adiyaman">Adıyaman</option><option value="afyonkarahisar">Afyonkarahisar</option><option value="agri">Ağrı</option><option value="aksaray">Aksaray</option><option value="amasya">Amasya</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="ardahan">Ardahan</option><option value="artvin">Artvin</option><option value="aydin">Aydın</option><option value="balikesir">Balıkesir</option><option value="bartin">Bartın</option><option value="batman">Batman</option><option value="bayburt">Bayburt</option><option value="bilecik">Bilecik</option><option value="bingol">Bingöl</option><option value="bitlis">Bitlis</option><option value="bolu">Bolu</option><option value="burdur">Burdur</option><option value="bursa">Bursa</option><option value="canakkale">Çanakkale</option><option value="cankiri">Çankırı</option><option value="corum">Çorum</option><option value="denizli">Denizli</option><option value="diyarbakir">Diyarbakır</option><option value="duzce">Düzce</option><option value="edirne">Edirne</option><option value="elazig">Elazığ</option><option value="erzincan">Erzincan</option><option value="erzurum">Erzurum</option><option value="eskisehir">Eskişehir</option><option value="gaziantep">Gaziantep</option><option value="giresun">Giresun</option><option value="gumushane">Gümüşhane</option><option value="hakkari">Hakkari</option><option value="hatay">Hatay</option><option value="igdir">Iğdır</option><option value="isparta">Isparta</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="kahramanmaras">Kahramanmaraş</option><option value="karabuk">Karabük</option><option value="karaman">Karaman</option><option value="kars">Kars</option><option value="kastamonu">Kastamonu</option><option value="kayseri">Kayseri</option><option value="kilis">Kilis</option><option value="kirikkale">Kırikkale</option><option value="kirklareli">Kırklareli</option><option value="kirsehir">Kırşehir</option><option value="kocaeli">Kocaeli</option><option value="konya">Konya</option><option value="kutahya">Kütahya</option><option value="malatya">Malatya</option><option value="manisa">Manisa</option><option value="mardin">Mardin</option><option value="mersin">Mersin</option><option value="mugla">Muğla</option><option value="mus">Muş</option><option value="nevsehir">Nevşehir</option><option value="nigde">Niğde</option><option value="ordu">Ordu</option><option value="osmaniye">Osmaniye</option><option value="rize">Rize</option><option value="sakarya">Sakarya</option><option value="samsun">Samsun</option><option value="sanliurfa">Şanlıurfa</option><option value="siirt">Siirt</option><option value="sinop">Sinop</option><option value="sirnak">Şırnak</option><option value="sivas">Sivas</option><option value="tekirdag">Tekirdağ</option><option value="tokat">Tokat</option><option value="trabzon">Trabzon</option><option value="tunceli">Tunceli</option><option value="usak">Uşak</option><option value="van">Van</option><option value="yalova">Yalova</option><option value="yozgat">Yozgat</option><option value="zonguldak">Zonguldak</option>
                 </select>
-
-                <label for="editSehir">
-                    Yeni Şehir
-                </label>
-
+                <label for="editSehir">Yeni Şehir</label>
             </div>
-
-
             <div class="form-floating select-wrapper">
-
-                <select
-                    id="editIslemTipi"
-                    required
-                >
-
-                    <option
-                        value=""
-                        disabled
-                        selected
-                    >
-                        Lütfen işlem tipi seçin
-                    </option>
-
+                <select id="editIslemTipi" required>
+                    <option value="" disabled selected>Lütfen işlem tipi seçin</option>
                     <option value="Bakım">Bakım</option>
                     <option value="Arıza">Arıza</option>
                     <option value="Kurulum">Kurulum</option>
                     <option value="Keşif">Keşif</option>
                     <option value="Diğer">Diğer</option>
-
                 </select>
-
-                <label for="editIslemTipi">
-                    Yeni İşlem Tipi
-                </label>
-
+                <label for="editIslemTipi">Yeni İşlem Tipi</label>
             </div>
-
-
-            <div
-                style="
-                    display:flex;
-                    gap:10px;
-                    margin-top:20px;
-                "
-            >
-
-                <button
-                    id="btnEditCancel"
-                    class="btn"
-                    style="
-                        background:#94a3b8;
-                        color:white;
-                    "
-                >
-                    İptal
-                </button>
-
-                <button
-                    id="btnEditSave"
-                    class="btn btn-primary"
-                >
-                    Kaydet
-                </button>
-
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button id="btnEditCancel" class="btn" style="background:#94a3b8; color:white;">İptal</button>
+                <button id="btnEditSave" class="btn btn-primary">Kaydet</button>
             </div>
-
         </div>
-
     </div>
 
-
-    <!-- =================================================
-         ALT MENÜ
-    ================================================== -->
-
+    <!-- ALT MENÜ -->
     <nav class="bottom-nav">
-
-        <div
-            class="nav-item active"
-            onclick="sekmeyiDegistir('ekle', this)"
-        >
-            <svg viewBox="0 0 24 24">
-                <path d="M12 5v14M5 12h14"/>
-            </svg>
-
-            <span>
-                Yeni Ekle
-            </span>
-
+        <div class="nav-item active" onclick="sekmeyiDegistir('ekle', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Yeni Ekle</span>
         </div>
-
-
-        <div
-            class="nav-item"
-            onclick="sekmeyiDegistir('ara', this)"
-        >
-            <svg viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8"/>
-                <line
-                    x1="21"
-                    y1="21"
-                    x2="16.65"
-                    y2="16.65"
-                />
-            </svg>
-
-            <span>
-                Ara
-            </span>
-
+        <div class="nav-item" onclick="sekmeyiDegistir('ara', this)">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Ara</span>
         </div>
-
-
-        <div
-            class="nav-item"
-            onclick="sekmeyiDegistir('akis', this)"
-        >
-            <svg viewBox="0 0 24 24">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-
-            <span>
-                Canlı Akış
-            </span>
-
+        <div class="nav-item" onclick="sekmeyiDegistir('akis', this)">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Canlı Akış</span>
         </div>
-
     </nav>
-
 </div>
 
-
-<!-- =========================================================
-     JAVASCRIPT
-========================================================= -->
-
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    import {
-        initializeApp
-    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    const yoneticiMailleri = ["saha@enorpa.com", "servis@enorpa.com", "stajyer@enorpa.com", "turuncu@enorpa.com"]; 
+    const tumSehirler = ["adana", "adiyaman", "afyonkarahisar", "agri", "aksaray", "amasya", "ankara", "antalya", "ardahan", "artvin", "aydin", "balikesir", "bartin", "batman", "bayburt", "bilecik", "bingol", "bitlis", "bolu", "burdur", "bursa", "canakkale", "cankiri", "corum", "denizli", "diyarbakir", "duzce", "edirne", "elazig", "erzincan", "erzurum", "eskisehir", "gaziantep", "giresun", "gumushane", "hakkari", "hatay", "igdir", "isparta", "istanbul", "izmir", "kahramanmaras", "karabuk", "karaman", "kars", "kastamonu", "kayseri", "kilis", "kirikkale", "kirklareli", "kirsehir", "kocaeli", "konya", "kutahya", "malatya", "manisa", "mardin", "mersin", "mugla", "mus", "nevsehir", "nigde", "ordu", "osmaniye", "rize", "sakarya", "samsun", "sanliurfa", "siirt", "sinop", "sirnak", "sivas", "tekirdag", "tokat", "trabzon", "tunceli", "usak", "van", "yalova", "yozgat", "zonguldak", "belirsiz"];
 
-    import {
-        getFirestore,
-        collection,
-        addDoc,
-        getDocs,
-        query,
-        where,
-        onSnapshot,
-        orderBy,
-        limit,
-        doc,
-        deleteDoc,
-        updateDoc,
-        getDoc,
-        deleteField
-    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-    import {
-        getAuth,
-        signInWithEmailAndPassword,
-        onAuthStateChanged,
-        signOut
-    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-
-    /* ========================================================
-       AYARLAR
-    ======================================================== */
-
-    const yoneticiMailleri = [
-        "saha@enorpa.com",
-        "servis@enorpa.com",
-        "stajyer@enorpa.com",
-        "turuncu@enorpa.com"
-    ];
-
-
-    const tumSehirler = [
-        "adana",
-        "adiyaman",
-        "afyonkarahisar",
-        "agri",
-        "aksaray",
-        "amasya",
-        "ankara",
-        "antalya",
-        "ardahan",
-        "artvin",
-        "aydin",
-        "balikesir",
-        "bartin",
-        "batman",
-        "bayburt",
-        "bilecik",
-        "bingol",
-        "bitlis",
-        "bolu",
-        "burdur",
-        "bursa",
-        "canakkale",
-        "cankiri",
-        "corum",
-        "denizli",
-        "diyarbakir",
-        "duzce",
-        "edirne",
-        "elazig",
-        "erzincan",
-        "erzurum",
-        "eskisehir",
-        "gaziantep",
-        "giresun",
-        "gumushane",
-        "hakkari",
-        "hatay",
-        "igdir",
-        "isparta",
-        "istanbul",
-        "izmir",
-        "kahramanmaras",
-        "karabuk",
-        "karaman",
-        "kars",
-        "kastamonu",
-        "kayseri",
-        "kilis",
-        "kirikkale",
-        "kirklareli",
-        "kirsehir",
-        "kocaeli",
-        "konya",
-        "kutahya",
-        "malatya",
-        "manisa",
-        "mardin",
-        "mersin",
-        "mugla",
-        "mus",
-        "nevsehir",
-        "nigde",
-        "ordu",
-        "osmaniye",
-        "rize",
-        "sakarya",
-        "samsun",
-        "sanliurfa",
-        "siirt",
-        "sinop",
-        "sirnak",
-        "sivas",
-        "tekirdag",
-        "tokat",
-        "trabzon",
-        "tunceli",
-        "usak",
-        "van",
-        "yalova",
-        "yozgat",
-        "zonguldak",
-        "belirsiz"
-    ];
-
-
-    let aktifKullaniciMail = "";
+    let aktifKullaniciMail = ""; 
     let guncellenecekDocId = null;
 
-
-    /* ========================================================
-       FIREBASE
-    ======================================================== */
-
     const firebaseConfig = {
-
         apiKey: "AIzaSyC2OWlHtSGY-2Xk6CKDfekCaDXD8k-erDs",
-
-        authDomain:
-            "isform-b284d.firebaseapp.com",
-
-        projectId:
-            "isform-b284d",
-
-        storageBucket:
-            "isform-b284d.firebasestorage.app",
-
-        messagingSenderId:
-            "601360853063",
-
-        appId:
-            "1:601360853063:web:ec6fa97a46f3d00cfaa962"
+        authDomain: "isform-b284d.firebaseapp.com",
+        projectId: "isform-b284d",
+        storageBucket: "isform-b284d.firebasestorage.app",
+        messagingSenderId: "601360853063",
+        appId: "1:601360853063:web:ec6fa97a46f3d00cfaa962"
     };
 
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    const app =
-        initializeApp(firebaseConfig);
-
-    const db =
-        getFirestore(app);
-
-    const auth =
-        getAuth(app);
-
-
-    const loginScreen =
-        document.getElementById("loginScreen");
-
-    const mainApp =
-        document.getElementById("mainApp");
-
-
-    /* ========================================================
-       NORMALİZASYON
-    ======================================================== */
+    const loginScreen = document.getElementById("loginScreen");
+    const mainApp = document.getElementById("mainApp");
 
     function metniNormalizeEt(metin) {
-
-        if (
-            metin === null ||
-            metin === undefined
-        ) {
-            return "";
-        }
-
-        return String(metin)
-            .toLocaleLowerCase("tr-TR")
-            .replace(/ı/g, "i")
-            .replace(/ş/g, "s")
-            .replace(/ğ/g, "g")
-            .replace(/ü/g, "u")
-            .replace(/ö/g, "o")
-            .replace(/ç/g, "c")
-            .replace(/\s+/g, " ")
-            .trim();
+        if (!metin) return "";
+        return String(metin).toLocaleLowerCase("tr-TR").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ö/g, "o").replace(/ç/g, "c").replace(/\s+/g, " ").trim();
     }
-
-
-    /* ========================================================
-       HTML GÜVENLİĞİ
-    ======================================================== */
 
     function htmlGuvenli(metin) {
-
-        if (
-            metin === null ||
-            metin === undefined
-        ) {
-            return "";
-        }
-
-        return String(metin)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+        if (!metin) return "";
+        return String(metin).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-
-    /* ========================================================
-       AUTH
-    ======================================================== */
-
-    onAuthStateChanged(
-        auth,
-        (user) => {
-
-            if (user) {
-
-                aktifKullaniciMail =
-                    (user.email || "").toLowerCase();
-
-                loginScreen.style.display =
-                    "none";
-
-                mainApp.style.display =
-                    "block";
-
-                if (
-                    yoneticiMailleri.includes(
-                        aktifKullaniciMail
-                    )
-                ) {
-
-                    document
-                        .getElementById("btnOptimize")
-                        .style.display = "block";
-
-                }
-
-            } else {
-
-                aktifKullaniciMail = "";
-
-                loginScreen.style.display =
-                    "flex";
-
-                mainApp.style.display =
-                    "none";
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            aktifKullaniciMail = (user.email || "").toLowerCase();
+            loginScreen.style.display = "none";
+            mainApp.style.display = "block";
+            if (yoneticiMailleri.includes(aktifKullaniciMail)) {
+                document.getElementById("btnOptimize").style.display = "block";
             }
-
+        } else {
+            aktifKullaniciMail = "";
+            loginScreen.style.display = "flex";
+            mainApp.style.display = "none";
         }
-    );
+    });
 
+    document.getElementById("loginBtn").addEventListener("click", () => {
+        const email = document.getElementById("loginEmail").value.trim();
+        const pass = document.getElementById("loginPassword").value;
+        document.getElementById("loginError").style.display = "none";
+        signInWithEmailAndPassword(auth, email, pass).catch(() => { document.getElementById("loginError").style.display = "block"; });
+    });
 
-    /* ========================================================
-       GİRİŞ
-    ======================================================== */
+    document.getElementById("logoutBtn").addEventListener("click", () => { signOut(auth); });
 
-    document
-        .getElementById("loginBtn")
-        .addEventListener(
-            "click",
-            () => {
+    window.eskiKayitlariOptimizeEt = async function () {
+        if (!confirm("Arama altyapısı ve fotoğraflar güncelleniyor. Onaylıyor musunuz?")) return;
+        const btn = document.getElementById("btnOptimize");
+        btn.disabled = true; btn.innerText = "⏳ İşlem Yapılıyor...";
+        try {
+            const snap = await getDocs(collection(db, "formlar"));
+            let islenenSayi = 0;
+            for (let docSnap of snap.docs) {
+                let data = docSnap.data();
+                let guncelleme = {};
 
-                const email =
-                    document
-                        .getElementById("loginEmail")
-                        .value
-                        .trim();
-
-                const pass =
-                    document
-                        .getElementById("loginPassword")
-                        .value;
-
-                document
-                    .getElementById("loginError")
-                    .style.display = "none";
-
-
-                signInWithEmailAndPassword(
-                    auth,
-                    email,
-                    pass
-                )
-                .catch(
-                    () => {
-
-                        document
-                            .getElementById("loginError")
-                            .style.display = "block";
-
-                    }
-                );
-
-            }
-        );
-
-
-    /* ========================================================
-       ÇIKIŞ
-    ======================================================== */
-
-    document
-        .getElementById("logoutBtn")
-        .addEventListener(
-            "click",
-            () => {
-
-                signOut(auth);
-
-            }
-        );
-
-
-    /* ========================================================
-       ESKİ KAYITLARI OPTİMİZE ET
-    ======================================================== */
-
-    window.eskiKayitlariOptimizeEt =
-        async function () {
-
-            if (
-                !confirm(
-                    "Arama altyapısı ve fotoğraflar güncelleniyor. Onaylıyor musunuz?"
-                )
-            ) {
-                return;
-            }
-
-
-            const btn =
-                document.getElementById(
-                    "btnOptimize"
-                );
-
-
-            btn.disabled = true;
-
-            btn.innerText =
-                "⏳ İşlem Yapılıyor...";
-
-
-            try {
-
-                const snap =
-                    await getDocs(
-                        collection(
-                            db,
-                            "formlar"
-                        )
-                    );
-
-
-                let islenenSayi = 0;
-
-
-                for (
-                    let docSnap of snap.docs
-                ) {
-
-                    let data =
-                        docSnap.data();
-
-                    let guncelleme = {};
-
-
-                    /* FOTOĞRAF */
-
-                    if (
-                        data.fotograf &&
-                        !data.fotoId
-                    ) {
-
-                        const fotoRef =
-                            await addDoc(
-                                collection(
-                                    db,
-                                    "formFotograflari"
-                                ),
-                                {
-                                    base64:
-                                        data.fotograf
-                                }
-                            );
-
-
-                        guncelleme.fotoId =
-                            fotoRef.id;
-
-                        guncelleme.fotograf =
-                            deleteField();
-
-                    }
-
-
-                    /* ARAMA */
-
-                    if (
-                        data.firmaAdi &&
-                        !data.aramaFirma
-                    ) {
-
-                        guncelleme.aramaFirma =
-                            metniNormalizeEt(
-                                data.firmaAdi
-                            );
-
-                    }
-
-
-                    if (
-                        Object.keys(
-                            guncelleme
-                        ).length > 0
-                    ) {
-
-                        await updateDoc(
-                            doc(
-                                db,
-                                "formlar",
-                                docSnap.id
-                            ),
-                            guncelleme
-                        );
-
-                        islenenSayi++;
-
-                    }
-
+                if (data.fotograf && !data.fotoId) {
+                    const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: data.fotograf });
+                    guncelleme.fotoId = fotoRef.id;
+                    guncelleme.fotograf = deleteField();
                 }
 
-
-                alert(
-                    `✅ Toplam ${islenenSayi} adet eski kayıt arama motoruna başarıyla uyarlandı!`
-                );
-
-
-                btn.style.display =
-                    "none";
-
-
-            } catch (e) {
-
-                alert(
-                    "Aktarım hatası: " +
-                    e.message
-                );
-
-            } finally {
-
-                btn.disabled = false;
-
-                btn.innerText =
-                    "⚡ Optimizasyon";
-
-            }
-
-        };
-
-
-    /* ========================================================
-       FOTOĞRAF GÖR
-    ======================================================== */
-
-    window.resmiAc =
-        async function (
-            docId,
-            fotoId
-        ) {
-
-            document
-                .getElementById(
-                    "modalLoading"
-                )
-                .style.display = "block";
-
-
-            document
-                .getElementById(
-                    "modalImage"
-                )
-                .style.display = "none";
-
-
-            document
-                .getElementById(
-                    "downloadLink"
-                )
-                .style.display = "none";
-
-
-            document
-                .getElementById(
-                    "imageModal"
-                )
-                .style.display = "flex";
-
-
-            try {
-
-                if (fotoId) {
-
-                    const fDoc =
-                        await getDoc(
-                            doc(
-                                db,
-                                "formFotograflari",
-                                fotoId
-                            )
-                        );
-
-
-                    if (fDoc.exists()) {
-
-                        const base64 =
-                            fDoc.data().base64;
-
-                        document
-                            .getElementById(
-                                "modalImage"
-                            )
-                            .src = base64;
-
-                        document
-                            .getElementById(
-                                "downloadLink"
-                            )
-                            .href = base64;
-
-                    }
-
-                } else {
-
-                    const fDoc =
-                        await getDoc(
-                            doc(
-                                db,
-                                "formlar",
-                                docId
-                            )
-                        );
-
-
-                    if (
-                        fDoc.exists() &&
-                        fDoc.data().fotograf
-                    ) {
-
-                        const fotograf =
-                            fDoc.data().fotograf;
-
-                        document
-                            .getElementById(
-                                "modalImage"
-                            )
-                            .src = fotograf;
-
-                        document
-                            .getElementById(
-                                "downloadLink"
-                            )
-                            .href = fotograf;
-
-                    }
-
+                if (data.firmaAdi && !data.aramaFirma) {
+                    guncelleme.aramaFirma = metniNormalizeEt(data.firmaAdi);
                 }
 
-
-                document
-                    .getElementById(
-                        "modalLoading"
-                    )
-                    .style.display = "none";
-
-
-                document
-                    .getElementById(
-                        "modalImage"
-                    )
-                    .style.display = "block";
-
-
-                document
-                    .getElementById(
-                        "downloadLink"
-                    )
-                    .style.display = "block";
-
-
-            } catch (e) {
-
-                alert(
-                    "Fotoğraf alınamadı."
-                );
-
-                window.modaliKapat();
-
+                if (Object.keys(guncelleme).length > 0) {
+                    await updateDoc(doc(db, "formlar", docSnap.id), guncelleme);
+                    islenenSayi++;
+                }
             }
-
-        };
-
-
-    /* ========================================================
-       MODAL KAPAT
-    ======================================================== */
-
-    window.modaliKapat =
-        function () {
-
-            document
-                .getElementById(
-                    "imageModal"
-                )
-                .style.display = "none";
-
-            document
-                .getElementById(
-                    "modalImage"
-                )
-                .src = "";
-
-        };
-
-
-    window.modaliKapatEdit =
-        function () {
-
-            document
-                .getElementById(
-                    "editModal"
-                )
-                .style.display = "none";
-
-            guncellenecekDocId =
-                null;
-
-        };
-
-
-    document
-        .getElementById(
-            "btnEditCancel"
-        )
-        .addEventListener(
-            "click",
-            window.modaliKapatEdit
-        );
-
-
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (
-                event.key === "Escape"
-            ) {
-
-                window.modaliKapat();
-
-                window.modaliKapatEdit();
-
-            }
-
+            alert(`✅ Toplam ${islenenSayi} adet eski kayıt arama motoruna başarıyla uyarlandı!`);
+            btn.style.display = "none";
+        } catch (e) {
+            alert("Aktarım hatası: " + e.message);
+        } finally {
+            btn.disabled = false; btn.innerText = "⚡ Optimizasyon";
         }
-    );
-
-
-    /* ========================================================
-       KAYIT DÜZENLE
-    ======================================================== */
-
-    window.formDuzenle =
-        function (
-            docId,
-            eskiFirma,
-            eskiSehir,
-            eskiIslem
-        ) {
-
-            guncellenecekDocId =
-                docId;
-
-
-            document
-                .getElementById(
-                    "editFirmaAdi"
-                )
-                .value =
-                eskiFirma;
-
-
-            document
-                .getElementById(
-                    "editSehir"
-                )
-                .value =
-                eskiSehir;
-
-
-            document
-                .getElementById(
-                    "editIslemTipi"
-                )
-                .value =
-                eskiIslem || "";
-
-
-            document
-                .getElementById(
-                    "editModal"
-                )
-                .style.display =
-                "flex";
-
-        };
-
-
-    document
-        .getElementById(
-            "btnEditSave"
-        )
-        .addEventListener(
-            "click",
-            async () => {
-
-                if (
-                    !guncellenecekDocId
-                ) {
-                    return;
-                }
-
-
-                const yeniFirma =
-                    document
-                        .getElementById(
-                            "editFirmaAdi"
-                        )
-                        .value
-                        .trim();
-
-
-                const aramaFirma =
-                    metniNormalizeEt(
-                        yeniFirma
-                    );
-
-
-                const yeniSehir =
-                    document
-                        .getElementById(
-                            "editSehir"
-                        )
-                        .value;
-
-
-                const yeniIslem =
-                    document
-                        .getElementById(
-                            "editIslemTipi"
-                        )
-                        .value;
-
-
-                if (
-                    !yeniFirma ||
-                    !yeniSehir ||
-                    !yeniIslem
-                ) {
-
-                    alert(
-                        "Lütfen boş alan bırakmayın."
-                    );
-
-                    return;
-
-                }
-
-
-                try {
-
-                    document
-                        .getElementById(
-                            "btnEditSave"
-                        )
-                        .innerText =
-                        "⏳...";
-
-
-                    await updateDoc(
-                        doc(
-                            db,
-                            "formlar",
-                            guncellenecekDocId
-                        ),
-                        {
-
-                            firmaAdi:
-                                yeniFirma,
-
-                            aramaFirma:
-                                aramaFirma,
-
-                            sehir:
-                                yeniSehir,
-
-                            islemTipi:
-                                yeniIslem
-
-                        }
-                    );
-
-
-                    window.modaliKapatEdit();
-
-
-                    if (
-                        document
-                            .getElementById(
-                                "aramaKutusu"
-                            )
-                            .value !== ""
-                    ) {
-
-                        document
-                            .getElementById(
-                                "aramaButonu"
-                            )
-                            .click();
-
-                    }
-
-
-                } catch (error) {
-
-                    alert(
-                        "Hata: " +
-                        error.message
-                    );
-
-                } finally {
-
-                    document
-                        .getElementById(
-                            "btnEditSave"
-                        )
-                        .innerText =
-                        "Kaydet";
-
-                }
-
-            }
-        );
-
-
-    /* ========================================================
-       FORM SİL
-    ======================================================== */
-
-    window.formSil =
-        async function (
-            docId,
-            fotoId
-        ) {
-
-            if (
-                !yoneticiMailleri.includes(
-                    aktifKullaniciMail
-                )
-            ) {
-
-                alert(
-                    "Yetkiniz yok!"
-                );
-
-                return;
-
-            }
-
-
-            if (
-                !confirm(
-                    "Bu formu kalıcı olarak silmek istediğinize emin misiniz?"
-                )
-            ) {
-
-                return;
-
-            }
-
-
-            try {
-
-                if (fotoId) {
-
-                    await deleteDoc(
-                        doc(
-                            db,
-                            "formFotograflari",
-                            fotoId
-                        )
-                    );
-
-                }
-
-
-                await deleteDoc(
-                    doc(
-                        db,
-                        "formlar",
-                        docId
-                    )
-                );
-
-
-                const kart =
-                    document.getElementById(
-                        "kart-" + docId
-                    );
-
-
-                if (kart) {
-
-                    kart.style.display =
-                        "none";
-
-                }
-
-
-            } catch (error) {
-
-                alert(
-                    "Hata: " +
-                    error.message
-                );
-
-            }
-
-        };
-
-
-    /* ========================================================
-       SEKME DEĞİŞTİR
-    ======================================================== */
-
-    window.sekmeyiDegistir =
-        function (
-            sekmeAdi,
-            secilenNav
-        ) {
-
-            document
-                .querySelectorAll(
-                    ".tab-content"
-                )
-                .forEach(
-                    tab =>
-                        tab.classList.remove(
-                            "active"
-                        )
-                );
-
-
-            document
-                .querySelectorAll(
-                    ".nav-item"
-                )
-                .forEach(
-                    nav =>
-                        nav.classList.remove(
-                            "active"
-                        )
-                );
-
-
-            document
-                .getElementById(
-                    "tab-" + sekmeAdi
-                )
-                .classList.add(
-                    "active"
-                );
-
-
-            if (secilenNav) {
-
-                secilenNav.classList.add(
-                    "active"
-                );
-
-            }
-
-        };
-
-
-    /* ========================================================
-       FOTOĞRAF SEÇİMİ
-    ======================================================== */
-
-    const fotoGirdisi =
-        document.getElementById(
-            "fotoGirdisi"
-        );
-
-
-    const dosyaAdiGosterge =
-        document.getElementById(
-            "dosyaAdi"
-        );
-
-
-    const fotoLabel =
-        document.getElementById(
-            "fotoLabel"
-        );
-
-
-    fotoGirdisi.addEventListener(
-        "change",
-        function (e) {
-
-            if (
-                e.target.files.length > 0
-            ) {
-
-                dosyaAdiGosterge.textContent =
-                    e.target.files.length === 1
-                        ? e.target.files[0].name
-                        : e.target.files.length +
-                          " Dosya Seçildi";
-
-
-                dosyaAdiGosterge.style.display =
-                    "block";
-
-
-                fotoLabel.classList.add(
-                    "active"
-                );
-
-            }
-
-        }
-    );
-
-
-    /* ========================================================
-       FOTOĞRAF SIKIŞTIR
-    ======================================================== */
-
-    const compressImage =
-        async (file) => {
-
-            let islenenDosya =
-                file;
-
-
-            if (
-                islenenDosya.name
-                    .toLowerCase()
-                    .endsWith(".heic") ||
-
-                islenenDosya.name
-                    .toLowerCase()
-                    .endsWith(".heif") ||
-
-                islenenDosya.type ===
-                    "image/heic"
-            ) {
-
-                try {
-
-                    if (
-                        typeof heic2any ===
-                        "undefined"
-                    ) {
-
-                        throw new Error(
-                            "Kütüphane sağlanamadı."
-                        );
-
-                    }
-
-
-                    const convertedBlob =
-                        await heic2any({
-                            blob:
-                                islenenDosya,
-                            toType:
-                                "image/jpeg"
-                        });
-
-
-                    islenenDosya =
-                        Array.isArray(
-                            convertedBlob
-                        )
-                            ? convertedBlob[0]
-                            : convertedBlob;
-
-
-                } catch (error) {
-
-                    throw error;
-
-                }
-
-            }
-
-
-            return new Promise(
-                (resolve, reject) => {
-
-                    const reader =
-                        new FileReader();
-
-
-                    reader.onload =
-                        event => {
-
-                            const img =
-                                new Image();
-
-
-                            img.src =
-                                event.target.result;
-
-
-                            img.onload =
-                                () => {
-
-                                    const canvas =
-                                        document.createElement(
-                                            "canvas"
-                                        );
-
-
-                                    const MAX_WIDTH =
-                                        800;
-
-
-                                    let scaleSize =
-                                        img.width >
-                                        MAX_WIDTH
-                                            ? MAX_WIDTH /
-                                              img.width
-                                            : 1;
-
-
-                                    canvas.width =
-                                        img.width *
-                                        scaleSize;
-
-
-                                    canvas.height =
-                                        img.height *
-                                        scaleSize;
-
-
-                                    canvas
-                                        .getContext(
-                                            "2d"
-                                        )
-                                        .drawImage(
-                                            img,
-                                            0,
-                                            0,
-                                            canvas.width,
-                                            canvas.height
-                                        );
-
-
-                                    resolve(
-                                        canvas.toDataURL(
-                                            "image/jpeg",
-                                            0.6
-                                        )
-                                    );
-
-                                };
-
-
-                            img.onerror =
-                                () =>
-                                    reject(
-                                        new Error(
-                                            "Fotoğraf okunamadı."
-                                        )
-                                    );
-
-                        };
-
-
-                    reader.onerror =
-                        () =>
-                            reject(
-                                new Error(
-                                    "Dosya okunamadı."
-                                )
-                            );
-
-
-                    reader.readAsDataURL(
-                        islenenDosya
-                    );
-
-                }
-            );
-
-        };
-
-
-    /* ========================================================
-       YENİ FORM KAYDET
-    ======================================================== */
-
-    document
-        .getElementById(
-            "isFormu"
-        )
-        .addEventListener(
-            "submit",
-            async (e) => {
-
-                e.preventDefault();
-
-
-                const ekleButonu =
-                    document.getElementById(
-                        "ekleButonu"
-                    );
-
-
-                ekleButonu.disabled =
-                    true;
-
-
-                const firmaAdi =
-                    document
-                        .getElementById(
-                            "firmaAdi"
-                        )
-                        .value
-                        .trim();
-
-
-                const aramaFirma =
-                    metniNormalizeEt(
-                        firmaAdi
-                    );
-
-
-                const sehir =
-                    document
-                        .getElementById(
-                            "sehir"
-                        )
-                        .value;
-
-
-                const islemTipi =
-                    document
-                        .getElementById(
-                            "islemTipi"
-                        )
-                        .value;
-
-
-                const dosyalar =
-                    fotoGirdisi.files;
-
-
-                try {
-
-                    for (
-                        let i = 0;
-                        i < dosyalar.length;
-                        i++
-                    ) {
-
-                        ekleButonu.innerHTML =
-                            `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})...`;
-
-
-                        const compressedPhoto =
-                            await compressImage(
-                                dosyalar[i]
-                            );
-
-
-                        const fotoRef =
-                            await addDoc(
-                                collection(
-                                    db,
-                                    "formFotograflari"
-                                ),
-                                {
-                                    base64:
-                                        compressedPhoto
-                                }
-                            );
-
-
-                        await addDoc(
-                            collection(
-                                db,
-                                "formlar"
-                            ),
-                            {
-
-                                firmaAdi:
-                                    firmaAdi,
-
-                                aramaFirma:
-                                    aramaFirma,
-
-                                sehir:
-                                    sehir,
-
-                                islemTipi:
-                                    islemTipi,
-
-                                ekleyen:
-                                    aktifKullaniciMail,
-
-                                fotoId:
-                                    fotoRef.id,
-
-                                tarih:
-                                    new Date()
-                                        .toISOString()
-
-                            }
-                        );
-
-                    }
-
-
-                    alert(
-                        "Başarıyla eklendi! 🎉"
-                    );
-
-
-                    document
-                        .getElementById(
-                            "isFormu"
-                        )
-                        .reset();
-
-
-                    dosyaAdiGosterge.style.display =
-                        "none";
-
-
-                    fotoLabel.classList.remove(
-                        "active"
-                    );
-
-
-                } catch (error) {
-
-                    console.error(
-                        error
-                    );
-
-                    alert(
-                        "Kayıt sırasında hata oluştu: " +
-                        error.message
-                    );
-
-                } finally {
-
-                    ekleButonu.disabled =
-                        false;
-
-                    ekleButonu.innerHTML =
-                        "Formları Kaydet";
-
-                }
-
-            }
-        );
-
-
-    /* ========================================================
-       ========================================================
-       GELİŞMİŞ ARAMA SİSTEMİ
-       ========================================================
-    ======================================================== */
-
-
-    const aramaKutusu =
-        document.getElementById(
-            "aramaKutusu"
-        );
-
-
-    const autoList =
-        document.createElement(
-            "div"
-        );
-
-
-    autoList.id =
-        "autocomplete-list";
-
-
-    autoList.className =
-        "autocomplete-items";
-
-
-    aramaKutusu.parentNode.appendChild(
-        autoList
-    );
-
-
-    let aramaZamanlayici;
-
-
-    /* ========================================================
-       ŞEHİR İSİMLERİ
-    ======================================================== */
-
-    const sehirGosterim = {
-
-        adana: "Adana",
-        adiyaman: "Adıyaman",
-        afyonkarahisar: "Afyonkarahisar",
-        agri: "Ağrı",
-        aksaray: "Aksaray",
-        amasya: "Amasya",
-        ankara: "Ankara",
-        antalya: "Antalya",
-        ardahan: "Ardahan",
-        artvin: "Artvin",
-        aydin: "Aydın",
-        balikesir: "Balıkesir",
-        bartin: "Bartın",
-        batman: "Batman",
-        bayburt: "Bayburt",
-        bilecik: "Bilecik",
-        bingol: "Bingöl",
-        bitlis: "Bitlis",
-        bolu: "Bolu",
-        burdur: "Burdur",
-        bursa: "Bursa",
-        canakkale: "Çanakkale",
-        cankiri: "Çankırı",
-        corum: "Çorum",
-        denizli: "Denizli",
-        diyarbakir: "Diyarbakır",
-        duzce: "Düzce",
-        edirne: "Edirne",
-        elazig: "Elazığ",
-        erzincan: "Erzincan",
-        erzurum: "Erzurum",
-        eskisehir: "Eskişehir",
-        gaziantep: "Gaziantep",
-        giresun: "Giresun",
-        gumushane: "Gümüşhane",
-        hakkari: "Hakkari",
-        hatay: "Hatay",
-        igdir: "Iğdır",
-        isparta: "Isparta",
-        istanbul: "İstanbul",
-        izmir: "İzmir",
-        kahramanmaras: "Kahramanmaraş",
-        karabuk: "Karabük",
-        karaman: "Karaman",
-        kars: "Kars",
-        kastamonu: "Kastamonu",
-        kayseri: "Kayseri",
-        kilis: "Kilis",
-        kirikkale: "Kırıkkale",
-        kirklareli: "Kırklareli",
-        kirsehir: "Kırşehir",
-        kocaeli: "Kocaeli",
-        konya: "Konya",
-        kutahya: "Kütahya",
-        malatya: "Malatya",
-        manisa: "Manisa",
-        mardin: "Mardin",
-        mersin: "Mersin",
-        mugla: "Muğla",
-        mus: "Muş",
-        nevsehir: "Nevşehir",
-        nigde: "Niğde",
-        ordu: "Ordu",
-        osmaniye: "Osmaniye",
-        rize: "Rize",
-        sakarya: "Sakarya",
-        samsun: "Samsun",
-        sanliurfa: "Şanlıurfa",
-        siirt: "Siirt",
-        sinop: "Sinop",
-        sirnak: "Şırnak",
-        sivas: "Sivas",
-        tekirdag: "Tekirdağ",
-        tokat: "Tokat",
-        trabzon: "Trabzon",
-        tunceli: "Tunceli",
-        usak: "Uşak",
-        van: "Van",
-        yalova: "Yalova",
-        yozgat: "Yozgat",
-        zonguldak: "Zonguldak",
-        belirsiz: "Belirsiz"
-
     };
 
+    window.resmiAc = async function (docId, fotoId) {
+        document.getElementById("modalLoading").style.display = "block";
+        document.getElementById("modalImage").style.display = "none";
+        document.getElementById("downloadLink").style.display = "none";
+        document.getElementById("imageModal").style.display = "flex";
 
-    /* ========================================================
-       OTOMATİK ÖNERİLER
-    ======================================================== */
-
-    aramaKutusu.addEventListener(
-        "input",
-        function () {
-
-            clearTimeout(
-                aramaZamanlayici
-            );
-
-
-            const val =
-                this.value.trim();
-
-
-            const normalizeArama =
-                metniNormalizeEt(
-                    val
-                );
-
-
-            autoList.innerHTML =
-                "";
-
-
-            if (!val) {
-                return;
+        try {
+            if (fotoId) {
+                const fDoc = await getDoc(doc(db, "formFotograflari", fotoId));
+                if (fDoc.exists()) {
+                    document.getElementById("modalImage").src = fDoc.data().base64;
+                    document.getElementById("downloadLink").href = fDoc.data().base64;
+                }
+            } else {
+                const fDoc = await getDoc(doc(db, "formlar", docId));
+                if (fDoc.exists() && fDoc.data().fotograf) {
+                    document.getElementById("modalImage").src = fDoc.data().fotograf;
+                    document.getElementById("downloadLink").href = fDoc.data().fotograf;
+                }
             }
-
-
-            aramaZamanlayici =
-                setTimeout(
-                    async () => {
-
-                        try {
-
-                            const oneriler =
-                                new Map();
-
-
-                            /* ŞEHİRLER */
-
-                            Object.entries(
-                                sehirGosterim
-                            ).forEach(
-                                ([kod, isim]) => {
-
-                                    if (
-                                        metniNormalizeEt(
-                                            isim
-                                        ).includes(
-                                            normalizeArama
-                                        )
-                                    ) {
-
-                                        oneriler.set(
-                                            "sehir-" +
-                                            kod,
-                                            {
-                                                deger:
-                                                    isim,
-                                                tip:
-                                                    "Şehir"
-                                            }
-                                        );
-
-                                    }
-
-                                }
-                            );
-
-
-                            /* İŞLEM TİPLERİ */
-
-                            const islemTipleri = [
-                                "Bakım",
-                                "Arıza",
-                                "Kurulum",
-                                "Keşif",
-                                "Diğer"
-                            ];
-
-
-                            islemTipleri.forEach(
-                                islem => {
-
-                                    if (
-                                        metniNormalizeEt(
-                                            islem
-                                        ).includes(
-                                            normalizeArama
-                                        )
-                                    ) {
-
-                                        oneriler.set(
-                                            "islem-" +
-                                            metniNormalizeEt(
-                                                islem
-                                            ),
-                                            {
-                                                deger:
-                                                    islem,
-                                                tip:
-                                                    "İşlem Tipi"
-                                            }
-                                        );
-
-                                    }
-
-                                }
-                            );
-
-
-                            /* FİRMALAR + MAILLER */
-
-                            const snap =
-                                await getDocs(
-                                    collection(
-                                        db,
-                                        "formlar"
-                                    )
-                                );
-
-
-                            snap.forEach(
-                                docSnap => {
-
-                                    const data =
-                                        docSnap.data();
-
-
-                                    /* Firma */
-
-                                    if (
-                                        data.firmaAdi
-                                    ) {
-
-                                        const firma =
-                                            data.firmaAdi;
-
-
-                                        const normalFirma =
-                                            metniNormalizeEt(
-                                                data.aramaFirma ||
-                                                firma
-                                            );
-
-
-                                        if (
-                                            normalFirma.includes(
-                                                normalizeArama
-                                            )
-                                        ) {
-
-                                            oneriler.set(
-                                                "firma-" +
-                                                normalFirma,
-                                                {
-                                                    deger:
-                                                        firma,
-                                                    tip:
-                                                        "Firma"
-                                                }
-                                            );
-
-                                        }
-
-                                    }
-
-
-                                    /* Mail */
-
-                                    if (
-                                        data.ekleyen
-                                    ) {
-
-                                        const mail =
-                                            data.ekleyen;
-
-
-                                        if (
-                                            mail
-                                                .toLowerCase()
-                                                .includes(
-                                                    normalizeArama
-                                                )
-                                        ) {
-
-                                            oneriler.set(
-                                                "mail-" +
-                                                mail.toLowerCase(),
-                                                {
-                                                    deger:
-                                                        mail,
-                                                    tip:
-                                                        "Ekleyen"
-                                                }
-                                            );
-
-                                        }
-
-                                    }
-
-                                }
-                            );
-
-
-                            autoList.innerHTML =
-                                "";
-
-
-                            let sayac = 0;
-
-
-                            oneriler.forEach(
-                                oneri => {
-
-                                    if (
-                                        sayac >= 10
-                                    ) {
-                                        return;
-                                    }
-
-
-                                    const div =
-                                        document.createElement(
-                                            "div"
-                                        );
-
-
-                                    div.innerHTML = `
-                                        ${htmlGuvenli(oneri.deger)}
-                                        <span class="autocomplete-category">
-                                            ${htmlGuvenli(oneri.tip)}
-                                        </span>
-                                    `;
-
-
-                                    div.addEventListener(
-                                        "click",
-                                        function () {
-
-                                            aramaKutusu.value =
-                                                oneri.deger;
-
-
-                                            autoList.innerHTML =
-                                                "";
-
-
-                                            document
-                                                .getElementById(
-                                                    "aramaButonu"
-                                                )
-                                                .click();
-
-                                        }
-                                    );
-
-
-                                    autoList.appendChild(
-                                        div
-                                    );
-
-
-                                    sayac++;
-
-                                }
-                            );
-
-
-                        } catch (error) {
-
-                            console.error(
-                                "Öneri hatası:",
-                                error
-                            );
-
-                        }
-
-                    },
-                    300
-                );
-
+            document.getElementById("modalLoading").style.display = "none";
+            document.getElementById("modalImage").style.display = "block";
+            document.getElementById("downloadLink").style.display = "block";
+        } catch (e) {
+            alert("Fotoğraf alınamadı.");
+            window.modaliKapat();
         }
-    );
+    };
 
+    window.modaliKapat = function () {
+        document.getElementById("imageModal").style.display = "none";
+        document.getElementById("modalImage").src = "";
+    };
 
-    /* ÖNERİLERİ KAPAT */
+    window.modaliKapatEdit = function () {
+        document.getElementById("editModal").style.display = "none";
+        guncellenecekDocId = null;
+    };
 
-    document.addEventListener(
-        "click",
-        function (e) {
+    document.getElementById("btnEditCancel").addEventListener("click", window.modaliKapatEdit);
 
-            if (
-                e.target !==
-                aramaKutusu
-            ) {
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") { window.modaliKapat(); window.modaliKapatEdit(); }
+    });
 
-                autoList.innerHTML =
-                    "";
+    window.formDuzenle = function (docId, eskiFirma, eskiSehir, eskiIslem) {
+        guncellenecekDocId = docId;
+        document.getElementById("editFirmaAdi").value = eskiFirma;
+        document.getElementById("editSehir").value = eskiSehir;
+        document.getElementById("editIslemTipi").value = eskiIslem || "";
+        document.getElementById("editModal").style.display = "flex";
+    };
 
+    document.getElementById("btnEditSave").addEventListener("click", async () => {
+        if (!guncellenecekDocId) return;
+        const yeniFirma = document.getElementById("editFirmaAdi").value.trim();
+        const aramaFirma = metniNormalizeEt(yeniFirma);
+        const yeniSehir = document.getElementById("editSehir").value;
+        const yeniIslem = document.getElementById("editIslemTipi").value;
+
+        if (!yeniFirma || !yeniSehir || !yeniIslem) {
+            alert("Lütfen boş alan bırakmayın."); return;
+        }
+
+        try {
+            document.getElementById("btnEditSave").innerText = "⏳...";
+            await updateDoc(doc(db, "formlar", guncellenecekDocId), {
+                firmaAdi: yeniFirma, aramaFirma: aramaFirma, sehir: yeniSehir, islemTipi: yeniIslem
+            });
+            window.modaliKapatEdit();
+            if (document.getElementById("aramaKutusu").value !== "") document.getElementById("aramaButonu").click();
+        } catch (error) {
+            alert("Hata: " + error.message);
+        } finally {
+            document.getElementById("btnEditSave").innerText = "Kaydet";
+        }
+    });
+
+    window.formSil = async function (docId, fotoId) {
+        if (!yoneticiMailleri.includes(aktifKullaniciMail)) { alert("Yetkiniz yok!"); return; }
+        if (!confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) return;
+
+        try {
+            if (fotoId) await deleteDoc(doc(db, "formFotograflari", fotoId));
+            await deleteDoc(doc(db, "formlar", docId));
+            const kart = document.getElementById("kart-" + docId);
+            if (kart) kart.style.display = "none";
+        } catch (error) { alert("Hata: " + error.message); }
+    };
+
+    window.sekmeyiDegistir = function (sekmeAdi, secilenNav) {
+        document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+        document.querySelectorAll(".nav-item").forEach(nav => nav.classList.remove("active"));
+        document.getElementById("tab-" + sekmeAdi).classList.add("active");
+        if (secilenNav) secilenNav.classList.add("active");
+    };
+
+    const fotoGirdisi = document.getElementById("fotoGirdisi");
+    const dosyaAdiGosterge = document.getElementById("dosyaAdi");
+    const fotoLabel = document.getElementById("fotoLabel");
+
+    fotoGirdisi.addEventListener("change", function (e) {
+        if (e.target.files.length > 0) {
+            dosyaAdiGosterge.textContent = e.target.files.length === 1 ? e.target.files[0].name : e.target.files.length + " Dosya Seçildi";
+            dosyaAdiGosterge.style.display = "block";
+            fotoLabel.classList.add("active");
+        }
+    });
+
+    const compressImage = async (file) => {
+        let islenenDosya = file;
+        if (islenenDosya.name.toLowerCase().endsWith(".heic") || islenenDosya.name.toLowerCase().endsWith(".heif") || islenenDosya.type === "image/heic") {
+            try {
+                if (typeof heic2any === "undefined") throw new Error("Kütüphane sağlanamadı.");
+                const convertedBlob = await heic2any({ blob: islenenDosya, toType: "image/jpeg" });
+                islenenDosya = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+            } catch (error) { throw error; }
+        }
+
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = event => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    const MAX_WIDTH = 800;
+                    let scaleSize = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+                    canvas.width = img.width * scaleSize;
+                    canvas.height = img.height * scaleSize;
+                    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL("image/jpeg", 0.6));
+                };
+                img.onerror = () => reject(new Error("Fotoğraf okunamadı."));
+            };
+            reader.onerror = () => reject(new Error("Dosya okunamadı."));
+            reader.readAsDataURL(islenenDosya);
+        });
+    };
+
+    document.getElementById("isFormu").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const ekleButonu = document.getElementById("ekleButonu");
+        ekleButonu.disabled = true;
+
+        const firmaAdi = document.getElementById("firmaAdi").value.trim();
+        const aramaFirma = metniNormalizeEt(firmaAdi);
+        const sehir = document.getElementById("sehir").value;
+        const islemTipi = document.getElementById("islemTipi").value;
+        const dosyalar = fotoGirdisi.files;
+
+        try {
+            for (let i = 0; i < dosyalar.length; i++) {
+                ekleButonu.innerHTML = `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})...`;
+                const compressedPhoto = await compressImage(dosyalar[i]);
+                const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: compressedPhoto });
+                
+                await addDoc(collection(db, "formlar"), {
+                    firmaAdi: firmaAdi,
+                    aramaFirma: aramaFirma,
+                    sehir: sehir,
+                    islemTipi: islemTipi,
+                    ekleyen: aktifKullaniciMail,
+                    fotoId: fotoRef.id,
+                    tarih: new Date().toISOString()
+                });
             }
-
+            alert("Başarıyla eklendi! 🎉");
+            document.getElementById("isFormu").reset();
+            dosyaAdiGosterge.style.display = "none";
+            fotoLabel.classList.remove("active");
+        } catch (error) {
+            console.error(error); alert("Kayıt sırasında hata oluştu: " + error.message);
+        } finally {
+            ekleButonu.disabled = false; ekleButonu.innerHTML = "Formları Kaydet";
         }
-    );
+    });
 
+    // ⚡ IŞIK HIZINDA OTOMATİK TAMAMLAMA (LOKAL + SERVER)
+    const aramaKutusu = document.getElementById("aramaKutusu");
+    const autoList = document.createElement("div");
+    autoList.id = "autocomplete-list";
+    autoList.className = "autocomplete-items";
+    aramaKutusu.parentNode.appendChild(autoList);
+    let aramaZamanlayici;
 
-    /* ========================================================
-       ANA ARAMA
-    ======================================================== */
+    aramaKutusu.addEventListener("input", function () {
+        clearTimeout(aramaZamanlayici);
+        const val = this.value.trim();
+        const normalizeArama = metniNormalizeEt(val);
+        autoList.innerHTML = "";
+        if (!val) return;
 
-    document
-        .getElementById(
-            "aramaButonu"
-        )
-        .addEventListener(
-            "click",
-            async () => {
+        const oneriler = new Map();
 
-                const hamArama =
-                    aramaKutusu
-                        .value
-                        .trim();
+        // 1. AŞAMA: ŞEHİRLERİ 0 MİLİSANİYEDE (ANINDA) BUL VE EKRANA ÇİZ
+        tumSehirler.forEach(s => {
+            if (s.startsWith(normalizeArama)) {
+                oneriler.set("sehir-" + s, { deger: s.toUpperCase(), tip: "📍 Şehir" });
+            }
+        });
 
-
-                const arama =
-                    metniNormalizeEt(
-                        hamArama
-                    );
-
-
-                const sonuclarDiv =
-                    document.getElementById(
-                        "sonuclar"
-                    );
-
-
-                if (!hamArama) {
-
-                    alert(
-                        "Lütfen arama kelimesi yazın."
-                    );
-
-                    return;
-
+        const ekranaCiz = () => {
+            autoList.innerHTML = "";
+            oneriler.forEach(oneri => {
+                const div = document.createElement("div");
+                
+                // Aranan kelimeyi kalın (bold) yapma
+                let orjinal = String(oneri.deger);
+                let kucukOrjinal = metniNormalizeEt(orjinal);
+                let arananIndex = kucukOrjinal.indexOf(normalizeArama);
+                
+                let gosterimHTML = htmlGuvenli(orjinal);
+                
+                if (arananIndex !== -1) {
+                    // Eşleşen kısmı kalın yap
+                    let bas = htmlGuvenli(orjinal.substring(0, arananIndex));
+                    let orta = `<strong>${htmlGuvenli(orjinal.substring(arananIndex, arananIndex + val.length))}</strong>`;
+                    let son = htmlGuvenli(orjinal.substring(arananIndex + val.length));
+                    gosterimHTML = bas + orta + son;
                 }
 
-
-                sonuclarDiv.innerHTML =
-                    `
-                        <p style="text-align:center;">
-                            ⏳ Aranıyor...
-                        </p>
-                    `;
-
-
-                autoList.innerHTML =
-                    "";
-
-
-                try {
-
-                    /* =========================================
-                       TÜM FORM KAYITLARINI AL
-                    ========================================= */
-
-                    const snap =
-                        await getDocs(
-                            collection(
-                                db,
-                                "formlar"
-                            )
-                        );
-
-
-                    const sonuclar =
-                        [];
-
-
-                    /* =========================================
-                       KAYITLARI TARA
-                    ========================================= */
-
-                    snap.forEach(
-                        docSnap => {
-
-                            const v =
-                                docSnap.data();
-
-
-                            const firma =
-                                v.firmaAdi ||
-                                "";
-
-
-                            const sehir =
-                                v.sehir ||
-                                "";
-
-
-                            const islem =
-                                v.islemTipi ||
-                                "";
-
-
-                            const ekleyen =
-                                v.ekleyen ||
-                                "";
-
-
-                            /*
-                             * ÖNEMLİ:
-                             *
-                             * Yeni kayıtlarda aramaFirma var.
-                             *
-                             * Eski kayıtlarda yoksa
-                             * firmaAdi normalize ediliyor.
-                             */
-
-                            const aramaFirma =
-                                v.aramaFirma ||
-                                metniNormalizeEt(
-                                    firma
-                                );
-
-
-                            const normalFirma =
-                                metniNormalizeEt(
-                                    aramaFirma
-                                );
-
-
-                            const normalFirmaAdi =
-                                metniNormalizeEt(
-                                    firma
-                                );
-
-
-                            const normalSehir =
-                                metniNormalizeEt(
-                                    sehir
-                                );
-
-
-                            const normalIslem =
-                                metniNormalizeEt(
-                                    islem
-                                );
-
-
-                            const normalEkleyen =
-                                metniNormalizeEt(
-                                    ekleyen
-                                );
-
-
-                            /* =================================
-                               ARAMA KONTROLÜ
-                            ================================= */
-
-                            const bulundu =
-                                normalFirma.includes(
-                                    arama
-                                ) ||
-
-                                normalFirmaAdi.includes(
-                                    arama
-                                ) ||
-
-                                normalSehir.includes(
-                                    arama
-                                ) ||
-
-                                normalIslem.includes(
-                                    arama
-                                ) ||
-
-                                normalEkleyen.includes(
-                                    arama
-                                );
-
-
-                            if (
-                                bulundu
-                            ) {
-
-                                sonuclar.push(
-                                    {
-                                        docSnap:
-                                            docSnap,
-                                        data:
-                                            v
-                                    }
-                                );
-
-                            }
-
-                        }
-                    );
-
-
-                    /* =========================================
-                       TARİHE GÖRE SIRALA
-                    ========================================= */
-
-                    sonuclar.sort(
-                        (a, b) => {
-
-                            const tarihA =
-                                new Date(
-                                    a.data.tarih || 0
-                                ).getTime();
-
-
-                            const tarihB =
-                                new Date(
-                                    b.data.tarih || 0
-                                ).getTime();
-
-
-                            return (
-                                tarihB -
-                                tarihA
-                            );
-
-                        }
-                    );
-
-
-                    /* =========================================
-                       SONUÇLARI TEMİZLE
-                    ========================================= */
-
-                    sonuclarDiv.innerHTML =
-                        "";
-
-
-                    /* =========================================
-                       SONUÇ YOK
-                    ========================================= */
-
-                    if (
-                        sonuclar.length ===
-                        0
-                    ) {
-
-                        sonuclarDiv.innerHTML =
-                            `
-                            <div class="empty-state">
-
-                                <img
-                                    src="Adsız tasarım.png"
-                                    alt="Bulunamadı"
-                                >
-
-                                <p>
-                                    "${htmlGuvenli(hamArama)}"
-                                    için uygun form bulunamadı.
-                                </p>
-
-                            </div>
-                            `;
-
-                        return;
-
+                div.innerHTML = `${gosterimHTML} <span class="autocomplete-category">${htmlGuvenli(oneri.tip)}</span>`;
+                
+                div.addEventListener("click", function () {
+                    aramaKutusu.value = orjinal;
+                    autoList.innerHTML = "";
+                    document.getElementById("aramaButonu").click();
+                });
+                autoList.appendChild(div);
+            });
+        };
+        // Şehirler bulunduysa hemen göster, bekleme!
+        ekranaCiz();
+
+        // 2. AŞAMA: FİRMALARI ARKA PLANDA KISA BİR GECİKME İLE (150ms) BUL VE LİSTEYE EKLE
+        aramaZamanlayici = setTimeout(async () => {
+            try {
+                const highChar = String.fromCharCode(63743);
+
+                const q = query(
+                    collection(db, "formlar"),
+                    where("aramaFirma", ">=", normalizeArama),
+                    where("aramaFirma", "<=", normalizeArama + highChar),
+                    limit(5) // Hız için maksimum 5 firma getirir
+                );
+                
+                const snap = await getDocs(q);
+                let yeniFirmaEklendi = false;
+                
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if(data.firmaAdi) {
+                        oneriler.set("firma-" + data.aramaFirma, { deger: data.firmaAdi.toUpperCase(), tip: "🏢 Firma" });
+                        yeniFirmaEklendi = true;
                     }
-
-
-                    /* =========================================
-                       ADMIN
-                    ========================================= */
-
-                    const isAdmin =
-                        yoneticiMailleri.includes(
-                            aktifKullaniciMail
-                        );
-
-
-                    /* =========================================
-                       SONUÇ SAYISI
-                    ========================================= */
-
-                    sonuclarDiv.innerHTML =
-                        `
-                        <div class="sonuc-bilgisi">
-                            Toplam ${sonuclar.length}
-                            sonuç listelendi
-                        </div>
-                        `;
-
-
-                    /* =========================================
-                       KARTLARI OLUŞTUR
-                    ========================================= */
-
-                    sonuclar.forEach(
-                        item => {
-
-                            const docSnap =
-                                item.docSnap;
-
-
-                            const v =
-                                item.data;
-
-
-                            const docId =
-                                docSnap.id;
-
-
-                            const firma =
-                                v.firmaAdi ||
-                                "İSİMSİZ FİRMA";
-
-
-                            const sehir =
-                                v.sehir ||
-                                "belirsiz";
-
-
-                            const islemGoster =
-                                v.islemTipi ||
-                                "Belirtilmemiş";
-
-
-                            const ekleyenGoster =
-                                v.ekleyen
-                                    ? v.ekleyen.split("@")[0]
-                                    : "Bilinmiyor";
-
-
-                            const paramFotoId =
-                                v.fotoId
-                                    ? `'${v.fotoId}'`
-                                    : "null";
-
-
-                            /* =================================
-                               INLINE PARAMETRELER
-                            ================================= */
-
-                            const escFirma =
-                                String(firma)
-                                    .replace(
-                                        /\\/g,
-                                        "\\\\"
-                                    )
-                                    .replace(
-                                        /'/g,
-                                        "\\'"
-                                    );
-
-
-                            const escSehir =
-                                String(sehir)
-                                    .replace(
-                                        /\\/g,
-                                        "\\\\"
-                                    )
-                                    .replace(
-                                        /'/g,
-                                        "\\'"
-                                    );
-
-
-                            const escIslem =
-                                String(
-                                    v.islemTipi ||
-                                    ""
-                                )
-                                    .replace(
-                                        /\\/g,
-                                        "\\\\"
-                                    )
-                                    .replace(
-                                        /'/g,
-                                        "\\'"
-                                    );
-
-
-                            /* =================================
-                               TARİH
-                            ================================= */
-
-                            let tarihGoster =
-                                "Tarih yok";
-
-
-                            if (
-                                v.tarih
-                            ) {
-
-                                const tarih =
-                                    new Date(
-                                        v.tarih
-                                    );
-
-
-                                if (
-                                    !isNaN(
-                                        tarih.getTime()
-                                    )
-                                ) {
-
-                                    tarihGoster =
-                                        tarih.toLocaleDateString(
-                                            "tr-TR",
-                                            {
-                                                day:
-                                                    "numeric",
-                                                month:
-                                                    "short",
-                                                year:
-                                                    "numeric",
-                                                hour:
-                                                    "2-digit",
-                                                minute:
-                                                    "2-digit"
-                                            }
-                                        );
-
-                                }
-
-                            }
-
-
-                            /* =================================
-                               ADMIN BUTONLARI
-                            ================================= */
-
-                            let adminButonlari =
-                                "";
-
-
-                            if (
-                                isAdmin
-                            ) {
-
-                                adminButonlari =
-                                    `
-
-                                    <button
-                                        class="btn-duzenle"
-                                        onclick="
-                                            formDuzenle(
-                                                '${docId}',
-                                                '${escFirma}',
-                                                '${escSehir}',
-                                                '${escIslem}'
-                                            )
-                                        "
-                                        title="Düzenle"
-                                    >
-
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-
-                                            <path
-                                                d="M12 20h9"
-                                            ></path>
-
-                                            <path
-                                                d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
-                                            ></path>
-
-                                        </svg>
-
-                                    </button>
-
-
-                                    <button
-                                        class="btn-sil"
-                                        onclick="
-                                            formSil(
-                                                '${docId}',
-                                                ${paramFotoId}
-                                            )
-                                        "
-                                        title="Formu Sil"
-                                    >
-
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-
-                                            <polyline
-                                                points="3 6 5 6 21 6"
-                                            ></polyline>
-
-                                            <path
-                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                                            ></path>
-
-                                        </svg>
-
-                                    </button>
-
-                                    `;
-
-                            }
-
-
-                            /* =================================
-                               KART
-                            ================================= */
-
-                            sonuclarDiv.innerHTML +=
-                                `
-
-                                <div
-                                    class="liste-karti"
-                                    id="kart-${docId}"
-                                >
-
-                                    <div
-                                        class="liste-karti-bilgi"
-                                        onclick="
-                                            resmiAc(
-                                                '${docId}',
-                                                ${paramFotoId}
-                                            )
-                                        "
-                                    >
-
-                                        <h4>
-                                            ${htmlGuvenli(
-                                                firma.toLocaleUpperCase(
-                                                    "tr-TR"
-                                                )
-                                            )}
-
-                                            -
-
-                                            ${htmlGuvenli(
-                                                sehir.toLocaleUpperCase(
-                                                    "tr-TR"
-                                                )
-                                            )}
-                                        </h4>
-
-
-                                        <div
-                                            class="detay-satiri"
-                                        >
-
-                                            🛠
-                                            ${htmlGuvenli(
-                                                islemGoster
-                                            )}
-
-                                            |
-
-                                            👤
-                                            ${htmlGuvenli(
-                                                ekleyenGoster
-                                            )}
-
-                                        </div>
-
-
-                                        <p>
-
-                                            🕒
-                                            ${htmlGuvenli(
-                                                tarihGoster
-                                            )}
-
-                                        </p>
-
-                                    </div>
-
-
-                                    <div
-                                        class="liste-karti-butonlar"
-                                    >
-
-                                        <button
-                                            class="btn-gor"
-                                            onclick="
-                                                resmiAc(
-                                                    '${docId}',
-                                                    ${paramFotoId}
-                                                )
-                                            "
-                                            title="Fotoğrafı Gör"
-                                        >
-
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                            >
-
-                                                <path
-                                                    d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-                                                ></path>
-
-                                                <circle
-                                                    cx="12"
-                                                    cy="12"
-                                                    r="3"
-                                                ></circle>
-
-                                            </svg>
-
-                                        </button>
-
-
-                                        ${adminButonlari}
-
-                                    </div>
-
-                                </div>
-
-                                `;
-
-                        }
-                    );
-
-
-                } catch (error) {
-
-                    console.error(
-                        "Arama hatası:",
-                        error
-                    );
-
-
-                    sonuclarDiv.innerHTML =
-                        `
-                        <p
-                            style="
-                                text-align:center;
-                                color:red;
-                                padding:20px;
-                            "
-                        >
-                            Arama sırasında hata oluştu:
-                            ${htmlGuvenli(
-                                error.message
-                            )}
-                        </p>
-                        `;
-
+                });
+
+                // Arka plandan firmalar geldiyse listeyi onlarla beraber tekrar çiz
+                if(yeniFirmaEklendi) {
+                    ekranaCiz();
                 }
 
-            }
-        );
+            } catch (error) { console.error("Öneri hatası:", error); }
+        }, 150); // Süreyi 300ms'den 150ms'ye düşürdük, bekleme hissini yok ettik
+    });
 
+    document.addEventListener("click", function (e) {
+        if (e.target !== aramaKutusu) autoList.innerHTML = "";
+    });
 
-    /* ========================================================
-       CANLI AKIŞ
-    ======================================================== */
+    document.getElementById("aramaButonu").addEventListener("click", async () => {
+        const hamArama = aramaKutusu.value.trim();
+        const arama = metniNormalizeEt(hamArama);
+        const sonuclarDiv = document.getElementById("sonuclar");
 
-    onSnapshot(
-        query(
-            collection(
-                db,
-                "formlar"
-            ),
-            orderBy(
-                "tarih",
-                "desc"
-            ),
-            limit(10)
-        ),
+        if (!hamArama) { alert("Lütfen arama kelimesi yazın."); return; }
+        sonuclarDiv.innerHTML = `<p style="text-align:center;">⏳ Aranıyor...</p>`;
+        autoList.innerHTML = "";
 
-        (snapshot) => {
+        try {
+            const highChar = String.fromCharCode(63743);
 
-            const canliAkanlarDiv =
-                document.getElementById(
-                    "canliAkanlar"
-                );
+            // ⚡ PARALEL VE SUNUCU TARAFLI HIZLI ARAMA EMRİ (ASLA KASMADAN VERİ ÇEKER)
+            let qSehir = getDocs(query(collection(db, "formlar"), where("sehir", "==", arama)));
+            let qFirma = getDocs(query(collection(db, "formlar"), where("aramaFirma", ">=", arama), where("aramaFirma", "<=", arama + highChar), limit(30)));
+            let qMail = hamArama.includes("@") ? getDocs(query(collection(db, "formlar"), where("ekleyen", "==", hamArama.toLowerCase()))) : Promise.resolve({empty:true, forEach:()=>{}});
 
+            const [snapSehir, snapFirma, snapMail] = await Promise.all([qSehir, qFirma, qMail]);
 
-            canliAkanlarDiv.innerHTML =
-                "";
+            const sonuclar = [];
+            const eklenenIdler = new Set();
 
+            const sonuclariEkle = (snap) => {
+                if(!snap.empty) {
+                    snap.forEach(docSnap => {
+                        if(!eklenenIdler.has(docSnap.id)) {
+                            sonuclar.push({ docSnap: docSnap, data: docSnap.data() });
+                            eklenenIdler.add(docSnap.id);
+                        }
+                    });
+                }
+            };
 
-            if (
-                snapshot.empty
-            ) {
+            sonuclariEkle(snapSehir);
+            sonuclariEkle(snapFirma);
+            sonuclariEkle(snapMail);
 
-                canliAkanlarDiv.innerHTML =
-                    `
+            sonuclarDiv.innerHTML = "";
+
+            if (sonuclar.length === 0) {
+                sonuclarDiv.innerHTML = `
                     <div class="empty-state">
-
-                        <img
-                            src="Adsız tasarım.png"
-                            alt="Form Yok"
-                        >
-
-                        <p>
-                            Henüz eklenmiş form yok.
-                        </p>
-
-                    </div>
-                    `;
-
+                        <img src="Adsız tasarım.png" alt="Bulunamadı">
+                        <p>"${htmlGuvenli(hamArama)}" için uygun form bulunamadı.</p>
+                    </div>`;
                 return;
-
             }
 
+            const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
+            sonuclarDiv.innerHTML = `<div class="sonuc-bilgisi">Toplam ${sonuclar.length} sonuç hızlıca listelendi</div>`;
 
-            const isAdmin =
-                yoneticiMailleri.includes(
-                    aktifKullaniciMail
-                );
+            sonuclar.sort((a, b) => new Date(b.data.tarih || 0).getTime() - new Date(a.data.tarih || 0).getTime());
 
+            sonuclar.forEach(item => {
+                const docSnap = item.docSnap;
+                const v = item.data;
+                const docId = docSnap.id;
+                
+                const firma = v.firmaAdi || "İSİMSİZ FİRMA";
+                const sehir = v.sehir || "belirsiz";
+                const islemGoster = v.islemTipi || "Belirtilmemiş";
+                const ekleyenGoster = v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor";
+                const paramFotoId = v.fotoId ? `'${v.fotoId}'` : "null";
 
-            snapshot.forEach(
-                docSnap => {
+                const escFirma = String(firma).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
+                const escSehir = String(sehir).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
+                const escIslem = String(v.islemTipi || "").replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
 
-                    const v =
-                        docSnap.data();
-
-
-                    const docId =
-                        docSnap.id;
-
-
-                    const gosterFirma =
-                        v.firmaAdi ||
-                        "İSİMSİZ FİRMA";
-
-
-                    const sehir =
-                        v.sehir ||
-                        "belirsiz";
-
-
-                    const escFirma =
-                        String(
-                            gosterFirma
-                        )
-                            .replace(
-                                /\\/g,
-                                "\\\\"
-                            )
-                            .replace(
-                                /'/g,
-                                "\\'"
-                            );
-
-
-                    const escSehir =
-                        String(
-                            sehir
-                        )
-                            .replace(
-                                /\\/g,
-                                "\\\\"
-                            )
-                            .replace(
-                                /'/g,
-                                "\\'"
-                            );
-
-
-                    const paramFotoId =
-                        v.fotoId
-                            ? `'${v.fotoId}'`
-                            : "null";
-
-
-                    const islemGoster =
-                        v.islemTipi ||
-                        "Belirtilmemiş";
-
-
-                    const ekleyenGoster =
-                        v.ekleyen
-                            ? v.ekleyen.split("@")[0]
-                            : "Bilinmiyor";
-
-
-                    const escIslem =
-                        String(
-                            v.islemTipi ||
-                            ""
-                        )
-                            .replace(
-                                /\\/g,
-                                "\\\\"
-                            )
-                            .replace(
-                                /'/g,
-                                "\\'"
-                            );
-
-
-                    let adminButonlari =
-                        "";
-
-
-                    if (
-                        isAdmin
-                    ) {
-
-                        adminButonlari =
-                            `
-
-                            <button
-                                class="btn-duzenle"
-                                onclick="
-                                    formDuzenle(
-                                        '${docId}',
-                                        '${escFirma}',
-                                        '${escSehir}',
-                                        '${escIslem}'
-                                    )
-                                "
-                                title="Düzenle"
-                            >
-
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-
-                                    <path
-                                        d="M12 20h9"
-                                    ></path>
-
-                                    <path
-                                        d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
-                                    ></path>
-
-                                </svg>
-
-                            </button>
-
-
-                            <button
-                                class="btn-sil"
-                                onclick="
-                                    formSil(
-                                        '${docId}',
-                                        ${paramFotoId}
-                                    )
-                                "
-                                title="Formu Sil"
-                            >
-
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-
-                                    <polyline
-                                        points="3 6 5 6 21 6"
-                                    ></polyline>
-
-                                    <path
-                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                                    ></path>
-
-                                </svg>
-
-                            </button>
-
-                            `;
-
+                let tarihGoster = "Tarih yok";
+                if (v.tarih) {
+                    const tarih = new Date(v.tarih);
+                    if (!isNaN(tarih.getTime())) {
+                        tarihGoster = tarih.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
                     }
-
-
-                    let tarihGoster =
-                        "Tarih yok";
-
-
-                    if (
-                        v.tarih
-                    ) {
-
-                        const tarih =
-                            new Date(
-                                v.tarih
-                            );
-
-
-                        if (
-                            !isNaN(
-                                tarih.getTime()
-                            )
-                        ) {
-
-                            tarihGoster =
-                                tarih.toLocaleDateString(
-                                    "tr-TR",
-                                    {
-                                        day:
-                                            "numeric",
-                                        month:
-                                            "short",
-                                        hour:
-                                            "2-digit",
-                                        minute:
-                                            "2-digit"
-                                    }
-                                );
-
-                        }
-
-                    }
-
-
-                    canliAkanlarDiv.innerHTML +=
-                        `
-
-                        <div
-                            class="liste-karti"
-                            id="kart-${docId}"
-                        >
-
-                            <div
-                                class="liste-karti-bilgi"
-                                onclick="
-                                    resmiAc(
-                                        '${docId}',
-                                        ${paramFotoId}
-                                    )
-                                "
-                            >
-
-                                <h4>
-
-                                    ${htmlGuvenli(
-                                        gosterFirma.toLocaleUpperCase(
-                                            "tr-TR"
-                                        )
-                                    )}
-
-                                    -
-
-                                    ${htmlGuvenli(
-                                        sehir.toLocaleUpperCase(
-                                            "tr-TR"
-                                        )
-                                    )}
-
-                                </h4>
-
-
-                                <div
-                                    class="detay-satiri"
-                                >
-
-                                    🛠
-                                    ${htmlGuvenli(
-                                        islemGoster
-                                    )}
-
-                                    |
-
-                                    👤
-                                    ${htmlGuvenli(
-                                        ekleyenGoster
-                                    )}
-
-                                </div>
-
-
-                                <p>
-
-                                    🕒
-                                    ${htmlGuvenli(
-                                        tarihGoster
-                                    )}
-
-                                </p>
-
-                            </div>
-
-
-                            <div
-                                class="liste-karti-butonlar"
-                            >
-
-                                <button
-                                    class="btn-gor"
-                                    onclick="
-                                        resmiAc(
-                                            '${docId}',
-                                            ${paramFotoId}
-                                        )
-                                    "
-                                    title="Fotoğrafı Gör"
-                                >
-
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-
-                                        <path
-                                            d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-                                        ></path>
-
-                                        <circle
-                                            cx="12"
-                                            cy="12"
-                                            r="3"
-                                        ></circle>
-
-                                    </svg>
-
-                                </button>
-
-
-                                ${adminButonlari}
-
-                            </div>
-
-                        </div>
-
-                        `;
-
                 }
-            );
 
-        },
+                let adminButonlari = "";
+                if (isAdmin) {
+                    adminButonlari = `
+                        <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${escSehir}', '${escIslem}')" title="Düzenle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                        </button>
+                        <button class="btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>`;
+                }
 
-        (error) => {
-
-            console.error(
-                "Canlı akış hatası:",
-                error
-            );
-
+                sonuclarDiv.innerHTML += `
+                    <div class="liste-karti" id="kart-${docId}">
+                        <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
+                            <h4>${htmlGuvenli(firma.toLocaleUpperCase("tr-TR"))} - ${htmlGuvenli(sehir.toLocaleUpperCase("tr-TR"))}</h4>
+                            <div class="detay-satiri">🛠 ${htmlGuvenli(islemGoster)} | 👤 ${htmlGuvenli(ekleyenGoster)}</div>
+                            <p>🕒 ${htmlGuvenli(tarihGoster)}</p>
+                        </div>
+                        <div class="liste-karti-butonlar">
+                            <button class="btn-gor" onclick="resmiAc('${docId}', ${paramFotoId})" title="Fotoğrafı Gör">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                            ${adminButonlari}
+                        </div>
+                    </div>`;
+            });
+        } catch (error) {
+            console.error("Arama hatası:", error);
+            sonuclarDiv.innerHTML = `<p style="text-align:center; color:red; padding:20px;">Arama sırasında hata oluştu: ${htmlGuvenli(error.message)}</p>`;
         }
-    );
+    });
 
+    onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), (snapshot) => {
+        const canliAkanlarDiv = document.getElementById("canliAkanlar");
+        canliAkanlarDiv.innerHTML = "";
+        
+        if (snapshot.empty) {
+            canliAkanlarDiv.innerHTML = `
+                <div class="empty-state">
+                    <img src="Adsız tasarım.png" alt="Form Yok">
+                    <p>Henüz eklenmiş form yok.</p>
+                </div>`;
+            return;
+        }
+
+        const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
+
+        snapshot.forEach(docSnap => {
+            const v = docSnap.data();
+            const docId = docSnap.id;
+            const gosterFirma = v.firmaAdi || "İSİMSİZ FİRMA";
+            const sehir = v.sehir || "belirsiz";
+            const escFirma = String(gosterFirma).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
+            const escSehir = String(sehir).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
+            const paramFotoId = v.fotoId ? `'${v.fotoId}'` : "null";
+            const islemGoster = v.islemTipi || "Belirtilmemiş";
+            const ekleyenGoster = v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor";
+            const escIslem = String(v.islemTipi || "").replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
+
+            let adminButonlari = "";
+            if (isAdmin) {
+                adminButonlari = `
+                    <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${escSehir}', '${escIslem}')" title="Düzenle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    </button>
+                    <button class="btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>`;
+            }
+
+            let tarihGoster = "Tarih yok";
+            if (v.tarih) {
+                const tarih = new Date(v.tarih);
+                if (!isNaN(tarih.getTime())) {
+                    tarihGoster = tarih.toLocaleDateString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+                }
+            }
+
+            canliAkanlarDiv.innerHTML += `
+                <div class="liste-karti" id="kart-${docId}">
+                    <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
+                        <h4>${htmlGuvenli(gosterFirma.toLocaleUpperCase("tr-TR"))} - ${htmlGuvenli(sehir.toLocaleUpperCase("tr-TR"))}</h4>
+                        <div class="detay-satiri">🛠 ${htmlGuvenli(islemGoster)} | 👤 ${htmlGuvenli(ekleyenGoster)}</div>
+                        <p>🕒 ${htmlGuvenli(tarihGoster)}</p>
+                    </div>
+                    <div class="liste-karti-butonlar">
+                        <button class="btn-gor" onclick="resmiAc('${docId}', ${paramFotoId})" title="Fotoğrafı Gör">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                        ${adminButonlari}
+                    </div>
+                </div>`;
+        });
+    }, (error) => { console.error("Canlı akış hatası:", error); });
 </script>
-
 </body>
 </html>
