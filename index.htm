@@ -28,7 +28,6 @@
         .login-logo { width: 100%; max-width: 220px; margin-bottom: 15px; }
         .login-title { font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
         .login-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 25px; }
-        
         .login-card input { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; outline: none; transition: 0.2s; }
         .login-card input:focus { border-color: var(--primary); }
         
@@ -39,8 +38,13 @@
         .header-brand { display: flex; align-items: center; gap: 10px; }
         .header-brand img { height: 32px; object-fit: contain; }
         .header-title { font-weight: 700; color: var(--text-main); font-size: 1.05rem; letter-spacing: -0.3px; border-left: 2px solid var(--border); padding-left: 10px; }
+        
+        /* HEADER BUTONLARI */
+        .header-actions { display: flex; align-items: center; gap: 8px; }
         .logout-btn { background: #fee2e2; border: none; color: var(--danger); font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: 0.2s; }
         .logout-btn:hover { background: var(--danger); color: white; }
+        .optimize-btn { display: none; background: #fef3c7; border: none; color: #d97706; font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: 0.2s; }
+        .optimize-btn:hover { background: #f59e0b; color: white; }
 
         .container { max-width: 500px; margin: 20px auto; padding: 0 15px; }
         
@@ -70,7 +74,7 @@
         .btn-primary { background: var(--primary); }
         button:disabled { background: #94a3b8; cursor: not-allowed; }
 
-        /* LİSTE GÖRÜNÜMÜ VE BUTONLAR CSS */
+        /* LİSTE GÖRÜNÜMÜ CSS */
         .liste-karti { background: var(--surface); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
         .liste-karti:hover { border-color: var(--primary); }
         .liste-karti-bilgi { flex: 1; cursor: pointer; overflow: hidden;}
@@ -133,8 +137,9 @@
             <img src="Adsız tasarım.png" alt="ENORPA Logo" onerror="this.style.display='none'">
             <div class="header-title">İş Formları</div>
         </div>
-        <div style="display:flex; align-items:center; gap: 10px;">
-            <span id="kullaniciMailGosterge" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+        <div class="header-actions">
+            <!-- SADECE ADMİNLERİN GÖRECEĞİ OPTİMİZASYON BUTONU -->
+            <button class="optimize-btn" id="btnOptimize" onclick="eskiKayitlariOptimizeEt()" title="Eski kayıtları yeni hızlı sisteme taşır">⚡ Optimizasyon</button>
             <button class="logout-btn" id="logoutBtn">Çıkış</button>
         </div>
     </header>
@@ -163,7 +168,6 @@
                             <span>Fotoğraf Seç / Çek (Çoklu)</span>
                             <div class="file-name-display" id="dosyaAdi" style="display:none;"></div>
                         </label>
-                        <!-- Capture ile doğrudan kamerayı da açma yeteneği -->
                         <input type="file" id="fotoGirdisi" accept="image/*,.heic,.heif" capture="environment" multiple required>
                     </div>
                     <button type="submit" id="ekleButonu" class="btn btn-primary">Formları Kaydet</button>
@@ -177,7 +181,6 @@
                 <div class="card-title">🔍 Kayıtlı Form Ara</div>
                 <div class="form-floating">
                     <input type="text" id="aramaKutusu" placeholder=" ">
-                    <!-- Label güncellendi -->
                     <label for="aramaKutusu">Şehir veya Firma Adı (Kısmi yazabilirsiniz)</label>
                 </div>
                 <button type="button" id="aramaButonu" class="btn btn-primary">Formları Bul</button>
@@ -194,17 +197,18 @@
         </div>
     </div>
 
-    <!-- GÖRSEL BÜYÜTME MODALI -->
+    <!-- GÖRSEL BÜYÜTME MODALI (LOADING ANİMASYONLU) -->
     <div id="imageModal">
         <span class="modal-close" onclick="modaliKapat()">&times;</span>
-        <img id="modalImage" src="">
-        <a id="downloadLink" href="" download="ENORPA_Is_Formu.jpg" class="modal-btn">⬇️ Fotoğrafı İndir / Kaydet</a>
+        <p id="modalLoading" style="color:white; font-size:1.2rem; font-weight:bold;">⏳ Fotoğraf İndiriliyor...</p>
+        <img id="modalImage" src="" style="display:none;">
+        <a id="downloadLink" href="" download="ENORPA_Is_Formu.jpg" class="modal-btn" style="display:none;">⬇️ Fotoğrafı İndir / Kaydet</a>
     </div>
 
-    <!-- METİN DÜZENLEME MODALI (YENİ) -->
+    <!-- METİN DÜZENLEME MODALI -->
     <div id="editModal">
         <div class="edit-card">
-            <h3 style="margin-bottom: 20px; color: var(--text-main); text-align:center;">✏️️ Kaydı Düzenle</h3>
+            <h3 style="margin-bottom: 20px; color: var(--text-main); text-align:center;">✏ Kaydı Düzenle</h3>
             <div class="form-floating">
                 <input type="text" id="editFirmaAdi" placeholder=" " required>
                 <label for="editFirmaAdi">Yeni Firma Adı</label>
@@ -242,12 +246,12 @@
 </div>
 
 <script type="module">
-    // updateDoc fonksiyonu sisteme import edildi
+    // Yeni sistem için gerekli kütüphaneler dahil edildi (deleteField, getDoc)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // Yönetici Mailleri (Silme ve Düzenleme yetkisi olanlar)
+    // Yönetici Mailleri (Silme, Düzenleme ve Optimizasyon yetkisi olanlar)
     const yoneticiMailleri = [
         "saha@enorpa.com", 
         "servis@enorpa.com",
@@ -256,7 +260,7 @@
     ]; 
 
     let aktifKullaniciMail = ""; 
-    let guncellenecekDocId = null; // Düzenleme işlemi için hafıza
+    let guncellenecekDocId = null;
 
     const firebaseConfig = {
         apiKey: "AIzaSyC2OWlHtSGY-2Xk6CKDfekCaDXD8k-erDs",
@@ -275,11 +279,17 @@
     const mainApp = document.getElementById('mainApp');
     const loginError = document.getElementById('loginError');
 
+    // Oturum Kontrolü ve Optimizasyon Butonu Yetkisi
     onAuthStateChanged(auth, (user) => {
         if (user) {
             aktifKullaniciMail = user.email.toLowerCase(); 
             loginScreen.style.display = 'none';
             mainApp.style.display = 'block';
+            
+            // Eğer giriş yapan yönetici ise Optimizasyon butonunu göster
+            if(yoneticiMailleri.includes(aktifKullaniciMail)) {
+                document.getElementById('btnOptimize').style.display = "block";
+            }
         } else {
             aktifKullaniciMail = "";
             loginScreen.style.display = 'flex';
@@ -290,7 +300,6 @@
     document.getElementById('loginBtn').addEventListener('click', () => {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
-        
         signInWithEmailAndPassword(auth, email, pass).catch(err => {
             loginError.style.display = 'block';
         });
@@ -298,13 +307,94 @@
 
     document.getElementById('logoutBtn').addEventListener('click', () => { signOut(auth); });
 
-    // Modalları Aç/Kapat
-    window.resmiBuyut = function(srcData) {
-        document.getElementById('modalImage').src = srcData;
-        document.getElementById('downloadLink').href = srcData;
+
+    // --- ⚡ ESKİ KAYITLARI YENİ HIZLI SİSTEME TAŞIMA (MIGRATION) MODÜLÜ ---
+    window.eskiKayitlariOptimizeEt = async function() {
+        if(!confirm("DİKKAT: Eski formların fotoğrafları yeni hızlı depoya aktarılacak. İşlem kayıt sayısına göre 1-2 dakika sürebilir. Onaylıyor musunuz?")) return;
+
+        const btn = document.getElementById("btnOptimize");
+        btn.disabled = true;
+        btn.innerText = "⏳ İşlem Yapılıyor...";
+
+        try {
+            const snap = await getDocs(collection(db, "formlar"));
+            let islenenSayi = 0;
+
+            for (let docSnap of snap.docs) {
+                let data = docSnap.data();
+                
+                // Eğer formun içinde devasa 'fotograf' verisi duruyorsa ve yeni sisteme ('fotoId') geçmemişse
+                if (data.fotograf && !data.fotoId) {
+                    
+                    // 1. O devasa fotoğrafı yeni özel fotoğraf deposuna ('formFotograflari') kaydet
+                    const fotoRef = await addDoc(collection(db, "formFotograflari"), {
+                        base64: data.fotograf
+                    });
+                    
+                    // 2. Ana listedeki formda devasa fotoğrafı SİL (deleteField) ve yerine yeni kimlik kodunu (fotoId) yaz
+                    await updateDoc(doc(db, "formlar", docSnap.id), {
+                        fotoId: fotoRef.id,
+                        fotograf: deleteField()
+                    });
+                    
+                    islenenSayi++;
+                }
+            }
+            alert(`✅ Muhteşem! Toplam ${islenenSayi} adet eski kayıt başarıyla yeni sisteme aktarıldı. Artık aramalar çok hızlı çalışacak!`);
+            btn.style.display = 'none'; // İşlem bitince butonu gizle
+        } catch(e) {
+            alert("Aktarım sırasında bir hata oluştu: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "⚡ Optimizasyon";
+        }
+    }
+
+
+    // --- FOTOĞRAF GÖSTERME (YENİ TEMBEL YÜKLEME MİMARİSİ) ---
+    window.resmiAc = async function(docId, fotoId) {
+        const modalLoading = document.getElementById('modalLoading');
+        const modalImg = document.getElementById('modalImage');
+        const dlLink = document.getElementById('downloadLink');
+        
+        // Önce Yükleniyor yazısını göster, eski fotoğrafı gizle
+        modalLoading.style.display = 'block';
+        modalImg.style.display = 'none';
+        dlLink.style.display = 'none';
         document.getElementById('imageModal').style.display = 'flex';
+
+        try {
+            if (fotoId) {
+                // YENİ SİSTEM: Sadece tıklanan fotoğrafı ayrı depodan saniyeler içinde indirir
+                const fDoc = await getDoc(doc(db, "formFotograflari", fotoId));
+                if(fDoc.exists()) {
+                    modalImg.src = fDoc.data().base64;
+                    dlLink.href = fDoc.data().base64;
+                }
+            } else {
+                // ESKİ SİSTEM: Eğer admin henüz "Optimizasyon" butonuna basmamışsa eski kayıtları okur
+                const fDoc = await getDoc(doc(db, "formlar", docId));
+                if(fDoc.exists() && fDoc.data().fotograf) {
+                    modalImg.src = fDoc.data().fotograf;
+                    dlLink.href = fDoc.data().fotograf;
+                }
+            }
+            
+            // İndirme bitince yükleniyor yazısını gizle, fotoğrafı göster
+            modalLoading.style.display = 'none';
+            modalImg.style.display = 'block';
+            dlLink.style.display = 'block';
+            
+        } catch (e) {
+            alert("Fotoğraf sunucudan alınamadı.");
+            window.modaliKapat();
+        }
     };
-    window.modaliKapat = function() { document.getElementById('imageModal').style.display = 'none'; };
+
+    window.modaliKapat = function() { 
+        document.getElementById('imageModal').style.display = 'none'; 
+        document.getElementById('modalImage').src = "";
+    };
 
     window.modaliKapatEdit = function() { 
         document.getElementById('editModal').style.display = 'none'; 
@@ -312,7 +402,7 @@
     };
     document.getElementById('btnEditCancel').addEventListener('click', window.modaliKapatEdit);
 
-    // ESC Tuşu ile Pencereleri Kapatma
+    // ESC Tuşu ile Kapatma
     document.addEventListener('keydown', function(event) {
         if (event.key === "Escape") {
             window.modaliKapat();
@@ -320,7 +410,7 @@
         }
     });
 
-    // --- KAYIT DÜZENLEME İŞLEMLERİ (YENİ) ---
+    // --- KAYIT DÜZENLEME İŞLEMLERİ ---
     window.formDuzenle = function(docId, eskiFirma, eskiSehir) {
         guncellenecekDocId = docId;
         document.getElementById('editFirmaAdi').value = eskiFirma;
@@ -333,38 +423,30 @@
         const yeniFirma = document.getElementById('editFirmaAdi').value.trim().toLowerCase();
         const yeniSehir = document.getElementById('editSehir').value;
 
-        if(!yeniFirma || !yeniSehir) {
-            return alert("Lütfen firma adı ve şehri boş bırakmayın.");
-        }
+        if(!yeniFirma || !yeniSehir) return alert("Lütfen boş bırakmayın.");
 
         try {
             document.getElementById('btnEditSave').innerText = "⏳ Kaydediliyor...";
-            await updateDoc(doc(db, "formlar", guncellenecekDocId), {
-                firmaAdi: yeniFirma,
-                sehir: yeniSehir
-            });
+            await updateDoc(doc(db, "formlar", guncellenecekDocId), { firmaAdi: yeniFirma, sehir: yeniSehir });
             window.modaliKapatEdit();
-            
-            // Eğer arama sekmesindeyse aramayı otomatik olarak tetikle (yenile)
-            if(document.getElementById('aramaKutusu').value !== "") {
-                document.getElementById('aramaButonu').click();
-            }
-        } catch (error) {
-            alert("Güncelleme hatası: " + error.message);
-        } finally {
-            document.getElementById('btnEditSave').innerText = "Kaydet";
-        }
+            if(document.getElementById('aramaKutusu').value !== "") document.getElementById('aramaButonu').click();
+        } catch (error) { alert("Hata: " + error.message); } 
+        finally { document.getElementById('btnEditSave').innerText = "Kaydet"; }
     });
 
-    // Kayıt Silme
-    window.formSil = async function(docId) {
-        if (!yoneticiMailleri.includes(aktifKullaniciMail)) {
-            alert("Bu işlemi yapmaya yetkiniz yoktur!");
-            return;
-        }
+    // --- KAYIT SİLME İŞLEMİ ---
+    window.formSil = async function(docId, fotoId) {
+        if (!yoneticiMailleri.includes(aktifKullaniciMail)) return alert("Yetkiniz yok!");
+
         if (confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) {
             try {
+                // Eğer yeni sisteme geçilmişse, ayrı depodaki o kocaman fotoğrafı da çöpe atarak yer açıyoruz
+                if (fotoId) {
+                    await deleteDoc(doc(db, "formFotograflari", fotoId));
+                }
+                // Ana listeyi sil
                 await deleteDoc(doc(db, "formlar", docId));
+                
                 const kart = document.getElementById('kart-' + docId);
                 if(kart) kart.style.display = 'none';
             } catch (error) { alert("Hata: " + error.message); }
@@ -394,13 +476,10 @@
         let islenenDosya = file;
         if (islenenDosya.name.toLowerCase().endsWith('.heic') || islenenDosya.name.toLowerCase().endsWith('.heif') || islenenDosya.type === 'image/heic') {
             try {
-                if (typeof heic2any === "undefined") { throw new Error("Kütüphane bağlantısı sağlanamadı. Sayfayı yenileyin."); }
+                if (typeof heic2any === "undefined") throw new Error("Kütüphane sağlanamadı.");
                 const convertedBlob = await heic2any({ blob: islenenDosya, toType: "image/jpeg" });
                 islenenDosya = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-            } catch (error) {
-                alert("HEIC Dönüştürme Hatası: " + (error.message || "Bilinmeyen kütüphane hatası."));
-                throw error;
-            }
+            } catch (error) { throw error; }
         }
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -416,12 +495,11 @@
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                     resolve(canvas.toDataURL('image/jpeg', 0.6));
                 }
-                img.onerror = () => reject("Görsel oluşturulamadı.");
             }
-            reader.onerror = () => reject("Dosya okunamadı.");
         });
     };
 
+    // --- FORM GÖNDERME (YENİ MİMARİ) ---
     document.getElementById('isFormu').addEventListener('submit', async (e) => {
         e.preventDefault();
         const ekleButonu = document.getElementById('ekleButonu');
@@ -433,10 +511,20 @@
 
         try {
             for (let i = 0; i < dosyalar.length; i++) {
-                ekleButonu.innerHTML = `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})...<br><small style="font-size:11px;">(HEIC Dönüşümü Uzun Sürebilir)</small>`;
+                ekleButonu.innerHTML = `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})...`;
                 const compressedPhoto = await compressImage(dosyalar[i]);
+                
+                // 1. Yeni Sistem: Önce o ağır fotoğrafı harici depoya kaydet
+                const fotoRef = await addDoc(collection(db, "formFotograflari"), {
+                    base64: compressedPhoto
+                });
+                
+                // 2. Yeni Sistem: Ana listede formu kaydet ama içine fotoğraf yerine fotoğrafın kodunu (fotoId) koy.
                 await addDoc(collection(db, "formlar"), {
-                    firmaAdi: firmaAdi, sehir: sehir, fotograf: compressedPhoto, tarih: new Date().toISOString()
+                    firmaAdi: firmaAdi, 
+                    sehir: sehir, 
+                    fotoId: fotoRef.id, 
+                    tarih: new Date().toISOString()
                 });
             }
             alert("Başarıyla eklendi! 🎉");
@@ -451,21 +539,20 @@
         }
     });
 
-    // --- KISMİ ARAMA (YENİ ALGORİTMA) ---
+    // --- ARAMA İŞLEMİ (IŞIK HIZINDA KISMİ ARAMA) ---
     document.getElementById('aramaButonu').addEventListener('click', async () => {
         let aramaKelimesi = document.getElementById('aramaKutusu').value.trim().toLowerCase();
         aramaKelimesi = aramaKelimesi.replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c');
         const sonuclarDiv = document.getElementById('sonuclar');
         
         if (!aramaKelimesi) return alert("Lütfen arama kelimesi yazın.");
-        sonuclarDiv.innerHTML = "<p style='text-align:center;'>⏳ Aranıyor...</p>";
+        sonuclarDiv.innerHTML = "<p style='text-align:center;'>⏳ Aramalarınız uçak hızında taranıyor...</p>";
         
         try {
-            // Önce Şehir olarak tam arama yap
+            // Önce Şehir araması
             let snap = await getDocs(query(collection(db, "formlar"), where("sehir", "==", aramaKelimesi)));
             
-            // Eğer şehir olarak bulunamazsa FİRMA ADI için "KISMİ (Önek)" araması yap
-            // Örneğin: "eno" yazınca "enorpa" firmasını bulur
+            // Eğer şehir olarak bulunamazsa FİRMA ADI için KISMİ Arama
             if (snap.empty) {
                 snap = await getDocs(query(collection(db, "formlar"), 
                     where("firmaAdi", ">=", aramaKelimesi),
@@ -474,7 +561,6 @@
             }
             
             sonuclarDiv.innerHTML = ""; 
-            
             if (snap.empty) {
                 return sonuclarDiv.innerHTML = `
                     <div class="empty-state">
@@ -490,17 +576,18 @@
                 const v = docSnap.data();
                 const docId = docSnap.id;
                 
-                // HTML içerisine yerleştirirken hata vermemesi için tırnakları temizliyoruz
                 const escFirma = v.firmaAdi.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 
-                // Adminler için "Düzenle" ve "Sil" butonları
+                // fotoId olup olmadığı kontrolü ile "Gör" ve "Sil" butonlarına parametre aktarımı
+                const paramFotoId = v.fotoId ? `'${v.fotoId}'` : `null`;
+
                 let adminButonlari = "";
                 if (isAdmin) {
                     adminButonlari = `
                         <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${v.sehir}')" title="Düzenle">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                         </button>
-                        <button class="btn-sil" onclick="formSil('${docId}')" title="Formu Sil">
+                        <button class="btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     `;
@@ -508,22 +595,19 @@
 
                 sonuclarDiv.innerHTML += `
                     <div class="liste-karti" id="kart-${docId}">
-                        <div class="liste-karti-bilgi" onclick="resmiBuyut('${v.fotograf}')">
+                        <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
                             <h4>${v.firmaAdi.toUpperCase()} - ${v.sehir.toUpperCase()}</h4>
                             <p>🕒 ${new Date(v.tarih).toLocaleDateString('tr-TR', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</p>
                         </div>
                         <div class="liste-karti-butonlar">
-                            <button class="btn-gor" onclick="resmiBuyut('${v.fotograf}')" title="Fotoğrafı Gör">
+                            <button class="btn-gor" onclick="resmiAc('${docId}', ${paramFotoId})" title="Fotoğrafı Gör">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             </button>
                             ${adminButonlari}
                         </div>
                     </div>`;
             });
-        } catch (error) { 
-            sonuclarDiv.innerHTML = "<p style='text-align:center; color:red;'>Arama sırasında bir hata oluştu.</p>"; 
-            console.error(error);
-        }
+        } catch (error) { sonuclarDiv.innerHTML = "<p style='text-align:center; color:red;'>Arama hatası.</p>"; }
     });
 
     // Canlı Akış Dinleyicisi
@@ -546,14 +630,15 @@
             const docId = docSnap.id;
             
             const escFirma = v.firmaAdi.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            
+            const paramFotoId = v.fotoId ? `'${v.fotoId}'` : `null`;
+
             let adminButonlari = "";
             if (isAdmin) {
                 adminButonlari = `
                     <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${v.sehir}')" title="Düzenle">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                     </button>
-                    <button class="btn-sil" onclick="formSil('${docId}')" title="Formu Sil">
+                    <button class="btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                 `;
@@ -561,12 +646,12 @@
 
             canliAkanlarDiv.innerHTML += `
                 <div class="liste-karti" id="kart-${docId}">
-                    <div class="liste-karti-bilgi" onclick="resmiBuyut('${v.fotograf}')">
+                    <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
                         <h4>${v.firmaAdi.toUpperCase()} - ${v.sehir.toUpperCase()}</h4>
                         <p>🕒 ${new Date(v.tarih).toLocaleDateString('tr-TR', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
                     </div>
                     <div class="liste-karti-butonlar">
-                        <button class="btn-gor" onclick="resmiBuyut('${v.fotograf}')" title="Fotoğrafı Gör">
+                        <button class="btn-gor" onclick="resmiAc('${docId}', ${paramFotoId})" title="Fotoğrafı Gör">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
                         ${adminButonlari}
