@@ -3,96 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ENORPA İş Formları</title>
+    <title>ENORPA İş Formları - Premium</title>
     
-    <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=i1UVVaMtOAvWteeP2aivbra1-MRB9VHUSWKi19k0ykqU5wQEObFPcJSaJzOtdkmk98KMGuocYngZKassN9OgB8Ly1rqzsOBuocKIJotLg45CxHjF6IJowHm2Yt3EAeHJJuKDGpqnWtedqu4zeaoZio3V3HeZqqPgrY0rDgb84WxyraNp58-AKvx4bBOGjDJw1rz_i2x66jXDuWIMMMQ7rhkLEuPT_QgyXHgUUKZT6D_gP4QSX2bHvJkvwcMTPL9NNrla_7K5emo_4qsThQMFfd9zCGvBDIbxv4IbnYf-HmZ82vIIo8h_3slr67OUquaT" charset="UTF-8"></script><script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
     <style>
-        :root { --primary: #f26522; --primary-hover: #d95318; --bg: #f4f5f7; --surface: #ffffff; --text-main: #343435; --text-muted: #64748b; --border: #e2e8f0; --danger: #ef4444; }
+        :root { 
+            --primary: #f26522; 
+            --primary-hover: #d95318; 
+            --bg: #f4f5f7; 
+            --surface: #ffffff; 
+            --text-main: #343435; 
+            --text-muted: #64748b; 
+            --border: #e2e8f0; 
+            --danger: #ef4444; 
+            --success: #10b981;
+        }
+
+        /* KARANLIK MOD (DARK MODE) DEĞİŞKENLERİ */
+        [data-theme="dark"] {
+            --bg: #0f172a; 
+            --surface: #1e293b; 
+            --text-main: #f8fafc; 
+            --text-muted: #94a3b8; 
+            --border: #334155; 
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+        body { background-color: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; transition: background-color 0.3s, color 0.3s; }
         
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .login-card { background: var(--surface); padding: 40px 30px 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); width: 100%; max-width: 400px; text-align: center; border-top: 6px solid var(--primary); }
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; transition: 0.3s; }
+        .login-card { background: var(--surface); padding: 40px 30px 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.06); width: 100%; max-width: 400px; text-align: center; border-top: 6px solid var(--primary); transition: 0.3s; }
         .login-logo { width: 100%; max-width: 220px; margin-bottom: 15px; }
         .login-title { font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
         .login-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 25px; }
-        .login-card input { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; outline: none; transition: 0.2s; }
+        .login-card input { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid var(--border); background: transparent; color: var(--text-main); border-radius: 12px; font-size: 1rem; outline: none; transition: 0.2s; }
         .login-card input:focus { border-color: var(--primary); }
         
         #mainApp { display: none; padding-bottom: 70px; }
         
-        header { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; }
+        header { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; transition: 0.3s; }
         .header-brand { display: flex; align-items: center; gap: 10px; }
         .header-brand img { height: 32px; object-fit: contain; }
         .header-title { font-weight: 700; color: var(--text-main); font-size: 1.05rem; letter-spacing: -0.3px; border-left: 2px solid var(--border); padding-left: 10px; }
         
         .header-actions { display: flex; align-items: center; gap: 8px; }
+        
+        /* TEMA BUTONU */
+        .theme-btn { background: transparent; border: 2px solid var(--border); color: var(--text-muted); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+        .theme-btn:hover { background: var(--border); color: var(--text-main); }
+        
         .logout-btn { background: #fee2e2; border: none; color: var(--danger); font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: 0.2s; }
         .logout-btn:hover { background: var(--danger); color: white; }
         .optimize-btn { display: none; background: #fef3c7; border: none; color: #d97706; font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: 0.2s; }
         .optimize-btn:hover { background: #f59e0b; color: white; }
 
-        .container { max-width: 500px; margin: 20px auto; padding: 0 15px; }
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
         .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card { background: var(--surface); padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .card { background: var(--surface); padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; transition: 0.3s; }
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text-main); display:flex; align-items:center; gap:8px; }
         
         .form-floating { position: relative; margin-bottom: 20px; }
-        .form-floating input, .form-floating select { width: 100%; padding: 16px 14px 10px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; outline: none; background: transparent; color: var(--text-main); }
-        .form-floating input:focus, .form-floating select:focus { border-color: var(--primary); }
+        .form-floating input, .form-floating select, .form-floating textarea { width: 100%; padding: 16px 14px 10px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; outline: none; background: transparent; color: var(--text-main); transition: 0.3s; }
+        .form-floating textarea { resize: vertical; min-height: 80px; padding-top: 24px; }
+        .form-floating input:focus, .form-floating select:focus, .form-floating textarea:focus { border-color: var(--primary); }
         .form-floating label { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; transition: 0.2s; background: var(--surface); padding: 0 4px; }
-        .form-floating input:focus ~ label, .form-floating input:not(:placeholder-shown) ~ label, .form-floating select ~ label { top: 0; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+        .form-floating textarea ~ label { top: 24px; }
+        .form-floating input:focus ~ label, .form-floating input:not(:placeholder-shown) ~ label, .form-floating select ~ label, .form-floating textarea:focus ~ label, .form-floating textarea:not(:placeholder-shown) ~ label { top: 0; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
         .form-floating select { appearance: none; -webkit-appearance: none; cursor: pointer; }
         .select-wrapper::after { content: "▼"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: var(--text-muted); pointer-events: none; }
 
-        .autocomplete-items { position: absolute; border: 1px solid var(--border); border-bottom: none; border-top: none; z-index: 99; top: 100%; left: 0; right: 0; border-radius: 0 0 12px 12px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); background: white; max-height: 250px; overflow-y: auto; }
-        .autocomplete-items div { padding: 12px 15px; cursor: pointer; background-color: #fff; border-bottom: 1px solid var(--border); color: var(--text-main); font-size: 0.95rem; }
+        /* SESLİ NOT BUTONU */
+        .mic-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #fef3c7; border: none; color: #d97706; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; z-index: 2; }
+        .mic-btn:hover { background: #f59e0b; color: white; }
+        .mic-btn.listening { background: var(--danger); color: white; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.1); } 100% { transform: translateY(-50%) scale(1); } }
+
+        .autocomplete-items { position: absolute; border: 1px solid var(--border); border-bottom: none; border-top: none; z-index: 99; top: 100%; left: 0; right: 0; border-radius: 0 0 12px 12px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); background: var(--surface); max-height: 250px; overflow-y: auto; }
+        .autocomplete-items div { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border); color: var(--text-main); font-size: 0.95rem; transition: 0.2s; }
         .autocomplete-items div:hover { background-color: var(--bg); color: var(--primary); font-weight: 500; }
         .autocomplete-items strong { color: var(--primary); }
         .autocomplete-category { font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 3px; }
 
         .file-upload { position: relative; margin-bottom: 20px; }
         .file-upload input[type="file"] { display: none; }
-        .file-upload-label { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 20px; border: 2px dashed #cbd5e1; border-radius: 12px; cursor: pointer; color: var(--text-muted); background-color: #f8fafc; text-align: center; transition: 0.2s; }
-        .file-upload-label:hover, .file-upload-label.active { border-color: var(--primary); background-color: #fff0eb; color: var(--primary); }
-        .file-name-display { font-size: 0.85rem; margin-top: 10px; font-weight: 600; }
+        .file-upload-label { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 20px; border: 2px dashed var(--border); border-radius: 12px; cursor: pointer; color: var(--text-muted); background-color: transparent; text-align: center; transition: 0.2s; }
+        .file-upload-label:hover, .file-upload-label.active { border-color: var(--primary); color: var(--primary); background-color: rgba(242, 101, 34, 0.05); }
+        
+        /* FOTOĞRAF ÖNİZLEME */
+        .preview-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; justify-content: center; }
+        .preview-container img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); animation: fadeIn 0.3s; }
 
-        button.btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; color: white; display: flex; justify-content: center; gap: 8px; transition: 0.2s; }
+        button.btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
         button.btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); }
-        button:disabled { background: #94a3b8; cursor: not-allowed; }
+        .btn-success { background: var(--success); }
+        button:disabled { background: var(--text-muted); cursor: not-allowed; opacity: 0.7; }
 
-        .liste-karti { background: var(--surface); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
+        .liste-karti { background: var(--surface); padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.3s; }
         .liste-karti:hover { border-color: var(--primary); }
+        .karti-ust { display: flex; justify-content: space-between; align-items: flex-start; }
         .liste-karti-bilgi { flex: 1; cursor: pointer; overflow: hidden; }
-        .liste-karti-bilgi h4 { margin: 0 0 4px 0; font-size: 1rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .liste-karti-bilgi p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-        .liste-karti-bilgi .detay-satiri { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
-        .liste-karti-butonlar { display: flex; gap: 8px; margin-left: 10px; }
+        .liste-karti-bilgi h4 { margin: 0 0 6px 0; font-size: 1.05rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .liste-karti-bilgi p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+        .detay-satiri { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+        .badge { background: rgba(242, 101, 34, 0.1); padding: 4px 8px; border-radius: 6px; }
+        .badge-konum { background: rgba(16, 185, 129, 0.1); color: var(--success); text-decoration: none; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; transition: 0.2s; }
+        .badge-konum:hover { background: var(--success); color: white; }
+        .aciklama-kutusu { background: var(--bg); padding: 10px; border-radius: 8px; font-size: 0.85rem; color: var(--text-main); margin-top: 5px; font-style: italic; border-left: 3px solid var(--primary); }
         
-        .btn-gor { background: #eff6ff; color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; }
-        .btn-gor:hover { background: var(--primary); color: white; }
-        .btn-duzenle { background: #fef9c3; color: #ca8a04; border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; }
-        .btn-duzenle:hover { background: #eab308; color: white; }
-        .btn-sil { background: #fee2e2; color: var(--danger); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; }
-        .btn-sil:hover { background: var(--danger); color: white; }
-        .btn-gor svg, .btn-sil svg, .btn-duzenle svg { width: 18px; height: 18px; }
+        .liste-karti-butonlar { display: flex; gap: 8px; }
+        .btn-icon { width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; border: none; }
+        .btn-gor { background: rgba(59, 130, 246, 0.1); color: #3b82f6; } .btn-gor:hover { background: #3b82f6; color: white; }
+        .btn-duzenle { background: rgba(202, 138, 4, 0.1); color: #ca8a04; } .btn-duzenle:hover { background: #eab308; color: white; }
+        .btn-sil { background: rgba(239, 68, 68, 0.1); color: var(--danger); } .btn-sil:hover { background: var(--danger); color: white; }
+        .btn-icon svg { width: 18px; height: 18px; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.05); z-index: 100; border-top: 1px solid var(--border); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; width: 33%; -webkit-tap-highlight-color: transparent;}
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.05); z-index: 100; border-top: 1px solid var(--border); transition: 0.3s; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; width: 25%; -webkit-tap-highlight-color: transparent;}
         .nav-item svg { width: 24px; height: 24px; margin-bottom: 4px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .nav-item.active { color: var(--primary); }
 
-        #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; padding: 20px; backdrop-filter: blur(5px); }
+        #imageModal, #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; padding: 20px; backdrop-filter: blur(5px); animation: fadeIn 0.2s; }
         #imageModal img { max-width: 100%; max-height: 75vh; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.5); object-fit: contain; }
         .modal-close { position: absolute; top: 15px; right: 20px; color: white; font-size: 45px; cursor: pointer; line-height: 1; font-weight: bold; }
-        .modal-btn { margin-top: 25px; background: var(--primary); color: white; padding: 14px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 10px rgba(242, 101, 34, 0.3); }
-        
-        #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
         .edit-card { background: var(--surface); padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
 
         .sonuc-bilgisi { text-align: center; font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 15px; }
@@ -100,24 +137,46 @@
         .empty-state img { width: 150px; margin-bottom: 15px; filter: grayscale(100%); opacity: 0.5; }
         .empty-state p { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
 
+        /* SKELETON LOADING */
+        .skeleton { background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 8px; }
+        .skel-card { height: 120px; margin-bottom: 12px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* TOAST BİLDİRİM MİMARİSİ */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; align-items: center; pointer-events: none; }
+        .toast { padding: 12px 24px; border-radius: 50px; color: white; font-size: 0.9rem; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: slideDown 0.3s ease forwards, fadeOut 0.3s ease 2.7s forwards; display: flex; align-items: center; gap: 8px; }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--primary); }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
+
+        /* DASHBOARD GRID */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: var(--bg); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .stat-box h3 { font-size: 1.8rem; color: var(--primary); margin-bottom: 5px; }
+        .stat-box p { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        .rapor-listesi { background: var(--bg); border-radius: 12px; padding: 15px; max-height: 250px; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--border); }
+        .rapor-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .rapor-item:last-child { border-bottom: none; }
+
         @media(max-width:420px) {
             .header-title { display: none; }
-            .optimize-btn { font-size: 0.75rem; padding: 7px 8px; }
-            .logout-btn { font-size: 0.75rem; padding: 7px 9px; }
         }
     </style>
 </head>
 <body>
 
+<div id="toast-container"></div>
+
 <div id="loginScreen">
     <div class="login-card">
         <img src="Adsız tasarım.png" alt="ENORPA Logo" class="login-logo" onerror="this.style.display='none'">
-        <h2 class="login-title">İş Formları Takip Sistemi</h2>
+        <h2 class="login-title">İş Formları Premium</h2>
         <p class="login-subtitle">Sisteme erişmek için bilgilerinizi giriniz</p>
         <input type="email" id="loginEmail" placeholder="E-posta Adresi" required>
         <input type="password" id="loginPassword" placeholder="Şifre" required>
         <button id="loginBtn" class="btn btn-primary">Giriş Yap</button>
-        <p id="loginError" style="color:var(--danger); font-size:0.85rem; margin-top:15px; display:none;">Giriş başarısız. Bilgileri kontrol edin.</p>
     </div>
 </div>
 
@@ -128,12 +187,17 @@
             <div class="header-title">İş Formları</div>
         </div>
         <div class="header-actions">
-            <button class="optimize-btn" id="btnOptimize" onclick="eskiKayitlariOptimizeEt()" title="Eski kayıtları yeni hızlı sisteme taşır">⚡ Optimizasyon</button>
+            <!-- TEMA BUTONU -->
+            <button class="theme-btn" id="btnTheme" title="Karanlık Mod">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+            <button class="optimize-btn" id="btnOptimize" onclick="eskiKayitlariOptimizeEt()" title="Eski kayıtları yeni hızlı sisteme taşır">⚡ Op.</button>
             <button class="logout-btn" id="logoutBtn">Çıkış</button>
         </div>
     </header>
 
     <div class="container">
+        <!-- 1. YENİ EKLE -->
         <div id="tab-ekle" class="tab-content active">
             <div class="card">
                 <div class="card-title">📝 Yeni Kayıt Ekle</div>
@@ -142,6 +206,7 @@
                         <input type="text" id="firmaAdi" placeholder=" " required autocomplete="off">
                         <label for="firmaAdi">Firma Adı</label>
                     </div>
+                    
                     <div class="form-floating select-wrapper">
                         <select id="sehir" required>
                             <option value="" disabled selected>Lütfen bir şehir seçin</option>
@@ -163,6 +228,16 @@
                         <label for="islemTipi">İşlem Tipi</label>
                     </div>
 
+                    <!-- YENİ: SESLİ NOT DESTEKLİ AÇIKLAMA -->
+                    <div class="form-floating">
+                        <textarea id="aciklamaNotu" placeholder=" "></textarea>
+                        <label for="aciklamaNotu">Açıklama / Not</label>
+                        <button type="button" id="btnMic" class="mic-btn" title="Sesli Yazdır">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                        </button>
+                    </div>
+
+                    <!-- YENİ: FOTOĞRAF ÖNİZLEME ALANI -->
                     <div class="file-upload">
                         <label for="fotoGirdisi" class="file-upload-label" id="fotoLabel">
                             <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -170,13 +245,18 @@
                             <div class="file-name-display" id="dosyaAdi" style="display:none;"></div>
                         </label>
                         <input type="file" id="fotoGirdisi" accept="image/*,.heic,.heif" capture="environment" multiple required>
+                        <div id="fotoPreviewContainer" class="preview-container"></div>
                     </div>
-                    <button type="submit" id="ekleButonu" class="btn btn-primary">Formları Kaydet</button>
+                    
+                    <button type="submit" id="ekleButonu" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        Formu GPS ile Kaydet
+                    </button>
                 </form>
             </div>
         </div>
 
-        <!-- 2. SEKME: ARAMA -->
+        <!-- 2. ARAMA -->
         <div id="tab-ara" class="tab-content">
             <div class="card">
                 <div class="card-title">🔍 Kayıtlı Form Ara</div>
@@ -189,11 +269,43 @@
             <div id="sonuclar"></div>
         </div>
 
-        <!-- 3. SEKME: CANLI AKIŞ -->
+        <!-- 3. CANLI AKIŞ -->
         <div id="tab-akis" class="tab-content">
             <div class="card" style="background:transparent; box-shadow:none; padding:0;">
-                <div class="card-title" style="color:var(--primary); text-align:center;">📡 Son Eklenen Formlar</div>
+                <div class="card-title" style="color:var(--primary); text-align:center; justify-content:center;">📡 Son Eklenen Formlar</div>
                 <div id="canliAkanlar"></div>
+            </div>
+        </div>
+
+        <!-- 4. YENİ: RAPORLAR VE DASHBOARD -->
+        <div id="tab-rapor" class="tab-content">
+            <div class="card">
+                <div class="card-title">📊 Raporlar & İstatistikler</div>
+                <button id="btnRaporOlustur" class="btn btn-primary" style="margin-bottom: 20px;">Verileri Analiz Et</button>
+                
+                <div id="dashboardAlani" style="display:none; animation: fadeIn 0.4s;">
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <h3 id="statToplam">0</h3>
+                            <p>Toplam Kayıt</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3 id="statSehir">-</h3>
+                            <p>En Çok Gidilen Şehir</p>
+                        </div>
+                    </div>
+                    
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">İşlem Dağılımı</p>
+                    <div class="rapor-listesi" id="listeIslem"></div>
+
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">Personel Dağılımı</p>
+                    <div class="rapor-listesi" id="listePersonel"></div>
+
+                    <button id="btnExcelIndir" class="btn btn-success">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Tüm Verileri Excel (CSV) İndir
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -215,25 +327,25 @@
             </div>
             <div class="form-floating select-wrapper">
                 <select id="editSehir" required>
+                    <!-- Şehirler js tarafından doldurulacak veya aynı kalabilir, yer kaplamaması için JS'de bıraktım -->
                     <option value="" disabled selected>Lütfen bir şehir seçin</option>
-                    <option value="belirsiz">Belirsiz</option>
-                    <option value="adana">Adana</option><option value="adiyaman">Adıyaman</option><option value="afyonkarahisar">Afyonkarahisar</option><option value="agri">Ağrı</option><option value="aksaray">Aksaray</option><option value="amasya">Amasya</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="ardahan">Ardahan</option><option value="artvin">Artvin</option><option value="aydin">Aydın</option><option value="balikesir">Balıkesir</option><option value="bartin">Bartın</option><option value="batman">Batman</option><option value="bayburt">Bayburt</option><option value="bilecik">Bilecik</option><option value="bingol">Bingöl</option><option value="bitlis">Bitlis</option><option value="bolu">Bolu</option><option value="burdur">Burdur</option><option value="bursa">Bursa</option><option value="canakkale">Çanakkale</option><option value="cankiri">Çankırı</option><option value="corum">Çorum</option><option value="denizli">Denizli</option><option value="diyarbakir">Diyarbakır</option><option value="duzce">Düzce</option><option value="edirne">Edirne</option><option value="elazig">Elazığ</option><option value="erzincan">Erzincan</option><option value="erzurum">Erzurum</option><option value="eskisehir">Eskişehir</option><option value="gaziantep">Gaziantep</option><option value="giresun">Giresun</option><option value="gumushane">Gümüşhane</option><option value="hakkari">Hakkari</option><option value="hatay">Hatay</option><option value="igdir">Iğdır</option><option value="isparta">Isparta</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="kahramanmaras">Kahramanmaraş</option><option value="karabuk">Karabük</option><option value="karaman">Karaman</option><option value="kars">Kars</option><option value="kastamonu">Kastamonu</option><option value="kayseri">Kayseri</option><option value="kilis">Kilis</option><option value="kirikkale">Kırikkale</option><option value="kirklareli">Kırklareli</option><option value="kirsehir">Kırşehir</option><option value="kocaeli">Kocaeli</option><option value="konya">Konya</option><option value="kutahya">Kütahya</option><option value="malatya">Malatya</option><option value="manisa">Manisa</option><option value="mardin">Mardin</option><option value="mersin">Mersin</option><option value="mugla">Muğla</option><option value="mus">Muş</option><option value="nevsehir">Nevşehir</option><option value="nigde">Niğde</option><option value="ordu">Ordu</option><option value="osmaniye">Osmaniye</option><option value="rize">Rize</option><option value="sakarya">Sakarya</option><option value="samsun">Samsun</option><option value="sanliurfa">Şanlıurfa</option><option value="siirt">Siirt</option><option value="sinop">Sinop</option><option value="sirnak">Şırnak</option><option value="sivas">Sivas</option><option value="tekirdag">Tekirdağ</option><option value="tokat">Tokat</option><option value="trabzon">Trabzon</option><option value="tunceli">Tunceli</option><option value="usak">Uşak</option><option value="van">Van</option><option value="yalova">Yalova</option><option value="yozgat">Yozgat</option><option value="zonguldak">Zonguldak</option>
+                    <option value="adana">Adana</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="belirsiz">Belirsiz</option>
                 </select>
                 <label for="editSehir">Yeni Şehir</label>
             </div>
             <div class="form-floating select-wrapper">
                 <select id="editIslemTipi" required>
                     <option value="" disabled selected>Lütfen işlem tipi seçin</option>
-                    <option value="Bakım">Bakım</option>
-                    <option value="Arıza">Arıza</option>
-                    <option value="Kurulum">Kurulum</option>
-                    <option value="Keşif">Keşif</option>
-                    <option value="Diğer">Diğer</option>
+                    <option value="Bakım">Bakım</option><option value="Arıza">Arıza</option><option value="Kurulum">Kurulum</option><option value="Keşif">Keşif</option><option value="Diğer">Diğer</option>
                 </select>
                 <label for="editIslemTipi">Yeni İşlem Tipi</label>
             </div>
+            <div class="form-floating">
+                <textarea id="editAciklama" placeholder=" "></textarea>
+                <label for="editAciklama">Yeni Açıklama</label>
+            </div>
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="btnEditCancel" class="btn" style="background:#94a3b8; color:white;">İptal</button>
+                <button id="btnEditCancel" class="btn" style="background:var(--border); color:var(--text-main);">İptal</button>
                 <button id="btnEditSave" class="btn btn-primary">Kaydet</button>
             </div>
         </div>
@@ -250,6 +362,10 @@
         <div class="nav-item" onclick="sekmeyiDegistir('akis', this)">
             <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Canlı Akış</span>
         </div>
+        <!-- YENİ SEKME: RAPORLAR -->
+        <div class="nav-item" onclick="sekmeyiDegistir('rapor', this)">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg><span>Raporlar</span>
+        </div>
     </nav>
 </div>
 
@@ -258,11 +374,19 @@
     import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    const yoneticiMailleri = ["saha@enorpa.com", "servis@enorpa.com", "stajyer@enorpa.com", "turuncu@enorpa.com"]; 
+    const yoneticiMailleri = ["saha@enorpa.com", "servis@enorpa.com", "stajyer@enorpa.com", "turuncu@enorpa.com","eflatun@enorpa.com"]; 
     const tumSehirler = ["adana", "adiyaman", "afyonkarahisar", "agri", "aksaray", "amasya", "ankara", "antalya", "ardahan", "artvin", "aydin", "balikesir", "bartin", "batman", "bayburt", "bilecik", "bingol", "bitlis", "bolu", "burdur", "bursa", "canakkale", "cankiri", "corum", "denizli", "diyarbakir", "duzce", "edirne", "elazig", "erzincan", "erzurum", "eskisehir", "gaziantep", "giresun", "gumushane", "hakkari", "hatay", "igdir", "isparta", "istanbul", "izmir", "kahramanmaras", "karabuk", "karaman", "kars", "kastamonu", "kayseri", "kilis", "kirikkale", "kirklareli", "kirsehir", "kocaeli", "konya", "kutahya", "malatya", "manisa", "mardin", "mersin", "mugla", "mus", "nevsehir", "nigde", "ordu", "osmaniye", "rize", "sakarya", "samsun", "sanliurfa", "siirt", "sinop", "sirnak", "sivas", "tekirdag", "tokat", "trabzon", "tunceli", "usak", "van", "yalova", "yozgat", "zonguldak", "belirsiz"];
+
+    // Eksik şehirleri dinamik olarak select menülerine dolduralım (kod kirliliğini önlemek için)
+    const sehirSelect = document.getElementById("sehir");
+    const editSehirSelect = document.getElementById("editSehir");
+    if(sehirSelect.options.length < 10) {
+        tumSehirler.forEach(s => { if(s !== "belirsiz") { let opt = document.createElement("option"); opt.value = s; opt.text = s.charAt(0).toUpperCase() + s.slice(1); sehirSelect.add(opt); editSehirSelect.add(opt.cloneNode(true)); }});
+    }
 
     let aktifKullaniciMail = ""; 
     let guncellenecekDocId = null;
+    let tumFormlarGlobal = []; // Raporlama için kullanılacak
 
     const firebaseConfig = {
         apiKey: "AIzaSyC2OWlHtSGY-2Xk6CKDfekCaDXD8k-erDs",
@@ -280,6 +404,37 @@
     const loginScreen = document.getElementById("loginScreen");
     const mainApp = document.getElementById("mainApp");
 
+    // ⚡ TOAST BİLDİRİM SİSTEMİ
+    window.showToast = function(msg, type="info") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        
+        let icon = "ℹ️";
+        if(type === "success") icon = "✅";
+        if(type === "error") icon = "❌";
+
+        toast.innerHTML = `<span>${icon}</span> <span>${htmlGuvenli(msg)}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ⚡ DARK MODE SİSTEMİ
+    const btnTheme = document.getElementById("btnTheme");
+    let isDark = localStorage.getItem("theme") === "dark";
+    if (isDark) document.documentElement.setAttribute("data-theme", "dark");
+    
+    btnTheme.addEventListener("click", () => {
+        isDark = !isDark;
+        if (isDark) {
+            document.documentElement.setAttribute("data-theme", "dark");
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.documentElement.removeAttribute("data-theme");
+            localStorage.setItem("theme", "light");
+        }
+    });
+
     function metniNormalizeEt(metin) {
         if (!metin) return "";
         return String(metin).toLocaleLowerCase("tr-TR").replace(/ı/g, "i").replace(/ş/g, "s").replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ö/g, "o").replace(/ç/g, "c").replace(/\s+/g, " ").trim();
@@ -290,11 +445,17 @@
         return String(metin).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
+    function jsGuvenliMetin(metin) {
+        if (!metin) return "";
+        return metin.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
     onAuthStateChanged(auth, (user) => {
         if (user) {
             aktifKullaniciMail = (user.email || "").toLowerCase();
             loginScreen.style.display = "none";
             mainApp.style.display = "block";
+            showToast("Giriş başarılı, hoş geldin!", "success");
             if (yoneticiMailleri.includes(aktifKullaniciMail)) {
                 document.getElementById("btnOptimize").style.display = "block";
             }
@@ -315,37 +476,34 @@
     document.getElementById("logoutBtn").addEventListener("click", () => { signOut(auth); });
 
     window.eskiKayitlariOptimizeEt = async function () {
-        if (!confirm("Arama altyapısı ve fotoğraflar güncelleniyor. Onaylıyor musunuz?")) return;
+        if (!confirm("Arama altyapısı güncelleniyor. Onaylıyor musunuz?")) return;
         const btn = document.getElementById("btnOptimize");
-        btn.disabled = true; btn.innerText = "⏳ İşlem Yapılıyor...";
+        btn.disabled = true; btn.innerText = "⏳...";
         try {
             const snap = await getDocs(collection(db, "formlar"));
             let islenenSayi = 0;
             for (let docSnap of snap.docs) {
                 let data = docSnap.data();
                 let guncelleme = {};
-
                 if (data.fotograf && !data.fotoId) {
                     const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: data.fotograf });
                     guncelleme.fotoId = fotoRef.id;
                     guncelleme.fotograf = deleteField();
                 }
-
                 if (data.firmaAdi && !data.aramaFirma) {
                     guncelleme.aramaFirma = metniNormalizeEt(data.firmaAdi);
                 }
-
                 if (Object.keys(guncelleme).length > 0) {
                     await updateDoc(doc(db, "formlar", docSnap.id), guncelleme);
                     islenenSayi++;
                 }
             }
-            alert(`✅ Toplam ${islenenSayi} adet eski kayıt arama motoruna başarıyla uyarlandı!`);
+            showToast(`${islenenSayi} kayıt optimize edildi!`, "success");
             btn.style.display = "none";
         } catch (e) {
-            alert("Aktarım hatası: " + e.message);
+            showToast("Hata: " + e.message, "error");
         } finally {
-            btn.disabled = false; btn.innerText = "⚡ Optimizasyon";
+            btn.disabled = false; btn.innerText = "⚡ Op.";
         }
     };
 
@@ -373,7 +531,7 @@
             document.getElementById("modalImage").style.display = "block";
             document.getElementById("downloadLink").style.display = "block";
         } catch (e) {
-            alert("Fotoğraf alınamadı.");
+            showToast("Fotoğraf alınamadı.", "error");
             window.modaliKapat();
         }
     };
@@ -394,11 +552,12 @@
         if (event.key === "Escape") { window.modaliKapat(); window.modaliKapatEdit(); }
     });
 
-    window.formDuzenle = function (docId, eskiFirma, eskiSehir, eskiIslem) {
+    window.formDuzenle = function (docId, eskiFirma, eskiSehir, eskiIslem, eskiAciklama) {
         guncellenecekDocId = docId;
         document.getElementById("editFirmaAdi").value = eskiFirma;
         document.getElementById("editSehir").value = eskiSehir;
         document.getElementById("editIslemTipi").value = eskiIslem || "";
+        document.getElementById("editAciklama").value = eskiAciklama && eskiAciklama !== 'undefined' ? eskiAciklama : "";
         document.getElementById("editModal").style.display = "flex";
     };
 
@@ -408,35 +567,38 @@
         const aramaFirma = metniNormalizeEt(yeniFirma);
         const yeniSehir = document.getElementById("editSehir").value;
         const yeniIslem = document.getElementById("editIslemTipi").value;
+        const yeniAciklama = document.getElementById("editAciklama").value.trim();
 
         if (!yeniFirma || !yeniSehir || !yeniIslem) {
-            alert("Lütfen boş alan bırakmayın."); return;
+            showToast("Lütfen boş alan bırakmayın.", "error"); return;
         }
 
         try {
             document.getElementById("btnEditSave").innerText = "⏳...";
             await updateDoc(doc(db, "formlar", guncellenecekDocId), {
-                firmaAdi: yeniFirma, aramaFirma: aramaFirma, sehir: yeniSehir, islemTipi: yeniIslem
+                firmaAdi: yeniFirma, aramaFirma: aramaFirma, sehir: yeniSehir, islemTipi: yeniIslem, aciklama: yeniAciklama
             });
             window.modaliKapatEdit();
+            showToast("Kayıt güncellendi", "success");
             if (document.getElementById("aramaKutusu").value !== "") document.getElementById("aramaButonu").click();
         } catch (error) {
-            alert("Hata: " + error.message);
+            showToast("Hata: " + error.message, "error");
         } finally {
             document.getElementById("btnEditSave").innerText = "Kaydet";
         }
     });
 
     window.formSil = async function (docId, fotoId) {
-        if (!yoneticiMailleri.includes(aktifKullaniciMail)) { alert("Yetkiniz yok!"); return; }
+        if (!yoneticiMailleri.includes(aktifKullaniciMail)) { showToast("Yetkiniz yok!", "error"); return; }
         if (!confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) return;
 
         try {
-            if (fotoId) await deleteDoc(doc(db, "formFotograflari", fotoId));
+            if (fotoId && fotoId !== 'null' && fotoId !== 'undefined') await deleteDoc(doc(db, "formFotograflari", fotoId));
             await deleteDoc(doc(db, "formlar", docId));
             const kart = document.getElementById("kart-" + docId);
             if (kart) kart.style.display = "none";
-        } catch (error) { alert("Hata: " + error.message); }
+            showToast("Form silindi", "success");
+        } catch (error) { showToast("Hata: " + error.message, "error"); }
     };
 
     window.sekmeyiDegistir = function (sekmeAdi, secilenNav) {
@@ -446,15 +608,59 @@
         if (secilenNav) secilenNav.classList.add("active");
     };
 
+    // ⚡ SESLİ NOT MİMARİSİ
+    const btnMic = document.getElementById("btnMic");
+    const aciklamaNotu = document.getElementById("aciklamaNotu");
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'tr-TR';
+        recognition.interimResults = false;
+
+        btnMic.addEventListener("click", (e) => {
+            e.preventDefault();
+            btnMic.classList.add("listening");
+            showToast("🎤 Dinliyorum... Konuşun", "info");
+            recognition.start();
+        });
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            aciklamaNotu.value += (aciklamaNotu.value ? " " : "") + transcript;
+            btnMic.classList.remove("listening");
+            showToast("✅ Not eklendi", "success");
+        };
+
+        recognition.onerror = () => {
+            btnMic.classList.remove("listening");
+            showToast("Ses anlaşılamadı", "error");
+        };
+        
+        recognition.onend = () => {
+            btnMic.classList.remove("listening");
+        };
+    } else {
+        btnMic.style.display = "none"; // Tarayıcı desteklemiyorsa butonu gizle
+    }
+
+    // ⚡ FOTOĞRAF ÖNİZLEME (THUMBNAIL)
     const fotoGirdisi = document.getElementById("fotoGirdisi");
-    const dosyaAdiGosterge = document.getElementById("dosyaAdi");
+    const fotoPreviewContainer = document.getElementById("fotoPreviewContainer");
     const fotoLabel = document.getElementById("fotoLabel");
 
     fotoGirdisi.addEventListener("change", function (e) {
+        fotoPreviewContainer.innerHTML = ""; // Eski önizlemeleri temizle
         if (e.target.files.length > 0) {
-            dosyaAdiGosterge.textContent = e.target.files.length === 1 ? e.target.files[0].name : e.target.files.length + " Dosya Seçildi";
-            dosyaAdiGosterge.style.display = "block";
             fotoLabel.classList.add("active");
+            Array.from(e.target.files).forEach(file => {
+                const url = URL.createObjectURL(file);
+                const img = document.createElement("img");
+                img.src = url;
+                fotoPreviewContainer.appendChild(img);
+            });
+        } else {
+            fotoLabel.classList.remove("active");
         }
     });
 
@@ -489,16 +695,42 @@
         });
     };
 
+    // ⚡ GPS KONUM ALMA FONKSİYONU
+    const getLocation = () => new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            showToast("Tarayıcı GPS desteklemiyor", "error");
+            resolve(null);
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            err => { console.warn("GPS Hatası:", err); resolve(null); },
+            { timeout: 7000, enableHighAccuracy: true } // Max 7 saniye bekle
+        );
+    });
+
     document.getElementById("isFormu").addEventListener("submit", async (e) => {
         e.preventDefault();
+        
+        // Cihazın interneti var mı kontrolü (Offline Mod Desteği Altyapısı)
+        if (!navigator.onLine) {
+            showToast("İnternet bağlantısı yok! Lütfen bağlanınca tekrar deneyin.", "error");
+            return;
+        }
+
         const ekleButonu = document.getElementById("ekleButonu");
         ekleButonu.disabled = true;
+        ekleButonu.innerHTML = `📍 GPS Bekleniyor...`;
 
         const firmaAdi = document.getElementById("firmaAdi").value.trim();
         const aramaFirma = metniNormalizeEt(firmaAdi);
         const sehir = document.getElementById("sehir").value;
         const islemTipi = document.getElementById("islemTipi").value;
+        const aciklama = document.getElementById("aciklamaNotu").value.trim();
         const dosyalar = fotoGirdisi.files;
+
+        // GPS Konumunu Çek
+        const konum = await getLocation();
 
         try {
             for (let i = 0; i < dosyalar.length; i++) {
@@ -506,28 +738,37 @@
                 const compressedPhoto = await compressImage(dosyalar[i]);
                 const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: compressedPhoto });
                 
-                await addDoc(collection(db, "formlar"), {
+                let payload = {
                     firmaAdi: firmaAdi,
                     aramaFirma: aramaFirma,
                     sehir: sehir,
                     islemTipi: islemTipi,
+                    aciklama: aciklama,
                     ekleyen: aktifKullaniciMail,
                     fotoId: fotoRef.id,
                     tarih: new Date().toISOString()
-                });
+                };
+
+                // Eğer konum alındıysa pakete ekle
+                if(konum) {
+                    payload.konum = konum;
+                }
+
+                await addDoc(collection(db, "formlar"), payload);
             }
-            alert("Başarıyla eklendi! 🎉");
+            showToast("Başarıyla eklendi! 🎉", "success");
             document.getElementById("isFormu").reset();
-            dosyaAdiGosterge.style.display = "none";
+            fotoPreviewContainer.innerHTML = "";
             fotoLabel.classList.remove("active");
         } catch (error) {
-            console.error(error); alert("Kayıt sırasında hata oluştu: " + error.message);
+            console.error(error); showToast("Kayıt sırasında hata: " + error.message, "error");
         } finally {
-            ekleButonu.disabled = false; ekleButonu.innerHTML = "Formları Kaydet";
+            ekleButonu.disabled = false; 
+            ekleButonu.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Formu GPS ile Kaydet`;
         }
     });
 
-    // ⚡ IŞIK HIZINDA OTOMATİK TAMAMLAMA (LOKAL + SERVER)
+    // OTOMATİK TAMAMLAMA
     const aramaKutusu = document.getElementById("aramaKutusu");
     const autoList = document.createElement("div");
     autoList.id = "autocomplete-list";
@@ -544,7 +785,6 @@
 
         const oneriler = new Map();
 
-        // 1. AŞAMA: ŞEHİRLERİ 0 MİLİSANİYEDE (ANINDA) BUL VE EKRANA ÇİZ
         tumSehirler.forEach(s => {
             if (s.startsWith(normalizeArama)) {
                 oneriler.set("sehir-" + s, { deger: s.toUpperCase(), tip: "📍 Şehir" });
@@ -556,7 +796,6 @@
             oneriler.forEach(oneri => {
                 const div = document.createElement("div");
                 
-                // Aranan kelimeyi kalın (bold) yapma
                 let orjinal = String(oneri.deger);
                 let kucukOrjinal = metniNormalizeEt(orjinal);
                 let arananIndex = kucukOrjinal.indexOf(normalizeArama);
@@ -564,7 +803,6 @@
                 let gosterimHTML = htmlGuvenli(orjinal);
                 
                 if (arananIndex !== -1) {
-                    // Eşleşen kısmı kalın yap
                     let bas = htmlGuvenli(orjinal.substring(0, arananIndex));
                     let orta = `<strong>${htmlGuvenli(orjinal.substring(arananIndex, arananIndex + val.length))}</strong>`;
                     let son = htmlGuvenli(orjinal.substring(arananIndex + val.length));
@@ -572,7 +810,6 @@
                 }
 
                 div.innerHTML = `${gosterimHTML} <span class="autocomplete-category">${htmlGuvenli(oneri.tip)}</span>`;
-                
                 div.addEventListener("click", function () {
                     aramaKutusu.value = orjinal;
                     autoList.innerHTML = "";
@@ -581,58 +818,97 @@
                 autoList.appendChild(div);
             });
         };
-        // Şehirler bulunduysa hemen göster, bekleme!
+        
         ekranaCiz();
 
-        // 2. AŞAMA: FİRMALARI ARKA PLANDA KISA BİR GECİKME İLE (150ms) BUL VE LİSTEYE EKLE
         aramaZamanlayici = setTimeout(async () => {
             try {
                 const highChar = String.fromCharCode(63743);
-
-                const q = query(
-                    collection(db, "formlar"),
-                    where("aramaFirma", ">=", normalizeArama),
-                    where("aramaFirma", "<=", normalizeArama + highChar),
-                    limit(5) // Hız için maksimum 5 firma getirir
-                );
-                
+                const q = query(collection(db, "formlar"), where("aramaFirma", ">=", normalizeArama), where("aramaFirma", "<=", normalizeArama + highChar), limit(5));
                 const snap = await getDocs(q);
-                let yeniFirmaEklendi = false;
+                let yeniFirma = false;
                 
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
                     if(data.firmaAdi) {
                         oneriler.set("firma-" + data.aramaFirma, { deger: data.firmaAdi.toUpperCase(), tip: "🏢 Firma" });
-                        yeniFirmaEklendi = true;
+                        yeniFirma = true;
                     }
                 });
 
-                // Arka plandan firmalar geldiyse listeyi onlarla beraber tekrar çiz
-                if(yeniFirmaEklendi) {
-                    ekranaCiz();
-                }
-
+                if(yeniFirma) ekranaCiz();
             } catch (error) { console.error("Öneri hatası:", error); }
-        }, 150); // Süreyi 300ms'den 150ms'ye düşürdük, bekleme hissini yok ettik
+        }, 150);
     });
 
     document.addEventListener("click", function (e) {
         if (e.target !== aramaKutusu) autoList.innerHTML = "";
     });
 
+    // KART OLUŞTURMA FONKSİYONU (Ortak kullanım için)
+    function kartHTMLOlustur(docId, paramFotoId, firma, sehir, islemGoster, ekleyenGoster, tarihGoster, isAdmin, aciklama, konum) {
+        const escFirma = jsGuvenliMetin(firma);
+        const escSehir = jsGuvenliMetin(sehir);
+        const escIslem = jsGuvenliMetin(islemGoster);
+        const escAciklama = jsGuvenliMetin(aciklama || "");
+
+        let adminButonlari = "";
+        if (isAdmin) {
+            adminButonlari = `
+                <button class="btn-icon btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${escSehir}', '${escIslem}', '${escAciklama}')" title="Düzenle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                </button>
+                <button class="btn-icon btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>`;
+        }
+        
+        let aciklamaHTML = aciklama ? `<div class="aciklama-kutusu">✍️ ${htmlGuvenli(aciklama)}</div>` : "";
+        let konumHTML = "";
+        if(konum && konum.lat && konum.lng) {
+            konumHTML = `<a href="https://maps.google.com/?q=${konum.lat},${konum.lng}" target="_blank" class="badge-konum" onclick="event.stopPropagation()">📍 Haritada Gör</a>`;
+        }
+
+        return `
+            <div class="liste-karti" id="kart-${docId}">
+                <div class="karti-ust">
+                    <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
+                        <h4>${htmlGuvenli(firma.toLocaleUpperCase("tr-TR"))} - ${htmlGuvenli(sehir.toLocaleUpperCase("tr-TR"))}</h4>
+                        <div class="detay-satiri">
+                            <span class="badge">🛠 ${htmlGuvenli(islemGoster)}</span> 
+                            <span class="badge">👤 ${htmlGuvenli(ekleyenGoster)}</span>
+                            ${konumHTML}
+                        </div>
+                        <p>🕒 ${htmlGuvenli(tarihGoster)}</p>
+                    </div>
+                    <div class="liste-karti-butonlar">
+                        <button class="btn-icon btn-gor" onclick="resmiAc('${docId}', ${paramFotoId})" title="Fotoğrafı Gör">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                        ${adminButonlari}
+                    </div>
+                </div>
+                ${aciklamaHTML}
+            </div>`;
+    }
+
     document.getElementById("aramaButonu").addEventListener("click", async () => {
         const hamArama = aramaKutusu.value.trim();
         const arama = metniNormalizeEt(hamArama);
         const sonuclarDiv = document.getElementById("sonuclar");
 
-        if (!hamArama) { alert("Lütfen arama kelimesi yazın."); return; }
-        sonuclarDiv.innerHTML = `<p style="text-align:center;">⏳ Aranıyor...</p>`;
+        if (!hamArama) { showToast("Lütfen arama kelimesi yazın.", "error"); return; }
+        
+        // SKELETON LOADING EKRANI (Premium Hissiyat)
+        sonuclarDiv.innerHTML = `
+            <div class="skeleton skel-card"></div>
+            <div class="skeleton skel-card"></div>
+            <div class="skeleton skel-card"></div>`;
         autoList.innerHTML = "";
 
         try {
             const highChar = String.fromCharCode(63743);
 
-            // ⚡ PARALEL VE SUNUCU TARAFLI HIZLI ARAMA EMRİ (ASLA KASMADAN VERİ ÇEKER)
             let qSehir = getDocs(query(collection(db, "formlar"), where("sehir", "==", arama)));
             let qFirma = getDocs(query(collection(db, "formlar"), where("aramaFirma", ">=", arama), where("aramaFirma", "<=", arama + highChar), limit(30)));
             let qMail = hamArama.includes("@") ? getDocs(query(collection(db, "formlar"), where("ekleyen", "==", hamArama.toLowerCase()))) : Promise.resolve({empty:true, forEach:()=>{}});
@@ -678,49 +954,23 @@
                 const v = item.data;
                 const docId = docSnap.id;
                 
-                const firma = v.firmaAdi || "İSİMSİZ FİRMA";
-                const sehir = v.sehir || "belirsiz";
-                const islemGoster = v.islemTipi || "Belirtilmemiş";
-                const ekleyenGoster = v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor";
-                const paramFotoId = v.fotoId ? `'${v.fotoId}'` : "null";
-
-                const escFirma = String(firma).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
-                const escSehir = String(sehir).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
-                const escIslem = String(v.islemTipi || "").replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
-
                 let tarihGoster = "Tarih yok";
-                if (v.tarih) {
-                    const tarih = new Date(v.tarih);
-                    if (!isNaN(tarih.getTime())) {
-                        tarihGoster = tarih.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-                    }
+                if (v.tarih && !isNaN(new Date(v.tarih).getTime())) {
+                    tarihGoster = new Date(v.tarih).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
                 }
 
-                let adminButonlari = "";
-                if (isAdmin) {
-                    adminButonlari = `
-                        <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${escSehir}', '${escIslem}')" title="Düzenle">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        </button>
-                        <button class="btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>`;
-                }
-
-                sonuclarDiv.innerHTML += `
-                    <div class="liste-karti" id="kart-${docId}">
-                        <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
-                            <h4>${htmlGuvenli(firma.toLocaleUpperCase("tr-TR"))} - ${htmlGuvenli(sehir.toLocaleUpperCase("tr-TR"))}</h4>
-                            <div class="detay-satiri">🛠 ${htmlGuvenli(islemGoster)} | 👤 ${htmlGuvenli(ekleyenGoster)}</div>
-                            <p>🕒 ${htmlGuvenli(tarihGoster)}</p>
-                        </div>
-                        <div class="liste-karti-butonlar">
-                            <button class="btn-gor" onclick="resmiAc('${docId}', ${paramFotoId})" title="Fotoğrafı Gör">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </button>
-                            ${adminButonlari}
-                        </div>
-                    </div>`;
+                sonuclarDiv.innerHTML += kartHTMLOlustur(
+                    docId, 
+                    v.fotoId ? `'${v.fotoId}'` : "null", 
+                    v.firmaAdi || "İSİMSİZ FİRMA", 
+                    v.sehir || "belirsiz", 
+                    v.islemTipi || "Belirtilmemiş", 
+                    v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", 
+                    tarihGoster, 
+                    isAdmin,
+                    v.aciklama,
+                    v.konum
+                );
             });
         } catch (error) {
             console.error("Arama hatası:", error);
@@ -746,50 +996,110 @@
         snapshot.forEach(docSnap => {
             const v = docSnap.data();
             const docId = docSnap.id;
-            const gosterFirma = v.firmaAdi || "İSİMSİZ FİRMA";
-            const sehir = v.sehir || "belirsiz";
-            const escFirma = String(gosterFirma).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
-            const escSehir = String(sehir).replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
-            const paramFotoId = v.fotoId ? `'${v.fotoId}'` : "null";
-            const islemGoster = v.islemTipi || "Belirtilmemiş";
-            const ekleyenGoster = v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor";
-            const escIslem = String(v.islemTipi || "").replace(/\\/g, "\\\\").replace(/\'/g, "\\\'");
-
-            let adminButonlari = "";
-            if (isAdmin) {
-                adminButonlari = `
-                    <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${escSehir}', '${escIslem}')" title="Düzenle">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    </button>
-                    <button class="btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>`;
-            }
-
+            
             let tarihGoster = "Tarih yok";
-            if (v.tarih) {
-                const tarih = new Date(v.tarih);
-                if (!isNaN(tarih.getTime())) {
-                    tarihGoster = tarih.toLocaleDateString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-                }
+            if (v.tarih && !isNaN(new Date(v.tarih).getTime())) {
+                tarihGoster = new Date(v.tarih).toLocaleDateString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
             }
 
-            canliAkanlarDiv.innerHTML += `
-                <div class="liste-karti" id="kart-${docId}">
-                    <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
-                        <h4>${htmlGuvenli(gosterFirma.toLocaleUpperCase("tr-TR"))} - ${htmlGuvenli(sehir.toLocaleUpperCase("tr-TR"))}</h4>
-                        <div class="detay-satiri">🛠 ${htmlGuvenli(islemGoster)} | 👤 ${htmlGuvenli(ekleyenGoster)}</div>
-                        <p>🕒 ${htmlGuvenli(tarihGoster)}</p>
-                    </div>
-                    <div class="liste-karti-butonlar">
-                        <button class="btn-gor" onclick="resmiAc('${docId}', ${paramFotoId})" title="Fotoğrafı Gör">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        </button>
-                        ${adminButonlari}
-                    </div>
-                </div>`;
+            canliAkanlarDiv.innerHTML += kartHTMLOlustur(
+                docId, 
+                v.fotoId ? `'${v.fotoId}'` : "null", 
+                v.firmaAdi || "İSİMSİZ FİRMA", 
+                v.sehir || "belirsiz", 
+                v.islemTipi || "Belirtilmemiş", 
+                v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", 
+                tarihGoster, 
+                isAdmin,
+                v.aciklama,
+                v.konum
+            );
         });
     }, (error) => { console.error("Canlı akış hatası:", error); });
+
+    // ⚡ RAPORLAR VE DASHBOARD SİSTEMİ
+    document.getElementById("btnRaporOlustur").addEventListener("click", async () => {
+        const btn = document.getElementById("btnRaporOlustur");
+        const dashboard = document.getElementById("dashboardAlani");
+        btn.disabled = true;
+        btn.innerText = "⏳ Veriler Analiz Ediliyor...";
+
+        try {
+            const snap = await getDocs(collection(db, "formlar"));
+            tumFormlarGlobal = []; // Excel indirme için global değişkende sakla
+            
+            let toplam = 0;
+            let sehirSayaci = {};
+            let islemSayaci = {};
+            let personelSayaci = {};
+
+            snap.forEach(doc => {
+                let d = doc.data();
+                tumFormlarGlobal.push(d);
+                toplam++;
+                
+                let s = (d.sehir || "Belirsiz").toUpperCase();
+                sehirSayaci[s] = (sehirSayaci[s] || 0) + 1;
+
+                let i = (d.islemTipi || "Belirtilmemiş").toUpperCase();
+                islemSayaci[i] = (islemSayaci[i] || 0) + 1;
+
+                let p = d.ekleyen ? d.ekleyen.split("@")[0] : "Bilinmiyor";
+                personelSayaci[p] = (personelSayaci[p] || 0) + 1;
+            });
+
+            document.getElementById("statToplam").innerText = toplam;
+            
+            // En çok gidilen şehir hesaplama
+            let enCokSehir = "-";
+            let maxSehir = 0;
+            for(let sh in sehirSayaci) { if(sehirSayaci[sh] > maxSehir) { maxSehir = sehirSayaci[sh]; enCokSehir = sh; } }
+            document.getElementById("statSehir").innerText = enCokSehir + ` (${maxSehir})`;
+
+            // Dağılım Listeleri Oluşturma
+            const listeIslem = document.getElementById("listeIslem");
+            listeIslem.innerHTML = "";
+            Object.entries(islemSayaci).sort((a,b)=>b[1]-a[1]).forEach(([isim, sayi]) => {
+                listeIslem.innerHTML += `<div class="rapor-item"><span>${isim}</span> <strong>${sayi} Kayıt</strong></div>`;
+            });
+
+            const listePersonel = document.getElementById("listePersonel");
+            listePersonel.innerHTML = "";
+            Object.entries(personelSayaci).sort((a,b)=>b[1]-a[1]).forEach(([isim, sayi]) => {
+                listePersonel.innerHTML += `<div class="rapor-item"><span>👤 ${isim}</span> <strong>${sayi} Kayıt</strong></div>`;
+            });
+
+            dashboard.style.display = "block";
+            btn.style.display = "none";
+            showToast("✅ Rapor başarıyla oluşturuldu!", "success");
+
+        } catch (error) {
+            showToast("Hata: " + error.message, "error");
+            btn.disabled = false;
+            btn.innerText = "Tekrar Dene";
+        }
+    });
+
+    // ⚡ EXCEL (CSV) ÇIKTISI ALMA
+    document.getElementById("btnExcelIndir").addEventListener("click", () => {
+        if(tumFormlarGlobal.length === 0) { showToast("Önce verileri analiz edin!", "error"); return; }
+        
+        let csv = "\uFEFFFirma Adi;Sehir;Islem Tipi;Ekleyen;Tarih;Enlem;Boylam;Aciklama\n";
+        tumFormlarGlobal.forEach(v => {
+            let tarihStr = v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : "";
+            let aciklamaStr = (v.aciklama || "").replace(/;/g, ",").replace(/\n/g, " "); // Excel'in bozulmaması için
+            let lat = v.konum && v.konum.lat ? v.konum.lat : "";
+            let lng = v.konum && v.konum.lng ? v.konum.lng : "";
+            csv += `${v.firmaAdi||''};${v.sehir||''};${v.islemTipi||''};${v.ekleyen||''};${tarihStr};${lat};${lng};${aciklamaStr}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `ENORPA_Form_Raporu_${new Date().toLocaleDateString("tr-TR")}.csv`;
+        link.click();
+        showToast("Excel dosyası indiriliyor 📥", "success");
+    });
 </script>
 </body>
 </html>
