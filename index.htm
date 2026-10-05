@@ -62,7 +62,6 @@
         .form-floating select { appearance: none; -webkit-appearance: none; cursor: pointer; }
         .select-wrapper::after { content: "▼"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: var(--text-muted); pointer-events: none; }
 
-        /* YENİ: OTOMATİK TAMAMLAMA LİSTESİ CSS */
         .autocomplete-items { position: absolute; border: 1px solid var(--border); border-bottom: none; border-top: none; z-index: 99; top: 100%; left: 0; right: 0; border-radius: 0 0 12px 12px; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.1); background: white; max-height: 200px; overflow-y: auto; }
         .autocomplete-items div { padding: 12px 15px; cursor: pointer; background-color: #fff; border-bottom: 1px solid var(--border); color: var(--text-main); font-size: 0.95rem; }
         .autocomplete-items div:hover { background-color: var(--bg); color: var(--primary); font-weight: 500; }
@@ -85,6 +84,7 @@
         .liste-karti-bilgi { flex: 1; cursor: pointer; overflow: hidden;}
         .liste-karti-bilgi h4 { margin: 0 0 4px 0; font-size: 1rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .liste-karti-bilgi p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .liste-karti-bilgi .detay-satiri { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
         .liste-karti-butonlar { display: flex; gap: 8px; margin-left: 10px; }
         
         .btn-gor { background: #eff6ff; color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; flex-shrink: 0; }
@@ -166,6 +166,20 @@
                         </select>
                         <label for="sehir">Şehir</label>
                     </div>
+                    
+                    <!-- YENİ: İŞLEM TİPİ SEÇİMİ -->
+                    <div class="form-floating select-wrapper">
+                        <select id="islemTipi" required>
+                            <option value="" disabled selected>Lütfen işlem tipi seçin</option>
+                            <option value="Bakım">Bakım</option>
+                            <option value="Arıza">Arıza</option>
+                            <option value="Kurulum">Kurulum</option>
+                            <option value="Keşif">Keşif</option>
+                            <option value="Diğer">Diğer</option>
+                        </select>
+                        <label for="islemTipi">İşlem Tipi</label>
+                    </div>
+
                     <div class="file-upload">
                         <label for="fotoGirdisi" class="file-upload-label" id="fotoLabel">
                             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -183,10 +197,10 @@
         <div id="tab-ara" class="tab-content">
             <div class="card">
                 <div class="card-title">🔍 Kayıtlı Form Ara</div>
-                <!-- Otomatik tamamlama için özel div (autocomplete kapalı) -->
                 <div class="form-floating autocomplete" style="position: relative;">
                     <input type="text" id="aramaKutusu" placeholder=" " autocomplete="off">
-                    <label for="aramaKutusu">Firma Adı veya Şehir yazın...</label>
+                    <!-- Label Güncellendi -->
+                    <label for="aramaKutusu">Firma, Şehir veya Ekleyen Mail (örn: saha@)</label>
                 </div>
                 <button type="button" id="aramaButonu" class="btn btn-primary">Formları Bul</button>
             </div>
@@ -202,7 +216,7 @@
         </div>
     </div>
 
-    <!-- GÖRSEL BÜYÜTME MODALI (YÜKLENİYOR ANİMASYONLU) -->
+    <!-- GÖRSEL BÜYÜTME MODALI -->
     <div id="imageModal">
         <span class="modal-close" onclick="modaliKapat()">&times;</span>
         <p id="modalLoading" style="color:white; font-size:1.2rem; font-weight:bold;">⏳ Fotoğraf İndiriliyor...</p>
@@ -226,6 +240,20 @@
                 </select>
                 <label for="editSehir">Yeni Şehir</label>
             </div>
+            
+            <!-- YENİ: DÜZENLEME EKRANINDA İŞLEM TİPİ -->
+            <div class="form-floating select-wrapper">
+                <select id="editIslemTipi" required>
+                    <option value="" disabled selected>Lütfen işlem tipi seçin</option>
+                    <option value="Bakım">Bakım</option>
+                    <option value="Arıza">Arıza</option>
+                    <option value="Kurulum">Kurulum</option>
+                    <option value="Keşif">Keşif</option>
+                    <option value="Diğer">Diğer</option>
+                </select>
+                <label for="editIslemTipi">Yeni İşlem Tipi</label>
+            </div>
+
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button id="btnEditCancel" class="btn" style="background:#94a3b8; color:white;">İptal</button>
                 <button id="btnEditSave" class="btn btn-primary">Kaydet</button>
@@ -348,18 +376,37 @@
         if (event.key === "Escape") { window.modaliKapat(); window.modaliKapatEdit(); }
     });
 
-    window.formDuzenle = function(docId, eskiFirma, eskiSehir) {
-        guncellenecekDocId = docId; document.getElementById('editFirmaAdi').value = eskiFirma; document.getElementById('editSehir').value = eskiSehir; document.getElementById('editModal').style.display = 'flex';
+    // DÜZENLEME MODALI AÇILIRKEN İŞLEM TİPİNİ DE GÖNDERİYORUZ
+    window.formDuzenle = function(docId, eskiFirma, eskiSehir, eskiIslem) {
+        guncellenecekDocId = docId; 
+        document.getElementById('editFirmaAdi').value = eskiFirma; 
+        document.getElementById('editSehir').value = eskiSehir; 
+        
+        // Eğer eski formda işlem tipi yoksa boş bırakır
+        if(eskiIslem) {
+            document.getElementById('editIslemTipi').value = eskiIslem;
+        } else {
+            document.getElementById('editIslemTipi').value = "";
+        }
+        
+        document.getElementById('editModal').style.display = 'flex';
     };
 
     document.getElementById('btnEditSave').addEventListener('click', async () => {
         if(!guncellenecekDocId) return;
         const yeniFirma = document.getElementById('editFirmaAdi').value.trim().toLowerCase();
         const yeniSehir = document.getElementById('editSehir').value;
-        if(!yeniFirma || !yeniSehir) return alert("Boş bırakılamaz.");
+        const yeniIslem = document.getElementById('editIslemTipi').value;
+        
+        if(!yeniFirma || !yeniSehir || !yeniIslem) return alert("Lütfen boş alan bırakmayın.");
+        
         try {
             document.getElementById('btnEditSave').innerText = "⏳...";
-            await updateDoc(doc(db, "formlar", guncellenecekDocId), { firmaAdi: yeniFirma, sehir: yeniSehir });
+            await updateDoc(doc(db, "formlar", guncellenecekDocId), { 
+                firmaAdi: yeniFirma, 
+                sehir: yeniSehir,
+                islemTipi: yeniIslem
+            });
             window.modaliKapatEdit();
             if(document.getElementById('aramaKutusu').value !== "") document.getElementById('aramaButonu').click();
         } catch (error) { alert("Hata: " + error.message); } 
@@ -424,19 +471,29 @@
         });
     };
 
+    // FORM EKLERKEN KULLANICIYI VE İŞLEM TİPİNİ DE KAYDET
     document.getElementById('isFormu').addEventListener('submit', async (e) => {
         e.preventDefault();
         const ekleButonu = document.getElementById('ekleButonu');
         ekleButonu.disabled = true;
         const firmaAdi = document.getElementById('firmaAdi').value.trim().toLowerCase();
         const sehir = document.getElementById('sehir').value; 
+        const islemTipi = document.getElementById('islemTipi').value;
         const dosyalar = fotoGirdisi.files;
+        
         try {
             for (let i = 0; i < dosyalar.length; i++) {
                 ekleButonu.innerHTML = `⏳ Yükleniyor (${i + 1} / ${dosyalar.length})...`;
                 const compressedPhoto = await compressImage(dosyalar[i]);
                 const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: compressedPhoto });
-                await addDoc(collection(db, "formlar"), { firmaAdi: firmaAdi, sehir: sehir, fotoId: fotoRef.id, tarih: new Date().toISOString() });
+                await addDoc(collection(db, "formlar"), { 
+                    firmaAdi: firmaAdi, 
+                    sehir: sehir, 
+                    islemTipi: islemTipi,     // EKLENDİ
+                    ekleyen: aktifKullaniciMail, // EKLENDİ
+                    fotoId: fotoRef.id, 
+                    tarih: new Date().toISOString() 
+                });
             }
             alert("Başarıyla eklendi! 🎉");
             document.getElementById('isFormu').reset();
@@ -446,15 +503,11 @@
         finally { ekleButonu.disabled = false; ekleButonu.innerHTML = "Formları Kaydet"; }
     });
 
-    // ----------------------------------------------------
-    // YENİ: OTOMATİK TAMAMLAMA (AUTO-COMPLETE) MOTORU
-    // ----------------------------------------------------
     const aramaKutusu = document.getElementById('aramaKutusu');
     const autoList = document.createElement('div');
     autoList.setAttribute('id', 'autocomplete-list');
     autoList.setAttribute('class', 'autocomplete-items');
     aramaKutusu.parentNode.appendChild(autoList);
-
     let aramaZamanlayici;
 
     aramaKutusu.addEventListener('input', function() {
@@ -465,53 +518,33 @@
         autoList.innerHTML = '';
         if (!val) return;
 
-        // 300 ms bekleyip arama yapar (Kotaları yormaz)
         aramaZamanlayici = setTimeout(async () => {
-            let oneriler = new Set(); // Tekrarları engellemek için
-
-            // 1. Şehirler arasında lokal arama
-            tumSehirler.forEach(s => {
-                if(s.startsWith(val)) oneriler.add(s.toUpperCase());
-            });
-
-            // 2. Firma adlarında Firestore üzerinden hızlı arama
+            let oneriler = new Set(); 
+            tumSehirler.forEach(s => { if(s.startsWith(val)) oneriler.add(s.toUpperCase()); });
+            
             try {
-                const q = query(collection(db, "formlar"), 
-                    where("firmaAdi", ">=", val),
-                    where("firmaAdi", "<=", val + '\uf8ff'),
-                    limit(5) // Sadece en benzer 5 tanesini önerir
-                );
+                const q = query(collection(db, "formlar"), where("firmaAdi", ">=", val), where("firmaAdi", "<=", val + '\uf8ff'), limit(5));
                 const snap = await getDocs(q);
-                snap.forEach(doc => {
-                    oneriler.add(doc.data().firmaAdi.toUpperCase());
-                });
-            } catch(e) { console.error(e); }
+                snap.forEach(doc => { oneriler.add(doc.data().firmaAdi.toUpperCase()); });
+            } catch(e) {}
 
-            // Sonuçları menüye çizdir
             autoList.innerHTML = '';
             oneriler.forEach(oneri => {
                 const div = document.createElement('div');
                 div.innerHTML = `<strong>${oneri.substring(0, val.length)}</strong>${oneri.substring(val.length)}`;
-                
-                // Seçeneğe tıklandığında yapılacaklar
                 div.addEventListener('click', function() {
-                    aramaKutusu.value = oneri; // Kutuya yazdır
-                    autoList.innerHTML = ''; // Menüyü kapat
-                    document.getElementById('aramaButonu').click(); // Otomatik olarak aramayı başlat!
+                    aramaKutusu.value = oneri; 
+                    autoList.innerHTML = ''; 
+                    document.getElementById('aramaButonu').click(); 
                 });
                 autoList.appendChild(div);
             });
         }, 300);
     });
 
-    // Sayfada başka bir yere tıklayınca öneri menüsünü kapat
-    document.addEventListener('click', function(e) {
-        if(e.target !== aramaKutusu) {
-            autoList.innerHTML = '';
-        }
-    });
+    document.addEventListener('click', function(e) { if(e.target !== aramaKutusu) autoList.innerHTML = ''; });
 
-    // Normal Arama Butonu İşlevi
+    // ARAMA BUTONU
     document.getElementById('aramaButonu').addEventListener('click', async () => {
         let aramaKelimesi = document.getElementById('aramaKutusu').value.trim().toLowerCase();
         aramaKelimesi = aramaKelimesi.replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c');
@@ -519,11 +552,19 @@
         
         if (!aramaKelimesi) return alert("Lütfen arama kelimesi yazın.");
         sonuclarDiv.innerHTML = "<p style='text-align:center;'>⏳ Aranıyor...</p>";
-        autoList.innerHTML = ''; // Arama başlayınca listeyi kapat
+        autoList.innerHTML = ''; 
         
         try {
             let snap = await getDocs(query(collection(db, "formlar"), where("sehir", "==", aramaKelimesi)));
-            if (snap.empty) snap = await getDocs(query(collection(db, "formlar"), where("firmaAdi", ">=", aramaKelimesi), where("firmaAdi", "<=", aramaKelimesi + '\uf8ff')));
+            
+            if (snap.empty) {
+                snap = await getDocs(query(collection(db, "formlar"), where("firmaAdi", ">=", aramaKelimesi), where("firmaAdi", "<=", aramaKelimesi + '\uf8ff')));
+            }
+            
+            // YENİ: Personel Mailine göre Arama (içinde @ varsa mail araması yapar)
+            if (snap.empty && aramaKelimesi.includes("@")) {
+                snap = await getDocs(query(collection(db, "formlar"), where("ekleyen", "==", aramaKelimesi)));
+            }
             
             sonuclarDiv.innerHTML = ""; 
             if (snap.empty) return sonuclarDiv.innerHTML = `<div class="empty-state"><img src="Adsız tasarım.png" alt="Bulunamadı"><p>Arama kriterlerinize uygun form bulunamadı.</p></div>`;
@@ -536,11 +577,14 @@
                 const docId = docSnap.id;
                 const escFirma = v.firmaAdi.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 const paramFotoId = v.fotoId ? `'${v.fotoId}'` : `null`;
+                const islemGoster = v.islemTipi || "Belirtilmemiş";
+                const ekleyenGoster = v.ekleyen ? v.ekleyen.split('@')[0] : "Bilinmiyor";
+                const escIslem = v.islemTipi ? v.islemTipi.replace(/'/g, "\\'") : "";
 
                 let adminButonlari = "";
                 if (isAdmin) {
                     adminButonlari = `
-                        <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${v.sehir}')" title="Düzenle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
+                        <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${v.sehir}', '${escIslem}')" title="Düzenle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
                         <button class="btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
                 }
 
@@ -548,6 +592,7 @@
                     <div class="liste-karti" id="kart-${docId}">
                         <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
                             <h4>${v.firmaAdi.toUpperCase()} - ${v.sehir.toUpperCase()}</h4>
+                            <div class="detay-satiri">🛠 ${islemGoster} | 👤 ${ekleyenGoster}</div>
                             <p>🕒 ${new Date(v.tarih).toLocaleDateString('tr-TR', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</p>
                         </div>
                         <div class="liste-karti-butonlar">
@@ -570,11 +615,14 @@
             const docId = docSnap.id;
             const escFirma = v.firmaAdi.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             const paramFotoId = v.fotoId ? `'${v.fotoId}'` : `null`;
+            const islemGoster = v.islemTipi || "Belirtilmemiş";
+            const ekleyenGoster = v.ekleyen ? v.ekleyen.split('@')[0] : "Bilinmiyor";
+            const escIslem = v.islemTipi ? v.islemTipi.replace(/'/g, "\\'") : "";
 
             let adminButonlari = "";
             if (isAdmin) {
                 adminButonlari = `
-                    <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${v.sehir}')" title="Düzenle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
+                    <button class="btn-duzenle" onclick="formDuzenle('${docId}', '${escFirma}', '${v.sehir}', '${escIslem}')" title="Düzenle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
                     <button class="btn-sil" onclick="formSil('${docId}', ${paramFotoId})" title="Formu Sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
             }
 
@@ -582,6 +630,7 @@
                 <div class="liste-karti" id="kart-${docId}">
                     <div class="liste-karti-bilgi" onclick="resmiAc('${docId}', ${paramFotoId})">
                         <h4>${v.firmaAdi.toUpperCase()} - ${v.sehir.toUpperCase()}</h4>
+                        <div class="detay-satiri">🛠 ${islemGoster} | 👤 ${ekleyenGoster}</div>
                         <p>🕒 ${new Date(v.tarih).toLocaleDateString('tr-TR', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
                     </div>
                     <div class="liste-karti-butonlar">
