@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>ENORPA İş Formları</title>
-<script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>ENORPA İş Formları</title>
+    <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root{
@@ -165,6 +165,15 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
 @media(max-width:420px){.header-title{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+/* GRUPLAMA (MATRUŞKA) CSS */
+.firma-grup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
+.firma-baslik { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--surface-2); font-weight: 700; color: var(--text-main); font-size: 1.05rem; user-select: none; transition: 0.2s; }
+.firma-baslik:hover { background: var(--primary-soft); }
+.firma-baslik svg { transition: transform 0.3s ease; width: 20px; height: 20px; color: var(--primary); }
+.firma-grup.acik .firma-baslik svg { transform: rotate(180deg); }
+.firma-icerik { display: none; padding: 16px; background: var(--surface); border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
+.firma-grup.acik .firma-icerik { display: flex; animation: fadeIn 0.3s ease; }
+.firma-icerik .liste-karti { margin-bottom: 0; box-shadow: none; border-color: var(--border); background: var(--bg); border-left-color: var(--primary); }
 </style>
 </head>
 <body>
@@ -619,12 +628,7 @@ function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, 
     </div>`;
 }
 
-function kartDokumuHTML(docId, v, tarihSecenek, isAdmin) {
-  let tarih = "Tarih yok";
-  if (v.tarih && !isNaN(new Date(v.tarih).getTime())) tarih = new Date(v.tarih).toLocaleDateString("tr-TR", tarihSecenek);
-  return kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum);
-}
-
+// MATRUŞKA GRUPLAMA YERLEŞTİRİLECEK
 $("aramaButonu").addEventListener("click", async () => {
   const ham = aramaKutusu.value.trim(), arama = metniNormalizeEt(ham), div = $("sonuclar");
   if (!ham) { showToast("Lütfen arama kelimesi yazın.", "error"); return; }
@@ -640,14 +644,48 @@ $("aramaButonu").addEventListener("click", async () => {
     ]);
     const sonuc = [], gorulen = new Set();
     [s1, s2, s3].forEach(snap => snap.forEach(d => { if (!gorulen.has(d.id)) { gorulen.add(d.id); sonuc.push({ id: d.id, v: d.data() }); } }));
+    
     if (!sonuc.length) {
       div.innerHTML = `<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display='none'"><p>"${htmlGuvenli(ham)}" için form bulunamadı.</p></div>`;
       return;
     }
+    
     const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
-    sonuc.sort((a, b) => new Date(b.v.tarih || 0) - new Date(a.v.tarih || 0));
     const opt = { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" };
-    div.innerHTML = `<div class="sonuc-bilgisi">${sonuc.length} sonuç</div>` + sonuc.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("");
+    
+    // GRUPLAMA MANTIĞI
+    const gruplar = {};
+    sonuc.forEach(x => {
+      const firmaGrup = (x.v.firmaAdi || "İSİMSİZ FİRMA").toLocaleUpperCase("tr-TR");
+      if (!gruplar[firmaGrup]) gruplar[firmaGrup] = [];
+      gruplar[firmaGrup].push(x);
+    });
+
+    let htmlOut = `<div class="sonuc-bilgisi">${sonuc.length} Form (${Object.keys(gruplar).length} Firma) listelendi</div>`;
+    
+    for (const [firmaAd, formlar] of Object.entries(gruplar)) {
+      formlar.sort((a, b) => new Date(b.v.tarih || 0) - new Date(a.v.tarih || 0));
+      let icerikHTML = formlar.map(x => {
+        let tarih = "Tarih yok";
+        if (x.v.tarih && !isNaN(new Date(x.v.tarih).getTime())) tarih = new Date(x.v.tarih).toLocaleDateString("tr-TR", opt);
+        return kartHTMLOlustur(x.id, x.v.fotoId ? `'${x.v.fotoId}'` : "null", x.v.firmaAdi || "İSİMSİZ FİRMA", x.v.sehir || "belirsiz", x.v.islemTipi || "Belirtilmemiş", x.v.ekleyen ? x.v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, x.v.aciklama, x.v.konum);
+      }).join("");
+      
+      htmlOut += `
+      <div class="firma-grup">
+        <div class="firma-baslik" onclick="this.parentElement.classList.toggle('acik')">
+          <span style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            🏢 ${htmlGuvenli(firmaAd)} 
+            <span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${formlar.length}</span>
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="firma-icerik" onclick="event.stopPropagation()">
+          ${icerikHTML}
+        </div>
+      </div>`;
+    }
+    div.innerHTML = htmlOut;
   } catch (err) {
     console.error("Arama hatası:", err);
     div.innerHTML = `<p style="text-align:center;color:var(--danger);padding:20px">Arama sırasında hata oluştu: ${htmlGuvenli(err.message)}</p>`;
@@ -663,7 +701,12 @@ onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10))
   const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
   const opt = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" };
   let html = "";
-  snapshot.forEach(d => { html += kartDokumuHTML(d.id, d.data(), opt, isAdmin); });
+  snapshot.forEach(d => { 
+    const v = d.data();
+    let tarih = "Tarih yok";
+    if (v.tarih && !isNaN(new Date(v.tarih).getTime())) tarih = new Date(v.tarih).toLocaleDateString("tr-TR", opt);
+    html += kartHTMLOlustur(d.id, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum); 
+  });
   div.innerHTML = html;
 }, err => console.error("Canlı akış hatası:", err));
 
