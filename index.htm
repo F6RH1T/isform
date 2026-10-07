@@ -121,6 +121,16 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
 .btn-sil{background:rgba(229,72,77,.12);color:var(--danger)}.btn-sil:hover{background:var(--danger);color:#fff}
 .btn-icon svg{width:18px;height:18px}
 
+/* GRUPLAMA (MATRUŞKA) CSS */
+.firma-grup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
+.firma-baslik { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--surface-2); font-weight: 700; color: var(--text-main); font-size: 1.05rem; user-select: none; transition: 0.2s; }
+.firma-baslik:hover { background: var(--primary-soft); }
+.firma-baslik svg { transition: transform 0.3s ease; width: 20px; height: 20px; color: var(--primary); }
+.firma-grup.acik .firma-baslik svg { transform: rotate(180deg); }
+.firma-icerik { display: none; padding: 16px; background: var(--surface); border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
+.firma-grup.acik .firma-icerik { display: flex; animation: fadeIn 0.3s ease; }
+.firma-icerik .liste-karti { margin-bottom: 0; box-shadow: none; border-color: var(--border); background: var(--bg); border-left-color: var(--primary); }
+
 /* Yüzen alt menü */
 .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px);max-width:420px;
   background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -164,16 +174,6 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
 
 @media(max-width:420px){.header-title{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-
-/* GRUPLAMA (MATRUŞKA) CSS */
-.firma-grup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
-.firma-baslik { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--surface-2); font-weight: 700; color: var(--text-main); font-size: 1.05rem; user-select: none; transition: 0.2s; }
-.firma-baslik:hover { background: var(--primary-soft); }
-.firma-baslik svg { transition: transform 0.3s ease; width: 20px; height: 20px; color: var(--primary); }
-.firma-grup.acik .firma-baslik svg { transform: rotate(180deg); }
-.firma-icerik { display: none; padding: 16px; background: var(--surface); border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
-.firma-grup.acik .firma-icerik { display: flex; animation: fadeIn 0.3s ease; }
-.firma-icerik .liste-karti { margin-bottom: 0; box-shadow: none; border-color: var(--border); background: var(--bg); border-left-color: var(--primary); }
 </style>
 </head>
 <body>
@@ -253,7 +253,7 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
         <div class="card-title">Form ara</div>
         <div class="form-floating autocomplete" style="position:relative">
           <input type="text" id="aramaKutusu" placeholder=" " autocomplete="off">
-          <label for="aramaKutusu">Firma, şehir veya e-posta</label>
+          <label for="aramaKutusu">Ürün kodu (ENOR3), firma, şehir veya e-posta</label>
         </div>
         <button type="button" id="aramaButonu" class="btn btn-primary">Ara</button>
       </div>
@@ -338,13 +338,36 @@ function jsGuvenliMetin(m) {
   return htmlGuvenli(String(m).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g," "));
 }
 
+function firmaKodTaban(aramaFirma) {
+  const h = String(aramaFirma || "").replace(/[^a-z]/g, "");
+  return h.substring(0, 4).toUpperCase().padEnd(3, "X");
+}
+function harfEki(n) { let s = ""; while (n > 0) { n--; s = String.fromCharCode(65 + n % 26) + s; n = Math.floor(n / 26); } return s; }
+function koddanNo(kod) { const m = String(kod || "").match(/(\d+)$/); return m ? parseInt(m[1], 10) : 0; }
+// Firmanın kodunu ve son form numarasını bulur; firma yeniyse boş bir kod üretir (ENOR, ENORA, ENORB...)
+async function firmaKodunuBul(aramaFirma) {
+  const snap = await getDocs(query(collection(db, "formlar"), where("aramaFirma", "==", aramaFirma)));
+  let kod = null, maks = 0;
+  snap.forEach(d => { const x = d.data(); if (x.firmaKodu && !kod) kod = x.firmaKodu; const n = x.formNo || koddanNo(x.formKodu); if (n > maks) maks = n; });
+  if (!kod) {
+    const taban = firmaKodTaban(aramaFirma); let aday = taban, i = 0;
+    while (true) {
+      const s = await getDocs(query(collection(db, "formlar"), where("firmaKodu", "==", aday), limit(1)));
+      if (s.empty) break;
+      aday = taban + harfEki(++i);
+    }
+    kod = aday;
+  }
+  return { firmaKodu: kod, sonNo: maks };
+}
+
 const tumSehirler = sehirIsimleri.map(metniNormalizeEt).concat("belirsiz");
 [$("sehir"), $("editSehir")].forEach(sel => {
   const belirsiz = sel.querySelector('option[value="belirsiz"]');
   sehirIsimleri.forEach(ad => { const o = document.createElement("option"); o.value = metniNormalizeEt(ad); o.text = ad; sel.insertBefore(o, belirsiz); });
 });
 
-let aktifKullaniciMail = "", guncellenecekDocId = null, tumFormlarGlobal = [];
+let aktifKullaniciMail = "", guncellenecekDocId = null, guncellenecekEskiAramaFirma = "", tumFormlarGlobal = [];
 
 const app = initializeApp({
   apiKey: "AIzaSyC2OWlHtSGY-2Xk6CKDfekCaDXD8k-erDs",
@@ -399,22 +422,56 @@ $("loginForm").addEventListener("submit", e => {
 $("logoutBtn").addEventListener("click", () => signOut(auth));
 
 window.eskiKayitlariOptimizeEt = async function () {
-  if (!confirm("Arama altyapısı güncelleniyor. Onaylıyor musunuz?")) return;
+  if (!confirm("Arama altyapısı ve Form Kodları güncelleniyor. Onaylıyor musunuz?")) return;
   const btn = $("btnOptimize");
   btn.disabled = true; btn.innerText = "⏳…";
   try {
     const snap = await getDocs(collection(db, "formlar"));
-    let n = 0;
-    for (const d of snap.docs) {
-      const data = d.data(), g = {};
-      if (data.fotograf && !data.fotoId) {
-        const ref = await addDoc(collection(db, "formFotograflari"), { base64: data.fotograf });
-        g.fotoId = ref.id; g.fotograf = deleteField();
-      }
-      if (data.firmaAdi && !data.aramaFirma) g.aramaFirma = metniNormalizeEt(data.firmaAdi);
-      if (Object.keys(g).length) { await updateDoc(doc(db, "formlar", d.id), g); n++; }
+    const firmalar = {};
+    snap.forEach(d => {
+      const data = d.data();
+      const f = data.aramaFirma || metniNormalizeEt(data.firmaAdi);
+      (firmalar[f] = firmalar[f] || []).push({ id: d.id, data });
+    });
+
+    // 1) Firma kodlarını belirle (mevcut olanı koru, çakışanlara yeni kod ver)
+    const kullanilan = new Set(), firmaKod = {};
+    for (const [f, dizi] of Object.entries(firmalar)) {
+      const mevcut = (dizi.find(x => x.data.firmaKodu) || { data: {} }).data.firmaKodu;
+      if (mevcut && !kullanilan.has(mevcut)) { firmaKod[f] = mevcut; kullanilan.add(mevcut); }
     }
-    showToast(`${n} kayıt optimize edildi!`, "success");
+    for (const f of Object.keys(firmalar)) {
+      if (firmaKod[f]) continue;
+      const taban = firmaKodTaban(f); let aday = taban, i = 0;
+      while (kullanilan.has(aday)) aday = taban + harfEki(++i);
+      firmaKod[f] = aday; kullanilan.add(aday);
+    }
+
+    // 2) Form numaraları (eskiden yeniye; var olan numaralar korunur)
+    let n = 0;
+    for (const [f, dizi] of Object.entries(firmalar)) {
+      dizi.sort((x, y) => new Date(x.data.tarih || 0) - new Date(y.data.tarih || 0));
+      const kodF = firmaKod[f], kullNo = new Set(); let maks = 0;
+      dizi.forEach(it => {
+        const no = it.data.formNo || koddanNo(it.data.formKodu);
+        if (no && !kullNo.has(no)) { it.no = no; kullNo.add(no); if (no > maks) maks = no; }
+      });
+      for (const item of dizi) {
+        if (!item.no) item.no = ++maks;
+        const g = {};
+        if (item.data.fotograf && !item.data.fotoId) {
+          const ref = await addDoc(collection(db, "formFotograflari"), { base64: item.data.fotograf });
+          g.fotoId = ref.id; g.fotograf = deleteField();
+        }
+        if (!item.data.aramaFirma) g.aramaFirma = f;
+        if (item.data.firmaKodu !== kodF) g.firmaKodu = kodF;
+        if (item.data.formNo !== item.no) g.formNo = item.no;
+        const yeniKod = `${kodF}${item.no}`;
+        if (item.data.formKodu !== yeniKod) g.formKodu = yeniKod;
+        if (Object.keys(g).length) { await updateDoc(doc(db, "formlar", item.id), g); n++; }
+      }
+    }
+    showToast(`${n} kayıt optimize edildi ve kodlandı!`, "success");
     btn.style.display = "none";
   } catch (e) { showToast("Hata: " + e.message, "error"); }
   finally { btn.disabled = false; btn.innerText = "⚡ Op."; }
@@ -441,6 +498,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { window.mod
 
 window.formDuzenle = function (docId, eskiFirma, eskiSehir, eskiIslem, eskiAciklama) {
   guncellenecekDocId = docId;
+  guncellenecekEskiAramaFirma = metniNormalizeEt(eskiFirma);
   $("editFirmaAdi").value = eskiFirma;
   $("editSehir").value = metniNormalizeEt(eskiSehir);
   $("editIslemTipi").value = eskiIslem || "";
@@ -454,7 +512,13 @@ $("btnEditSave").addEventListener("click", async () => {
   if (!firma || !sehir || !islem) { showToast("Lütfen boş alan bırakmayın.", "error"); return; }
   try {
     $("btnEditSave").innerText = "⏳…";
-    await updateDoc(doc(db, "formlar", guncellenecekDocId), { firmaAdi: firma, aramaFirma: metniNormalizeEt(firma), sehir, islemTipi: islem, aciklama });
+    const yeniArama = metniNormalizeEt(firma);
+    const g = { firmaAdi: firma, aramaFirma: yeniArama, sehir, islemTipi: islem, aciklama };
+    if (yeniArama !== guncellenecekEskiAramaFirma) {
+      const { firmaKodu, sonNo } = await firmaKodunuBul(yeniArama);
+      g.firmaKodu = firmaKodu; g.formNo = sonNo + 1; g.formKodu = `${firmaKodu}${sonNo + 1}`;
+    }
+    await updateDoc(doc(db, "formlar", guncellenecekDocId), g);
     window.modaliKapatEdit();
     showToast("Kayıt güncellendi", "success");
     if ($("aramaKutusu").value !== "") $("aramaButonu").click();
@@ -542,15 +606,35 @@ $("isFormu").addEventListener("submit", async e => {
   if (!navigator.onLine) { showToast("İnternet bağlantısı yok. Bağlanınca tekrar deneyin.", "error"); return; }
   const btn = $("ekleButonu");
   btn.disabled = true; btn.innerText = "📍 Konum alınıyor…";
+  
   const firmaAdi = $("firmaAdi").value.trim(), sehir = $("sehir").value, islemTipi = $("islemTipi").value, aciklama = aciklamaNotu.value.trim();
+  const aramaFirma = metniNormalizeEt(firmaAdi);
   const dosyalar = fotoGirdisi.files;
+  
   const konum = await getLocation();
+  
   try {
+    // Kaçıncı form olduğunu bul (Yeni Ürün Kodu için)
+    const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
+    const siradakiNo = sonNo + 1;
+
     for (let i = 0; i < dosyalar.length; i++) {
       btn.innerText = `Yükleniyor (${i + 1}/${dosyalar.length})…`;
       const foto = await compressImage(dosyalar[i]);
       const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: foto });
-      const payload = { firmaAdi, aramaFirma: metniNormalizeEt(firmaAdi), sehir, islemTipi, aciklama, ekleyen: aktifKullaniciMail, fotoId: fotoRef.id, tarih: new Date().toISOString() };
+      const payload = { 
+          firmaAdi, 
+          aramaFirma, 
+          sehir, 
+          islemTipi, 
+          aciklama, 
+          ekleyen: aktifKullaniciMail, 
+          fotoId: fotoRef.id, 
+          firmaKodu,
+          formNo: siradakiNo + i,
+          formKodu: `${firmaKodu}${siradakiNo + i}`, 
+          tarih: new Date().toISOString() 
+      };
       if (konum) payload.konum = konum;
       await addDoc(collection(db, "formlar"), payload);
     }
@@ -579,10 +663,17 @@ aramaKutusu.addEventListener("input", function () {
     autoList.innerHTML = "";
     oneriler.forEach(o => {
       const div = document.createElement("div");
-      const orj = String(o.deger), idx = metniNormalizeEt(orj).indexOf(na);
-      let html = htmlGuvenli(orj);
-      if (idx !== -1) html = htmlGuvenli(orj.substring(0, idx)) + `<strong>${htmlGuvenli(orj.substring(idx, idx + val.length))}</strong>` + htmlGuvenli(orj.substring(idx + val.length));
-      div.innerHTML = `${html} <span class="autocomplete-category">${htmlGuvenli(o.tip)}</span>`;
+      const orj = String(o.deger);
+      let kucukOrjinal = metniNormalizeEt(orj);
+      let arananIndex = kucukOrjinal.indexOf(na);
+      let gosterimHTML = htmlGuvenli(orj);
+      if (arananIndex !== -1) {
+          let bas = htmlGuvenli(orj.substring(0, arananIndex));
+          let orta = `<strong>${htmlGuvenli(orj.substring(arananIndex, arananIndex + val.length))}</strong>`;
+          let son = htmlGuvenli(orj.substring(arananIndex + val.length));
+          gosterimHTML = bas + orta + son;
+      }
+      div.innerHTML = `${gosterimHTML}${o.ek ? ` <span style="color:var(--text-muted);font-weight:500">(${htmlGuvenli(o.ek)})</span>` : ""} <span class="autocomplete-category">${htmlGuvenli(o.tip)}</span>`;
       div.addEventListener("click", () => { aramaKutusu.value = orj; autoList.innerHTML = ""; $("aramaButonu").click(); });
       autoList.appendChild(div);
     });
@@ -592,16 +683,30 @@ aramaKutusu.addEventListener("input", function () {
   aramaZamanlayici = setTimeout(async () => {
     try {
       const hi = String.fromCharCode(63743);
-      const snap = await getDocs(query(collection(db, "formlar"), where("aramaFirma", ">=", na), where("aramaFirma", "<=", na + hi), limit(5)));
-      let yeni = false;
-      snap.forEach(d => { const x = d.data(); if (x.firmaAdi) { oneriler.set("firma-" + x.aramaFirma, { deger: x.firmaAdi.toUpperCase(), tip: "🏢 Firma" }); yeni = true; } });
-      if (yeni) ciz();
+      const VAL = val.toUpperCase().replace(/\s+/g, "");
+      const harfler = /^[A-Z]+$/.test(VAL);
+      const q1 = getDocs(query(collection(db, "formlar"), where("aramaFirma", ">=", na), where("aramaFirma", "<=", na + hi), limit(5)));
+      const q2 = getDocs(query(collection(db, "formlar"), where("firmaKodu", ">=", VAL), where("firmaKodu", "<=", VAL + hi), limit(3)));
+      const q3 = harfler
+        ? getDocs(query(collection(db, "formlar"), where("firmaKodu", "==", VAL), limit(30)))
+        : getDocs(query(collection(db, "formlar"), where("formKodu", ">=", VAL), where("formKodu", "<=", VAL + hi), limit(10)));
+
+      const [sFirma, sFKod, sKod] = await Promise.all([q1, q2, q3]);
+      let eklendi = false;
+      sFirma.forEach(d => { const x = d.data(); if (x.firmaAdi) { oneriler.set("firma-" + x.aramaFirma, { deger: x.firmaAdi.toUpperCase(), ek: x.firmaKodu || "", tip: "🏢 Firma" }); eklendi = true; } });
+      sFKod.forEach(d => { const x = d.data(); if (x.firmaKodu) { oneriler.set("fkod-" + x.firmaKodu, { deger: x.firmaKodu, ek: (x.firmaAdi || "").toUpperCase(), tip: "🏢 Firma kodu" }); eklendi = true; } });
+      const kodlar = []; sKod.forEach(d => kodlar.push(d.data()));
+      kodlar.filter(x => x.formKodu).sort((p, q) => (q.formNo || koddanNo(q.formKodu)) - (p.formNo || koddanNo(p.formKodu))).slice(0, 6)
+        .forEach(x => { oneriler.set("kod-" + x.formKodu, { deger: x.formKodu, ek: (x.firmaAdi || "").toUpperCase(), tip: "🏷️ Ürün kodu" }); eklendi = true; });
+
+      if (eklendi) ciz();
     } catch (err) { console.error("Öneri hatası:", err); }
   }, 150);
 });
 document.addEventListener("click", e => { if (e.target !== aramaKutusu) autoList.innerHTML = ""; });
 
-function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, isAdmin, aciklama, konum) {
+function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, isAdmin, aciklama, konum, formKodu) {
+  const codeDisplay = formKodu || "FRM-" + docId.substring(0, 5).toUpperCase();
   let admin = "";
   if (isAdmin) admin = `
     <button class="btn-icon btn-duzenle" onclick="formDuzenle('${docId}','${jsGuvenliMetin(firma)}','${jsGuvenliMetin(sehir)}','${jsGuvenliMetin(islem)}','${jsGuvenliMetin(aciklama || "")}')" title="Düzenle" aria-label="Düzenle">
@@ -615,7 +720,12 @@ function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, 
       <div class="karti-ust">
         <div class="liste-karti-bilgi" onclick="resmiAc('${docId}',${fotoParam})">
           <h4>${htmlGuvenli(firma.toLocaleUpperCase("tr-TR"))} · ${htmlGuvenli(sehir.toLocaleUpperCase("tr-TR"))}</h4>
-          <div class="detay-satiri"><span class="badge">🛠 ${htmlGuvenli(islem)}</span><span class="badge">👤 ${htmlGuvenli(ekleyen)}</span>${konumHTML}</div>
+          <div class="detay-satiri">
+            <span class="badge" style="background:var(--primary);color:#fff;">#${htmlGuvenli(codeDisplay)}</span>
+            <span class="badge">🛠 ${htmlGuvenli(islem)}</span>
+            <span class="badge">👤 ${htmlGuvenli(ekleyen)}</span>
+            ${konumHTML}
+          </div>
           <p>🕒 ${htmlGuvenli(tarih)}</p>
         </div>
         <div class="liste-karti-butonlar">
@@ -628,7 +738,12 @@ function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, 
     </div>`;
 }
 
-// MATRUŞKA GRUPLAMA YERLEŞTİRİLECEK
+function kartDokumuHTML(docId, v, tarihSecenek, isAdmin) {
+  let tarih = "Tarih yok";
+  if (v.tarih && !isNaN(new Date(v.tarih).getTime())) tarih = new Date(v.tarih).toLocaleDateString("tr-TR", tarihSecenek);
+  return kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum, v.formKodu);
+}
+
 $("aramaButonu").addEventListener("click", async () => {
   const ham = aramaKutusu.value.trim(), arama = metniNormalizeEt(ham), div = $("sonuclar");
   if (!ham) { showToast("Lütfen arama kelimesi yazın.", "error"); return; }
@@ -637,13 +752,18 @@ $("aramaButonu").addEventListener("click", async () => {
   try {
     const hi = String.fromCharCode(63743);
     const bos = { empty: true, forEach() {} };
-    const [s1, s2, s3] = await Promise.all([
+    const aramaBuyuk = ham.toUpperCase().replace("FRM-","").trim();
+    
+    const [s1, s2, s3, s4, s5] = await Promise.all([
       getDocs(query(collection(db, "formlar"), where("sehir", "==", arama))),
       getDocs(query(collection(db, "formlar"), where("aramaFirma", ">=", arama), where("aramaFirma", "<=", arama + hi), limit(30))),
-      ham.includes("@") ? getDocs(query(collection(db, "formlar"), where("ekleyen", "==", ham.toLowerCase()))) : Promise.resolve(bos)
+      ham.includes("@") ? getDocs(query(collection(db, "formlar"), where("ekleyen", "==", ham.toLowerCase()))) : Promise.resolve(bos),
+      getDocs(query(collection(db, "formlar"), where("formKodu", "==", aramaBuyuk))),
+      getDocs(query(collection(db, "formlar"), where("firmaKodu", "==", aramaBuyuk)))
     ]);
+    
     const sonuc = [], gorulen = new Set();
-    [s1, s2, s3].forEach(snap => snap.forEach(d => { if (!gorulen.has(d.id)) { gorulen.add(d.id); sonuc.push({ id: d.id, v: d.data() }); } }));
+    [s4, s5, s1, s2, s3].forEach(snap => snap.forEach(d => { if (!gorulen.has(d.id)) { gorulen.add(d.id); sonuc.push({ id: d.id, v: d.data() }); } }));
     
     if (!sonuc.length) {
       div.innerHTML = `<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display='none'"><p>"${htmlGuvenli(ham)}" için form bulunamadı.</p></div>`;
@@ -661,22 +781,23 @@ $("aramaButonu").addEventListener("click", async () => {
       gruplar[firmaGrup].push(x);
     });
 
-    let htmlOut = `<div class="sonuc-bilgisi">${sonuc.length} Form (${Object.keys(gruplar).length} Firma) listelendi</div>`;
+    const siraliGruplar = Object.entries(gruplar).map(([firmaAd, formlar]) => {
+      formlar.sort((a, b) => new Date(b.v.tarih || 0).getTime() - new Date(a.v.tarih || 0).getTime());
+      return { firmaAd, formlar, firmaKodu: (formlar.find(x => x.v.firmaKodu) || { v: {} }).v.firmaKodu || "", enYeniTarih: new Date(formlar[0].v.tarih || 0).getTime() };
+    });
+
+    siraliGruplar.sort((a, b) => b.enYeniTarih - a.enYeniTarih);
+
+    let htmlOut = `<div class="sonuc-bilgisi">${sonuc.length} Form (${siraliGruplar.length} Firma) listelendi</div>`;
     
-    for (const [firmaAd, formlar] of Object.entries(gruplar)) {
-      formlar.sort((a, b) => new Date(b.v.tarih || 0) - new Date(a.v.tarih || 0));
-      let icerikHTML = formlar.map(x => {
-        let tarih = "Tarih yok";
-        if (x.v.tarih && !isNaN(new Date(x.v.tarih).getTime())) tarih = new Date(x.v.tarih).toLocaleDateString("tr-TR", opt);
-        return kartHTMLOlustur(x.id, x.v.fotoId ? `'${x.v.fotoId}'` : "null", x.v.firmaAdi || "İSİMSİZ FİRMA", x.v.sehir || "belirsiz", x.v.islemTipi || "Belirtilmemiş", x.v.ekleyen ? x.v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, x.v.aciklama, x.v.konum);
-      }).join("");
-      
+    for (const grup of siraliGruplar) {
+      const icerikHTML = grup.formlar.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("");
       htmlOut += `
       <div class="firma-grup">
         <div class="firma-baslik" onclick="this.parentElement.classList.toggle('acik')">
           <span style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-            🏢 ${htmlGuvenli(firmaAd)} 
-            <span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${formlar.length}</span>
+            🏢 ${htmlGuvenli(grup.firmaAd)} ${grup.firmaKodu ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}
+            <span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${grup.formlar.length}</span>
           </span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
@@ -701,12 +822,7 @@ onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10))
   const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
   const opt = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" };
   let html = "";
-  snapshot.forEach(d => { 
-    const v = d.data();
-    let tarih = "Tarih yok";
-    if (v.tarih && !isNaN(new Date(v.tarih).getTime())) tarih = new Date(v.tarih).toLocaleDateString("tr-TR", opt);
-    html += kartHTMLOlustur(d.id, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum); 
-  });
+  snapshot.forEach(d => { html += kartDokumuHTML(d.id, d.data(), opt, isAdmin); });
   div.innerHTML = html;
 }, err => console.error("Canlı akış hatası:", err));
 
@@ -738,10 +854,10 @@ $("btnRaporOlustur").addEventListener("click", async () => {
 $("btnExcelIndir").addEventListener("click", () => {
   if (!tumFormlarGlobal.length) { showToast("Önce verileri analiz edin!", "error"); return; }
   const h = t => String(t || "").replace(/;/g, ",").replace(/\n/g, " ");
-  let csv = "\uFEFFFirma Adi;Sehir;Islem Tipi;Ekleyen;Tarih;Enlem;Boylam;Aciklama\n";
+  let csv = "\uFEFFFirma Adi;Sehir;Islem Tipi;Form Kodu;Ekleyen;Tarih;Enlem;Boylam;Aciklama\n";
   tumFormlarGlobal.forEach(v => {
     const t = v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : "";
-    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + "\n";
+    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.formKodu), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + "\n";
   });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
