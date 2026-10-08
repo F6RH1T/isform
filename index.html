@@ -423,7 +423,6 @@ import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStat
 
 const $ = id => document.getElementById(id);
 
-// SIRA_YONU: 1 = Yeniden Eskiye (En güncel en üstte), -1 = Eskiden Yeniye
 let SIRA_YONU = 1;
 
 $("btnSiraYeni").addEventListener("click", function() {
@@ -448,7 +447,6 @@ const tarihiInputaCevir = iso => {
 };
 const inputtanIsoYap = val => new Date(val + "T12:00:00").toISOString();
 
-// Sıralama Fonksiyonu
 const tarihKarsilastir = (a, b) => {
   const tA = new Date(a.tarih || 0).getTime();
   const tB = new Date(b.tarih || 0).getTime();
@@ -467,11 +465,19 @@ function metniNormalizeEt(m) {
 }
 function htmlGuvenli(m) {
   if (!m) return "";
-  return String(m).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+  let s = String(m);
+  s = s.split(String.fromCharCode(92)).join(String.fromCharCode(92, 92));
+  s = s.split("'").join("\\'");
+  s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  return s;
 }
 function jsGuvenliMetin(m) {
   if (!m) return "";
-  return htmlGuvenli(String(m).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g," "));
+  let s = String(m);
+  s = s.split(String.fromCharCode(92)).join(String.fromCharCode(92, 92));
+  s = s.split("'").join("\\'");
+  s = s.replace(/[\r\n]+/g," ");
+  return htmlGuvenli(s);
 }
 
 function firmaKodTaban(aramaFirma) {
@@ -557,7 +563,6 @@ $("loginForm").addEventListener("submit", e => {
 });
 $("logoutBtn").addEventListener("click", () => signOut(auth));
 
-// Sifre Sifirlama Sistemi
 $("forgotPasswordLink").addEventListener("click", (e) => {
     e.preventDefault();
     $("resetPasswordModal").style.display = "flex";
@@ -570,10 +575,7 @@ $("btnResetCancel").addEventListener("click", () => {
 
 $("btnResetSend").addEventListener("click", () => {
     const email = $("resetEmail").value.trim();
-    if(!email) {
-        showToast("Lütfen e-posta adresinizi girin.", "error");
-        return;
-    }
+    if(!email) { showToast("Lütfen e-posta adresinizi girin.", "error"); return; }
     const btn = $("btnResetSend");
     btn.innerText = "⏳..."; btn.disabled = true;
 
@@ -583,12 +585,8 @@ $("btnResetSend").addEventListener("click", () => {
         $("resetPasswordModal").style.display = "none";
         $("resetEmail").value = "";
     })
-    .catch((error) => {
-        showToast("Hata: " + error.message, "error");
-    })
-    .finally(() => {
-        btn.innerText = "Gönder"; btn.disabled = false;
-    });
+    .catch((error) => { showToast("Hata: " + error.message, "error"); })
+    .finally(() => { btn.innerText = "Gönder"; btn.disabled = false; });
 });
 
 window.eskiKayitlariOptimizeEt = async function () {
@@ -604,7 +602,6 @@ window.eskiKayitlariOptimizeEt = async function () {
       (firmalar[f] = firmalar[f] || []).push({ id: d.id, data });
     });
 
-    // 1) Firma kodlarını belirle (mevcut olanı koru, çakışanlara yeni kod ver)
     const kullanilan = new Set(), firmaKod = {};
     for (const [f, dizi] of Object.entries(firmalar)) {
       const mevcut = (dizi.find(x => x.data.firmaKodu) || { data: {} }).data.firmaKodu;
@@ -617,7 +614,6 @@ window.eskiKayitlariOptimizeEt = async function () {
       firmaKod[f] = aday; kullanilan.add(aday);
     }
 
-    // 2) Form numaraları (eskiden yeniye; var olan numaralar korunur)
     let n = 0;
     for (const [f, dizi] of Object.entries(firmalar)) {
       dizi.sort((x, y) => new Date(x.data.tarih || 0) - new Date(y.data.tarih || 0));
@@ -779,18 +775,17 @@ $("isFormu").addEventListener("submit", async e => {
   if (!navigator.onLine) { showToast("İnternet bağlantısı yok. Bağlanınca tekrar deneyin.", "error"); return; }
   const btn = $("ekleButonu");
   btn.disabled = true; btn.innerText = "📍 Konum alınıyor…";
-  
+
   const firmaAdi = $("firmaAdi").value.trim(), sehir = $("sehir").value, islemTipi = $("islemTipi").value, aciklama = aciklamaNotu.value.trim();
   const aramaFirma = metniNormalizeEt(firmaAdi);
   const formTarihi = $("formTarihi").value;
   if (!formTarihi) { showToast("Lütfen form tarihini girin.", "error"); btn.disabled = false; btn.innerText = kaydetEtiket; return; }
   const tarihIso = inputtanIsoYap(formTarihi);
   const dosyalar = fotoGirdisi.files;
-  
+
   const konum = await getLocation();
-  
+
   try {
-    // Kaçıncı form olduğunu bul (Yeni Ürün Kodu için)
     const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
     const siradakiNo = sonNo + 1;
 
@@ -798,19 +793,19 @@ $("isFormu").addEventListener("submit", async e => {
       btn.innerText = `Yükleniyor (${i + 1}/${dosyalar.length})…`;
       const foto = await compressImage(dosyalar[i]);
       const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: foto });
-      const payload = { 
-          firmaAdi, 
-          aramaFirma, 
-          sehir, 
-          islemTipi, 
-          aciklama, 
-          ekleyen: aktifKullaniciMail, 
-          fotoId: fotoRef.id, 
+      const payload = {
+          firmaAdi,
+          aramaFirma,
+          sehir,
+          islemTipi,
+          aciklama,
+          ekleyen: aktifKullaniciMail,
+          fotoId: fotoRef.id,
           firmaKodu,
           formNo: siradakiNo + i,
-          formKodu: `${firmaKodu}${siradakiNo + i}`, 
+          formKodu: `${firmaKodu}${siradakiNo + i}`,
           tarih: tarihIso,
-          eklenmeTarihi: new Date().toISOString() 
+          eklenmeTarihi: new Date().toISOString()
       };
       if (konum) payload.konum = konum;
       await addDoc(collection(db, "formlar"), payload);
@@ -1147,11 +1142,11 @@ $("btnRaporOlustur").addEventListener("click", async () => {
 
 $("btnExcelIndir").addEventListener("click", () => {
   if (!tumFormlarGlobal.length) { showToast("Önce verileri analiz edin!", "error"); return; }
-  const h = t => String(t || "").replace(/;/g, ",").replace(/\n/g, " ");
-  let csv = "\uFEFFFirma Adi;Sehir;Islem Tipi;Form Kodu;Ekleyen;Tarih;Enlem;Boylam;Aciklama\n";
+  const h = t => String(t || "").replace(/;/g, ",").replace(/[\r\n]+/g, " ");
+  let csv = String.fromCharCode(0xFEFF) + "Firma Adi;Sehir;Islem Tipi;Form Kodu;Ekleyen;Tarih;Enlem;Boylam;Aciklama" + String.fromCharCode(10);
   tumFormlarGlobal.forEach(v => {
     const t = v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : "";
-    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.formKodu), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + "\n";
+    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.formKodu), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + String.fromCharCode(10);
   });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
