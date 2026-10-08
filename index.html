@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>ENORPA İş Formları</title>
-    <script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=NRMFmeeI3iQyF2nsrJrOxYDics90iBtp3IL26sTh0r17C_9uA7_wKSaAsZ5Me78tY8u8fGFhKvzTM0mndmMPvXS99YYjJELJj5YrgHWKulZtRtRjKTOywUNxW2Kr8U4S3E2dK4oc5Otw509WInTlyXBMaaH7t6XRobq8H8vaM8qLZUpnS_VsrKZNjVPrBOVkKvdW-v0BBH5r1iWAC_sbWcIxeJk567yEnJU5T6DkAWUyHTZ94a6jDG3jlu5pmmZMXfSCPWASymCnns3W6Uck2CH1weaf0JEa1Nd5ubAHPZK7hohMLBz96ItomlUVQ7DRHO4s_66oVaGGQQXxi3eF9Q" charset="UTF-8"></script><script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -77,6 +77,8 @@ header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:b
 .form-floating input:focus ~ label,.form-floating input:not(:placeholder-shown) ~ label,.form-floating select ~ label,.form-floating textarea:focus ~ label,.form-floating textarea:not(:placeholder-shown) ~ label{top:11px;font-size:.72rem;color:var(--primary);font-weight:700}
 .form-floating select{appearance:none;-webkit-appearance:none;cursor:pointer}
 .select-wrapper::after{content:"";position:absolute;right:18px;top:50%;width:8px;height:8px;border-right:2px solid var(--text-muted);border-bottom:2px solid var(--text-muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.form-floating input[type="date"] ~ label{top:11px;font-size:.72rem;color:var(--primary);font-weight:700}
+.form-floating input[type="date"]{min-height:58px}
 
 .mic-btn{position:absolute;right:10px;top:12px;background:var(--primary-soft);border:none;color:var(--primary);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;transition:.2s;z-index:2}
 .mic-btn:hover{background:var(--primary);color:#fff}
@@ -124,6 +126,37 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
 .btn-duzenle{background:rgba(202,138,4,.12);color:#ca8a04}.btn-duzenle:hover{background:#eab308;color:#fff}
 .btn-sil{background:rgba(229,72,77,.12);color:var(--danger)}.btn-sil:hover{background:var(--danger);color:#fff}
 .btn-icon svg{width:18px;height:18px}
+
+/* GRUPLAMA (MATRUŞKA) CSS */
+.firma-grup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
+.firma-baslik { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--surface-2); font-weight: 700; color: var(--text-main); font-size: 1.05rem; user-select: none; transition: 0.2s; }
+.firma-baslik:hover { background: var(--primary-soft); }
+.firma-baslik svg { transition: transform 0.3s ease; width: 20px; height: 20px; color: var(--primary); }
+.firma-grup.acik .firma-baslik svg { transform: rotate(180deg); }
+.firma-icerik { display: none; padding: 16px; background: var(--surface); border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
+.firma-grup.acik .firma-icerik { display: flex; animation: fadeIn 0.3s ease; }
+.firma-icerik .liste-karti { margin-bottom: 0; box-shadow: none; border-color: var(--border); background: var(--bg); border-left-color: var(--primary); }
+
+.siralama-butonlari {
+    display: flex;
+    gap: 8px;
+}
+.btn-siralama {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-siralama.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
 
 /* Yüzen alt menü */
 .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px);max-width:420px;
@@ -188,37 +221,6 @@ details.gidilmeyen{margin-top:14px}
 details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color:var(--text-muted)}
 .chip-liste{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .chip-liste span{background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:.75rem;font-weight:600;color:var(--text-muted)}
-
-/* GRUPLAMA (MATRUŞKA) CSS */
-.firma-grup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
-.firma-baslik { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--surface-2); font-weight: 700; color: var(--text-main); font-size: 1.05rem; user-select: none; transition: 0.2s; }
-.firma-baslik:hover { background: var(--primary-soft); }
-.firma-baslik svg { transition: transform 0.3s ease; width: 20px; height: 20px; color: var(--primary); }
-.firma-grup.acik .firma-baslik svg { transform: rotate(180deg); }
-.firma-icerik { display: none; padding: 16px; background: var(--surface); border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
-.firma-grup.acik .firma-icerik { display: flex; animation: fadeIn 0.3s ease; }
-.firma-icerik .liste-karti { margin-bottom: 0; box-shadow: none; border-color: var(--border); background: var(--bg); border-left-color: var(--primary); }
-
-.siralama-butonlari {
-    display: flex;
-    gap: 8px;
-}
-.btn-siralama {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    color: var(--text-main);
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.btn-siralama.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-}
 </style>
 </head>
 <body>
@@ -469,8 +471,7 @@ function htmlGuvenli(m) {
 }
 function jsGuvenliMetin(m) {
   if (!m) return "";
-  return htmlGuvenli(String(m).replace(/\/g,"\\").replace(/'/g,"\'").replace(/
-/g," "));
+  return htmlGuvenli(String(m).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g," "));
 }
 
 function firmaKodTaban(aramaFirma) {
@@ -603,6 +604,7 @@ window.eskiKayitlariOptimizeEt = async function () {
       (firmalar[f] = firmalar[f] || []).push({ id: d.id, data });
     });
 
+    // 1) Firma kodlarını belirle (mevcut olanı koru, çakışanlara yeni kod ver)
     const kullanilan = new Set(), firmaKod = {};
     for (const [f, dizi] of Object.entries(firmalar)) {
       const mevcut = (dizi.find(x => x.data.firmaKodu) || { data: {} }).data.firmaKodu;
@@ -615,6 +617,7 @@ window.eskiKayitlariOptimizeEt = async function () {
       firmaKod[f] = aday; kullanilan.add(aday);
     }
 
+    // 2) Form numaraları (eskiden yeniye; var olan numaralar korunur)
     let n = 0;
     for (const [f, dizi] of Object.entries(firmalar)) {
       dizi.sort((x, y) => new Date(x.data.tarih || 0) - new Date(y.data.tarih || 0));
@@ -776,17 +779,18 @@ $("isFormu").addEventListener("submit", async e => {
   if (!navigator.onLine) { showToast("İnternet bağlantısı yok. Bağlanınca tekrar deneyin.", "error"); return; }
   const btn = $("ekleButonu");
   btn.disabled = true; btn.innerText = "📍 Konum alınıyor…";
-
+  
   const firmaAdi = $("firmaAdi").value.trim(), sehir = $("sehir").value, islemTipi = $("islemTipi").value, aciklama = aciklamaNotu.value.trim();
   const aramaFirma = metniNormalizeEt(firmaAdi);
   const formTarihi = $("formTarihi").value;
   if (!formTarihi) { showToast("Lütfen form tarihini girin.", "error"); btn.disabled = false; btn.innerText = kaydetEtiket; return; }
   const tarihIso = inputtanIsoYap(formTarihi);
   const dosyalar = fotoGirdisi.files;
-
+  
   const konum = await getLocation();
-
+  
   try {
+    // Kaçıncı form olduğunu bul (Yeni Ürün Kodu için)
     const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
     const siradakiNo = sonNo + 1;
 
@@ -794,19 +798,19 @@ $("isFormu").addEventListener("submit", async e => {
       btn.innerText = `Yükleniyor (${i + 1}/${dosyalar.length})…`;
       const foto = await compressImage(dosyalar[i]);
       const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: foto });
-      const payload = {
-          firmaAdi,
-          aramaFirma,
-          sehir,
-          islemTipi,
-          aciklama,
-          ekleyen: aktifKullaniciMail,
-          fotoId: fotoRef.id,
+      const payload = { 
+          firmaAdi, 
+          aramaFirma, 
+          sehir, 
+          islemTipi, 
+          aciklama, 
+          ekleyen: aktifKullaniciMail, 
+          fotoId: fotoRef.id, 
           firmaKodu,
           formNo: siradakiNo + i,
-          formKodu: `${firmaKodu}${siradakiNo + i}`,
+          formKodu: `${firmaKodu}${siradakiNo + i}`, 
           tarih: tarihIso,
-          eklenmeTarihi: new Date().toISOString()
+          eklenmeTarihi: new Date().toISOString() 
       };
       if (konum) payload.konum = konum;
       await addDoc(collection(db, "formlar"), payload);
@@ -990,7 +994,7 @@ $("aramaButonu").addEventListener("click", async () => {
 onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), snapshot => {
   const div = $("canliAkanlar");
   if (snapshot.empty) {
-    div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display='none'"><p>Henüz form eklenmemiş.</p></div>';
+    div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display=\'none\'"><p>Henüz form eklenmemiş.</p></div>';
     return;
   }
   const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
@@ -1075,7 +1079,7 @@ function raporHaritasiniCiz() {
 }
 
 function ilPaneliniCiz() {
-  const div = $("raporIlPaneli"), k = secilenIl, ad = sehirAdi[k] || k, filtre = $("haritaFiltre").value;
+  const div = $("raporIlPaneli"), k = secilenIl, ad = sehirAdi[k] \vert{}\vert{} k, filtre = $("haritaFiltre").value;
   const liste = (raporSehirVeri[k] || []).filter(x => !filtre || x.v.islemTipi === filtre);
   if (!liste.length) { div.innerHTML = `<div class="empty-state"><p>${htmlGuvenli(ad)} için kayıt yok.</p></div>`; return; }
   const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
@@ -1143,14 +1147,11 @@ $("btnRaporOlustur").addEventListener("click", async () => {
 
 $("btnExcelIndir").addEventListener("click", () => {
   if (!tumFormlarGlobal.length) { showToast("Önce verileri analiz edin!", "error"); return; }
-  const h = t => String(t || "").replace(/;/g, ",").replace(/
-/g, " ");
-  let csv = "﻿Firma Adi;Sehir;Islem Tipi;Form Kodu;Ekleyen;Tarih;Enlem;Boylam;Aciklama
-";
+  const h = t => String(t || "").replace(/;/g, ",").replace(/\n/g, " ");
+  let csv = "\uFEFFFirma Adi;Sehir;Islem Tipi;Form Kodu;Ekleyen;Tarih;Enlem;Boylam;Aciklama\n";
   tumFormlarGlobal.forEach(v => {
     const t = v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : "";
-    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.formKodu), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + "
-";
+    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.formKodu), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + "\n";
   });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
