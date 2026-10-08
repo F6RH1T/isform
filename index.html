@@ -169,7 +169,7 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
 .nav-item.active{color:#fff;background:var(--primary)}
 
 /* Modallar */
-#imageModal,#editModal{display:none;position:fixed;inset:0;background:rgba(10,9,8,.82);z-index:2000;justify-content:center;align-items:center;flex-direction:column;padding:20px;backdrop-filter:blur(8px)}
+#imageModal,#editModal,#firmaModal{display:none;position:fixed;inset:0;background:rgba(10,9,8,.82);z-index:2000;justify-content:center;align-items:center;flex-direction:column;padding:20px;backdrop-filter:blur(8px)}
 #imageModal img{max-width:100%;max-height:75vh;border-radius:var(--r-md);box-shadow:0 20px 50px rgba(0,0,0,.5);object-fit:contain;transform-origin:center center;will-change:transform;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;display:block}
 #zoomSahne{overflow:hidden;max-width:100%;border-radius:var(--r-md);touch-action:none;cursor:grab;display:none}
 #zoomSahne.surukle{cursor:grabbing}
@@ -310,6 +310,34 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
 .form-floating input[type="time"] ~ label{top:11px;font-size:.72rem;color:var(--primary);font-weight:700}
 .form-floating input[type="time"]{min-height:58px}
 @media(min-width:1024px){.grid2{display:grid;grid-template-columns:1fr 1fr;column-gap:20px}.grid2 .tam{grid-column:1/-1}}
+.form-floating input[type="date"] ~ label{top:11px;font-size:.72rem;color:var(--primary);font-weight:700}
+.form-floating input[type="date"]{min-height:58px}
+.bakim-satir{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:.9rem}
+.bakim-satir:last-child{border-bottom:none}
+.bakim-rozet{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px;color:#fff;white-space:nowrap;background:var(--primary)}
+.bakim-rozet.gec{background:var(--danger)}.bakim-rozet.yakin{background:#d97706}
+.btn-firma{border:1px solid var(--border);background:var(--surface-2);color:var(--text-main);border-radius:999px;font-size:.72rem;font-weight:700;padding:3px 10px;cursor:pointer;margin-left:6px}
+/* Firma kartı */
+.fk-card{position:relative;width:100%;max-width:520px;max-height:92vh;overflow:auto;background:var(--surface);border-radius:24px;box-shadow:0 30px 70px -20px rgba(0,0,0,.55);animation:fkGiris .25s ease}
+@keyframes fkGiris{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.fk-ust{position:relative;padding:30px 24px 52px;text-align:center;color:#fff;background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary) 55%,#000))}
+.fk-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.2);color:#fff;font-size:1.1rem;cursor:pointer}
+.fk-avatar{width:68px;height:68px;margin:0 auto 12px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;letter-spacing:.5px}
+.fk-ust h3{font-size:1.25rem;font-weight:800;line-height:1.25;word-break:break-word}
+.fk-sehir{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.2);font-size:.8rem;font-weight:600}
+.fk-ist{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:-32px 18px 0;position:relative}
+.fk-ist div{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
+.fk-ist b{display:block;font-size:1rem;font-weight:800}
+.fk-ist small{font-size:.68rem;color:var(--text-muted);font-weight:600}
+.fk-hizli{display:flex;justify-content:center;gap:14px;padding:18px 18px 4px}
+.fk-hizli a{flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:16px;text-decoration:none;font-size:.76rem;font-weight:700;color:var(--text-main);background:var(--surface-2);border:1px solid var(--border);transition:.2s}
+.fk-hizli a span{font-size:1.4rem;line-height:1}
+.fk-hizli a:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+.fk-hizli a.pasif{opacity:.4;pointer-events:none}
+.fk-form{padding:14px 18px 6px}
+.fk-form .form-floating{margin-bottom:12px}
+.fk-alt{display:flex;gap:10px;padding:8px 18px 20px}
+@media(max-width:420px){.fk-ust{padding:26px 16px 48px}.fk-hizli{gap:8px}}
 </style>
 </head>
 <body>
@@ -362,6 +390,7 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
 
   <div class="container">
     <div id="tab-ekle" class="tab-content active">
+      <div id="yaklasanKart" class="card" style="display:none;margin-bottom:16px"></div>
 
       <div id="ekleSecim" class="card">
         <div class="card-title">Yeni kayıt</div>
@@ -393,6 +422,10 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
           <div class="form-floating">
             <input type="date" id="formTarihi" placeholder=" " required>
             <label for="formTarihi">Form tarihi</label>
+          </div>
+          <div class="form-floating">
+            <input type="date" id="bakimTarihi" placeholder=" ">
+            <label for="bakimTarihi">Bir sonraki bakım (isteğe bağlı)</label>
           </div>
           <div class="form-floating">
             <textarea id="aciklamaNotu" placeholder=" "></textarea>
@@ -522,6 +555,38 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
     <a id="downloadLink" href="" download="ENORPA_Is_Formu.jpg" style="display:none">Fotoğrafı indir</a>
   </div>
 
+  <div id="firmaModal">
+    <div class="fk-card">
+      <div class="fk-ust">
+        <button type="button" class="fk-x" id="fkX" aria-label="Kapat">✕</button>
+        <div class="fk-avatar" id="fkAvatar">F</div>
+        <h3 id="fkBaslik">Firma kartı</h3>
+        <span class="fk-sehir" id="fkSehir"></span>
+        <span id="fkAlt" style="display:none"></span>
+      </div>
+      <div class="fk-ist">
+        <div><b id="fkIstForm">0</b><small>Form</small></div>
+        <div><b id="fkIstSon">—</b><small>Son işlem</small></div>
+        <div><b id="fkIstBakim">—</b><small>Sonraki bakım</small></div>
+      </div>
+      <div class="fk-hizli">
+        <a id="fkAra" href="#"><span>📞</span>Ara</a>
+        <a id="fkWa" href="#" target="_blank" rel="noopener"><span>💬</span>WhatsApp</a>
+        <a id="fkHarita" href="#" target="_blank" rel="noopener"><span>🗺</span>Harita</a>
+      </div>
+      <div class="fk-form">
+        <div class="form-floating"><input type="text" id="fkYetkili" placeholder=" " autocomplete="off"><label for="fkYetkili">👤 Yetkili kişi</label></div>
+        <div class="form-floating"><input type="tel" id="fkTelefon" placeholder=" " autocomplete="off"><label for="fkTelefon">📞 Telefon</label></div>
+        <div class="form-floating"><textarea id="fkAdres" placeholder=" "></textarea><label for="fkAdres">📍 Adres</label></div>
+        <div class="form-floating"><textarea id="fkNot" placeholder=" "></textarea><label for="fkNot">📝 Notlar</label></div>
+      </div>
+      <div class="fk-alt">
+        <button id="fkIptal" class="btn" style="background:var(--border);color:var(--text-main)">Kapat</button>
+        <button id="fkKaydet" class="btn btn-primary">💾 Kaydet</button>
+      </div>
+    </div>
+  </div>
+
   <div id="editModal">
     <div class="edit-card">
       <h3 style="margin-bottom:20px;text-align:center;font-weight:800">Kaydı düzenle</h3>
@@ -535,6 +600,7 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
         <input type="date" id="editTarih" placeholder=" " required>
         <label for="editTarih">Form tarihi</label>
       </div>
+      <div class="form-floating"><input type="date" id="editBakim" placeholder=" "><label for="editBakim">Bir sonraki bakım</label></div>
       <div class="form-floating"><textarea id="editAciklama" placeholder=" "></textarea><label for="editAciklama">Açıklama</label></div>
       <div style="display:flex;gap:10px;margin-top:20px">
         <button id="btnEditCancel" class="btn" style="background:var(--border);color:var(--text-main)">İptal</button>
@@ -553,7 +619,7 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, setDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
@@ -1221,6 +1287,8 @@ window.formDuzenle = function (docId, eskiFirma, eskiSehir, eskiIslem, eskiAcikl
   $("editIslemTipi").value = eskiIslem || "";
   $("editAciklama").value = eskiAciklama && eskiAciklama !== "undefined" ? eskiAciklama : "";
   $("editTarih").value = tarihiInputaCevir(eskiTarih);
+  const onceki = (window.formCache || {})[docId];
+  $("editBakim").value = onceki && onceki.sonrakiBakim ? tarihiInputaCevir(onceki.sonrakiBakim) : "";
   $("editModal").style.display = "flex";
 };
 
@@ -1233,7 +1301,7 @@ $("btnEditSave").addEventListener("click", async () => {
   try {
     $("btnEditSave").innerText = "⏳…";
     const yeniArama = metniNormalizeEt(firma);
-    const g = { firmaAdi: firma, aramaFirma: yeniArama, sehir, islemTipi: islem, aciklama, tarih: inputtanIsoYap(editTarih) };
+    const g = { firmaAdi: firma, aramaFirma: yeniArama, sehir, islemTipi: islem, aciklama, tarih: inputtanIsoYap(editTarih), sonrakiBakim: $("editBakim").value ? inputtanIsoYap($("editBakim").value) : deleteField() };
     if (yeniArama !== guncellenecekEskiAramaFirma) {
       const { firmaKodu, sonNo } = await firmaKodunuBul(yeniArama);
       g.firmaKodu = firmaKodu; g.formNo = sonNo + 1; g.formKodu = `${firmaKodu}${sonNo + 1}`;
@@ -1360,6 +1428,7 @@ $("isFormu").addEventListener("submit", async e => {
           eklenmeTarihi: new Date().toISOString()
       };
       if (konum) payload.konum = konum;
+      if ($("bakimTarihi").value) payload.sonrakiBakim = inputtanIsoYap($("bakimTarihi").value);
       await kuyrugaAl(addDoc(collection(db, "formlar"), payload));
     }
     showToast(navigator.onLine ? "Başarıyla eklendi! 🎉" : "Çevrimdışı kaydedildi, bağlantı gelince otomatik gönderilecek 📡", navigator.onLine ? "success" : "info");
@@ -1494,10 +1563,19 @@ function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, 
     </div>`;
 }
 
+const gunFarki = iso => { const g = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); return Math.round((g(new Date(iso)) - g(new Date())) / 864e5); };
+function bakimRozeti(iso, blok) {
+  const f = gunFarki(iso);
+  const sinif = f < 0 ? "gec" : f <= 7 ? "yakin" : "";
+  const yazi = f < 0 ? `⚠ Bakım ${-f} gün gecikti` : f === 0 ? "🔧 Bakım bugün" : `🔧 Bakıma ${f} gün (${new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })})`;
+  return `<span class="bakim-rozet ${sinif}"${blok ? ' style="display:inline-block;margin-bottom:6px"' : ""}>${yazi}</span>`;
+}
 function kartDokumuHTML(docId, v, tarihSecenek, isAdmin) {
   let tarih = "Tarih yok";
   if (v.tarih && !isNaN(new Date(v.tarih).getTime())) tarih = new Date(v.tarih).toLocaleDateString("tr-TR", tarihSecenek);
-  return kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum, v.formKodu, v.tarih);
+  (window.formCache = window.formCache || {})[docId] = v;
+  const kartHtml = kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum, v.formKodu, v.tarih);
+  return v.sonrakiBakim ? kartHtml.replace("<p>🕒", bakimRozeti(v.sonrakiBakim, true) + "<p>🕒") : kartHtml;
 }
 
 (function () {
@@ -1581,6 +1659,7 @@ $("aramaButonu").addEventListener("click", async () => {
             🏢 ${htmlGuvenli(grup.firmaAd)} ${grup.firmaKodu ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}
             <span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${grup.formlar.length}</span>
           </span>
+          <button type="button" class="btn-firma" onclick="event.stopPropagation();firmaKartiAc('${jsGuvenliMetin(grup.formlar[0].v.aramaFirma || metniNormalizeEt(grup.firmaAd))}','${jsGuvenliMetin(grup.firmaAd)}','${jsGuvenliMetin(grup.formlar[0].v.sehir || "")}')">ℹ Firma kartı</button>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
         <div class="firma-icerik" onclick="event.stopPropagation()">
@@ -1593,6 +1672,64 @@ $("aramaButonu").addEventListener("click", async () => {
     console.error("Arama hatası:", err);
     div.innerHTML = `<p style="text-align:center;color:var(--danger);padding:20px">Arama sırasında hata oluştu: ${htmlGuvenli(err.message)}</p>`;
   }
+});
+
+/* ===== YAKLAŞAN BAKIMLAR ===== */
+let bakimDinleyici = null;
+function yaklasanBaslat() {
+  if (bakimDinleyici) return;
+  const alt = new Date(); alt.setDate(alt.getDate() - 30);
+  bakimDinleyici = onSnapshot(query(collection(db, "formlar"), where("sonrakiBakim", ">=", alt.toISOString()), orderBy("sonrakiBakim"), limit(15)), snap => {
+    const kutu = $("yaklasanKart");
+    if (snap.empty) { kutu.style.display = "none"; return; }
+    let h = '<div class="card-title" style="font-size:1.1rem;margin-bottom:8px">📅 Yaklaşan bakımlar</div>';
+    snap.forEach(d => { const v = d.data(); h += `<div class="bakim-satir" onclick="yaklasanAc('${jsGuvenliMetin(v.firmaAdi || "")}')"><span><b>${htmlGuvenli((v.firmaAdi || "").toLocaleUpperCase("tr-TR"))}</b> · ${htmlGuvenli(v.sehir || "")}<br><small style="color:var(--text-muted)">${htmlGuvenli(v.islemTipi || "")} · #${htmlGuvenli(v.formKodu || "")}</small></span>${bakimRozeti(v.sonrakiBakim)}</div>`; });
+    kutu.innerHTML = h; kutu.style.display = "block";
+  }, err => { bakimDinleyici = null; console.error("Bakım listesi hatası:", err); });
+}
+onAuthStateChanged(auth, u => { if (u) yaklasanBaslat(); else { if (bakimDinleyici) bakimDinleyici(); bakimDinleyici = null; } });
+window.yaklasanAc = function (firma) {
+  $("aramaKutusu").value = firma;
+  sekmeyiDegistir("ara", document.querySelectorAll(".nav-item")[1]);
+  $("aramaButonu").click();
+};
+
+/* ===== FİRMA KARTI ===== */
+let fkId = "";
+const fkLinkler = () => {
+  const tel = $("fkTelefon").value.replace(/[^\d+]/g, "");
+  let wa = tel.replace(/^\+/, ""); if (wa.startsWith("00")) wa = wa.slice(2); else if (wa.startsWith("0")) wa = "90" + wa.slice(1); else if (wa.length === 10) wa = "90" + wa;
+  $("fkAra").href = tel ? "tel:" + tel : "#"; $("fkAra").classList.toggle("pasif", !tel);
+  $("fkWa").href = wa ? "https://wa.me/" + wa : "#"; $("fkWa").classList.toggle("pasif", !wa);
+  $("fkHarita").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent($("fkAdres").value.trim() || $("fkAlt").textContent);
+};
+window.firmaKartiAc = async function (aramaFirma, firmaAdi, sehir) {
+  fkId = encodeURIComponent(aramaFirma);
+  $("fkBaslik").textContent = firmaAdi; $("fkAlt").textContent = (firmaAdi + " " + sehir).trim();
+  $("fkSehir").textContent = sehir ? "📍 " + sehir : ""; $("fkSehir").style.display = sehir ? "inline-block" : "none";
+  $("fkAvatar").textContent = firmaAdi.split(/\s+/).filter(Boolean).slice(0, 2).map(k => k[0]).join("").toLocaleUpperCase("tr-TR") || "F";
+  const fl = Object.values(window.formCache || {}).filter(v => v.aramaFirma === aramaFirma);
+  const kisa = iso => new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "2-digit" });
+  const son = fl.map(v => v.tarih).filter(Boolean).sort().pop();
+  const bak = fl.map(v => v.sonrakiBakim).filter(x => x && gunFarki(x) >= 0).sort()[0];
+  $("fkIstForm").textContent = fl.length; $("fkIstSon").textContent = son ? kisa(son) : "—"; $("fkIstBakim").textContent = bak ? kisa(bak) : "—";
+  ["fkYetkili", "fkTelefon", "fkAdres", "fkNot"].forEach(i => $(i).value = "");
+  $("firmaModal").style.display = "flex"; fkLinkler();
+  try {
+    const s = await getDoc(doc(db, "firmalar", fkId));
+    if (s.exists()) { const v = s.data(); $("fkYetkili").value = v.yetkili || ""; $("fkTelefon").value = v.telefon || ""; $("fkAdres").value = v.adres || ""; $("fkNot").value = v.notlar || ""; fkLinkler(); }
+  } catch (e) { console.error(e); showToast("Firma kartı okunamadı: " + e.message, "error"); }
+};
+["fkTelefon", "fkAdres"].forEach(i => $(i).addEventListener("input", fkLinkler));
+const fkKapat = () => { $("firmaModal").style.display = "none"; };
+$("fkIptal").addEventListener("click", fkKapat); $("fkX").addEventListener("click", fkKapat);
+$("firmaModal").addEventListener("click", e => { if (e.target === $("firmaModal")) fkKapat(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("firmaModal").style.display === "flex") fkKapat(); });
+$("fkKaydet").addEventListener("click", async () => {
+  try {
+    await setDoc(doc(db, "firmalar", fkId), { yetkili: $("fkYetkili").value.trim(), telefon: $("fkTelefon").value.trim(), adres: $("fkAdres").value.trim(), notlar: $("fkNot").value.trim(), guncelleyen: aktifKullaniciMail, guncellemeTarihi: new Date().toISOString() }, { merge: true });
+    showToast("Firma kartı kaydedildi", "success"); $("firmaModal").style.display = "none";
+  } catch (e) { showToast("Kaydedilemedi: " + e.message, "error"); }
 });
 
 onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), snapshot => {
