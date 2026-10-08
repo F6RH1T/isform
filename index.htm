@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>ENORPA İş Formları</title>
-    <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=NRMFmeeI3iQyF2nsrJrOxYDics90iBtp3IL26sTh0r17C_9uA7_wKSaAsZ5Me78tY8u8fGFhKvzTM0mndmMPvXS99YYjJELJj5YrgHWKulZtRtRjKTOywUNxW2Kr8U4S3E2dK4oc5Otw509WInTlyXBMaaH7t6XRobq8H8vaM8qLZUpnS_VsrKZNjVPrBOVkKvdW-v0BBH5r1iWAC_sbWcIxeJk567yEnJU5T6DkAWUyHTZ94a6jDG3jlu5pmmZMXfSCPWASymCnns3W6Uck2CH1weaf0JEa1Nd5ubAHPZK7hohMLBz96ItomlUVQ7DRHO4s_66oVaGGQQXxi3eF9Q" charset="UTF-8"></script><script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"></script>
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -40,6 +40,10 @@ body{background:var(--bg);color:var(--text-main);-webkit-font-smoothing:antialia
 .login-card input{width:100%;padding:15px 16px;margin-bottom:12px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-main);border-radius:var(--r-md);font-size:1rem;outline:none;transition:.2s}
 .login-card input:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-soft);background:var(--surface)}
 
+/* Sifre Sifirlama Modali */
+#resetPasswordModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2000; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(5px); }
+.reset-card { background:var(--surface); padding:30px; border-radius:var(--r-lg); width:100%; max-width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
+
 /* Üst bar */
 #mainApp{display:none;padding-bottom:110px}
 header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
@@ -61,7 +65,7 @@ header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:b
 
 /* Kart & başlık */
 .card{background:var(--surface);padding:24px 20px;border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:20px}
-.card-title{font-size:1.35rem;font-weight:800;letter-spacing:-.03em;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.card-title{font-size:1.35rem;font-weight:800;letter-spacing:-.03em;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 
 /* Form alanları */
 .form-floating{position:relative;margin-bottom:16px}
@@ -73,8 +77,6 @@ header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:b
 .form-floating input:focus ~ label,.form-floating input:not(:placeholder-shown) ~ label,.form-floating select ~ label,.form-floating textarea:focus ~ label,.form-floating textarea:not(:placeholder-shown) ~ label{top:11px;font-size:.72rem;color:var(--primary);font-weight:700}
 .form-floating select{appearance:none;-webkit-appearance:none;cursor:pointer}
 .select-wrapper::after{content:"";position:absolute;right:18px;top:50%;width:8px;height:8px;border-right:2px solid var(--text-muted);border-bottom:2px solid var(--text-muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
-.form-floating input[type="date"] ~ label{top:11px;font-size:.72rem;color:var(--primary);font-weight:700}
-.form-floating input[type="date"]{min-height:58px}
 
 .mic-btn{position:absolute;right:10px;top:12px;background:var(--primary-soft);border:none;color:var(--primary);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;transition:.2s;z-index:2}
 .mic-btn:hover{background:var(--primary);color:#fff}
@@ -122,16 +124,6 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
 .btn-duzenle{background:rgba(202,138,4,.12);color:#ca8a04}.btn-duzenle:hover{background:#eab308;color:#fff}
 .btn-sil{background:rgba(229,72,77,.12);color:var(--danger)}.btn-sil:hover{background:var(--danger);color:#fff}
 .btn-icon svg{width:18px;height:18px}
-
-/* GRUPLAMA (MATRUŞKA) CSS */
-.firma-grup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
-.firma-baslik { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--surface-2); font-weight: 700; color: var(--text-main); font-size: 1.05rem; user-select: none; transition: 0.2s; }
-.firma-baslik:hover { background: var(--primary-soft); }
-.firma-baslik svg { transition: transform 0.3s ease; width: 20px; height: 20px; color: var(--primary); }
-.firma-grup.acik .firma-baslik svg { transform: rotate(180deg); }
-.firma-icerik { display: none; padding: 16px; background: var(--surface); border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
-.firma-grup.acik .firma-icerik { display: flex; animation: fadeIn 0.3s ease; }
-.firma-icerik .liste-karti { margin-bottom: 0; box-shadow: none; border-color: var(--border); background: var(--bg); border-left-color: var(--primary); }
 
 /* Yüzen alt menü */
 .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px);max-width:420px;
@@ -196,6 +188,37 @@ details.gidilmeyen{margin-top:14px}
 details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color:var(--text-muted)}
 .chip-liste{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .chip-liste span{background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:.75rem;font-weight:600;color:var(--text-muted)}
+
+/* GRUPLAMA (MATRUŞKA) CSS */
+.firma-grup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
+.firma-baslik { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--surface-2); font-weight: 700; color: var(--text-main); font-size: 1.05rem; user-select: none; transition: 0.2s; }
+.firma-baslik:hover { background: var(--primary-soft); }
+.firma-baslik svg { transition: transform 0.3s ease; width: 20px; height: 20px; color: var(--primary); }
+.firma-grup.acik .firma-baslik svg { transform: rotate(180deg); }
+.firma-icerik { display: none; padding: 16px; background: var(--surface); border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
+.firma-grup.acik .firma-icerik { display: flex; animation: fadeIn 0.3s ease; }
+.firma-icerik .liste-karti { margin-bottom: 0; box-shadow: none; border-color: var(--border); background: var(--bg); border-left-color: var(--primary); }
+
+.siralama-butonlari {
+    display: flex;
+    gap: 8px;
+}
+.btn-siralama {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-siralama.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
 </style>
 </head>
 <body>
@@ -210,9 +233,25 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
       <input type="email" id="loginEmail" placeholder="E-posta adresi" required autocomplete="email">
       <input type="password" id="loginPassword" placeholder="Şifre" required autocomplete="current-password">
       <button type="submit" id="loginBtn" class="btn btn-primary">Giriş yap</button>
+      <a href="#" id="forgotPasswordLink" style="display:block; margin-top:15px; color:var(--primary); font-size:0.85rem; text-decoration:none; font-weight:600;">Şifremi Unuttum</a>
     </form>
     <p id="loginError" style="color:var(--danger);font-size:.85rem;margin-top:15px;display:none">Giriş başarısız. E-posta ve şifreyi kontrol edin.</p>
   </div>
+</div>
+
+<div id="resetPasswordModal">
+    <div class="reset-card">
+        <h3 style="margin-bottom:10px;text-align:center;font-weight:800; color:var(--text-main);">Şifre Sıfırlama</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); text-align:center; margin-bottom:20px;">Hesabınıza ait e-posta adresini girin, size şifre sıfırlama bağlantısı gönderelim.</p>
+        <div class="form-floating">
+            <input type="email" id="resetEmail" placeholder=" " required autocomplete="off">
+            <label for="resetEmail">E-posta Adresi</label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+            <button id="btnResetCancel" class="btn" style="background:var(--border);color:var(--text-main)">İptal</button>
+            <button id="btnResetSend" class="btn btn-primary">Gönder</button>
+        </div>
+    </div>
 </div>
 
 <div id="mainApp">
@@ -276,10 +315,16 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
 
     <div id="tab-ara" class="tab-content">
       <div class="card">
-        <div class="card-title">Form ara</div>
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            Form ara
+            <div class="siralama-butonlari">
+                <button type="button" id="btnSiraYeni" class="btn-siralama active" title="Yeniden Eskiye">⬇️ Yeni</button>
+                <button type="button" id="btnSiraEski" class="btn-siralama" title="Eskiden Yeniye">⬆️ Eski</button>
+            </div>
+        </div>
         <div class="form-floating autocomplete" style="position:relative">
           <input type="text" id="aramaKutusu" placeholder=" " autocomplete="off">
-          <label for="aramaKutusu">Ürün kodu (ENOR3), firma, şehir veya e-posta</label>
+          <label for="aramaKutusu">Ürün kodu, firma, şehir veya e-posta</label>
         </div>
         <button type="button" id="aramaButonu" class="btn btn-primary">Ara</button>
       </div>
@@ -372,12 +417,26 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
 
-// 1 = eskiden yeniye, -1 = yeniden eskiye
-const SIRA_YONU = 1;
+// SIRA_YONU: 1 = Yeniden Eskiye (En güncel en üstte), -1 = Eskiden Yeniye
+let SIRA_YONU = 1;
+
+$("btnSiraYeni").addEventListener("click", function() {
+    SIRA_YONU = 1;
+    this.classList.add("active");
+    $("btnSiraEski").classList.remove("active");
+    if($("aramaKutusu").value !== "") $("aramaButonu").click();
+});
+
+$("btnSiraEski").addEventListener("click", function() {
+    SIRA_YONU = -1;
+    this.classList.add("active");
+    $("btnSiraYeni").classList.remove("active");
+    if($("aramaKutusu").value !== "") $("aramaButonu").click();
+});
 
 const tarihiInputaCevir = iso => {
   const d = iso ? new Date(iso) : new Date();
@@ -386,10 +445,18 @@ const tarihiInputaCevir = iso => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 };
 const inputtanIsoYap = val => new Date(val + "T12:00:00").toISOString();
-const tarihKarsilastir = (a, b) =>
-  (new Date(a.tarih || 0) - new Date(b.tarih || 0)) || ((a.formNo || 0) - (b.formNo || 0));
 
-const yoneticiMailleri = ["saha@enorpa.com", "servis@enorpa.com", "stajyer@enorpa.com", "turuncu@enorpa.com"];
+// Sıralama Fonksiyonu
+const tarihKarsilastir = (a, b) => {
+  const tA = new Date(a.tarih || 0).getTime();
+  const tB = new Date(b.tarih || 0).getTime();
+  if(tA === tB) {
+      return (b.formNo || koddanNo(b.formKodu)) - (a.formNo || koddanNo(a.formKodu));
+  }
+  return tB - tA; 
+};
+
+const yoneticiMailleri = ["saha@enorpa.com", "servis@enorpa.com", "stajyer@enorpa.com", "turuncu@enorpa.com", "eflatun@enorpa.com"];
 const sehirIsimleri = "Adana,Adıyaman,Afyonkarahisar,Ağrı,Aksaray,Amasya,Ankara,Antalya,Ardahan,Artvin,Aydın,Balıkesir,Bartın,Batman,Bayburt,Bilecik,Bingöl,Bitlis,Bolu,Burdur,Bursa,Çanakkale,Çankırı,Çorum,Denizli,Diyarbakır,Düzce,Edirne,Elazığ,Erzincan,Erzurum,Eskişehir,Gaziantep,Giresun,Gümüşhane,Hakkari,Hatay,Iğdır,Isparta,İstanbul,İzmir,Kahramanmaraş,Karabük,Karaman,Kars,Kastamonu,Kayseri,Kilis,Kırıkkale,Kırklareli,Kırşehir,Kocaeli,Konya,Kütahya,Malatya,Manisa,Mardin,Mersin,Muğla,Muş,Nevşehir,Niğde,Ordu,Osmaniye,Rize,Sakarya,Samsun,Şanlıurfa,Siirt,Sinop,Şırnak,Sivas,Tekirdağ,Tokat,Trabzon,Tunceli,Uşak,Van,Yalova,Yozgat,Zonguldak".split(",");
 
 function metniNormalizeEt(m) {
@@ -402,7 +469,8 @@ function htmlGuvenli(m) {
 }
 function jsGuvenliMetin(m) {
   if (!m) return "";
-  return htmlGuvenli(String(m).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\n/g," "));
+  return htmlGuvenli(String(m).replace(/\/g,"\\").replace(/'/g,"\'").replace(/
+/g," "));
 }
 
 function firmaKodTaban(aramaFirma) {
@@ -411,7 +479,6 @@ function firmaKodTaban(aramaFirma) {
 }
 function harfEki(n) { let s = ""; while (n > 0) { n--; s = String.fromCharCode(65 + n % 26) + s; n = Math.floor(n / 26); } return s; }
 function koddanNo(kod) { const m = String(kod || "").match(/(\d+)$/); return m ? parseInt(m[1], 10) : 0; }
-// Firmanın kodunu ve son form numarasını bulur; firma yeniyse boş bir kod üretir (ENOR, ENORA, ENORB...)
 async function firmaKodunuBul(aramaFirma) {
   const snap = await getDocs(query(collection(db, "formlar"), where("aramaFirma", "==", aramaFirma)));
   let kod = null, maks = 0;
@@ -489,6 +556,40 @@ $("loginForm").addEventListener("submit", e => {
 });
 $("logoutBtn").addEventListener("click", () => signOut(auth));
 
+// Sifre Sifirlama Sistemi
+$("forgotPasswordLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    $("resetPasswordModal").style.display = "flex";
+});
+
+$("btnResetCancel").addEventListener("click", () => {
+    $("resetPasswordModal").style.display = "none";
+    $("resetEmail").value = "";
+});
+
+$("btnResetSend").addEventListener("click", () => {
+    const email = $("resetEmail").value.trim();
+    if(!email) {
+        showToast("Lütfen e-posta adresinizi girin.", "error");
+        return;
+    }
+    const btn = $("btnResetSend");
+    btn.innerText = "⏳..."; btn.disabled = true;
+
+    sendPasswordResetEmail(auth, email)
+    .then(() => {
+        showToast("Şifre sıfırlama bağlantısı e-postanıza gönderildi!", "success");
+        $("resetPasswordModal").style.display = "none";
+        $("resetEmail").value = "";
+    })
+    .catch((error) => {
+        showToast("Hata: " + error.message, "error");
+    })
+    .finally(() => {
+        btn.innerText = "Gönder"; btn.disabled = false;
+    });
+});
+
 window.eskiKayitlariOptimizeEt = async function () {
   if (!confirm("Arama altyapısı ve Form Kodları güncelleniyor. Onaylıyor musunuz?")) return;
   const btn = $("btnOptimize");
@@ -502,7 +603,6 @@ window.eskiKayitlariOptimizeEt = async function () {
       (firmalar[f] = firmalar[f] || []).push({ id: d.id, data });
     });
 
-    // 1) Firma kodlarını belirle (mevcut olanı koru, çakışanlara yeni kod ver)
     const kullanilan = new Set(), firmaKod = {};
     for (const [f, dizi] of Object.entries(firmalar)) {
       const mevcut = (dizi.find(x => x.data.firmaKodu) || { data: {} }).data.firmaKodu;
@@ -515,7 +615,6 @@ window.eskiKayitlariOptimizeEt = async function () {
       firmaKod[f] = aday; kullanilan.add(aday);
     }
 
-    // 2) Form numaraları (eskiden yeniye; var olan numaralar korunur)
     let n = 0;
     for (const [f, dizi] of Object.entries(firmalar)) {
       dizi.sort((x, y) => new Date(x.data.tarih || 0) - new Date(y.data.tarih || 0));
@@ -688,7 +787,6 @@ $("isFormu").addEventListener("submit", async e => {
   const konum = await getLocation();
 
   try {
-    // Kaçıncı form olduğunu bul (Yeni Ürün Kodu için)
     const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
     const siradakiNo = sonNo + 1;
 
@@ -892,7 +990,7 @@ $("aramaButonu").addEventListener("click", async () => {
 onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), snapshot => {
   const div = $("canliAkanlar");
   if (snapshot.empty) {
-    div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display=\'none\'"><p>Henüz form eklenmemiş.</p></div>';
+    div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display='none'"><p>Henüz form eklenmemiş.</p></div>';
     return;
   }
   const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
@@ -1045,11 +1143,14 @@ $("btnRaporOlustur").addEventListener("click", async () => {
 
 $("btnExcelIndir").addEventListener("click", () => {
   if (!tumFormlarGlobal.length) { showToast("Önce verileri analiz edin!", "error"); return; }
-  const h = t => String(t || "").replace(/;/g, ",").replace(/\n/g, " ");
-  let csv = "\uFEFFFirma Adi;Sehir;Islem Tipi;Form Kodu;Ekleyen;Tarih;Enlem;Boylam;Aciklama\n";
+  const h = t => String(t || "").replace(/;/g, ",").replace(/
+/g, " ");
+  let csv = "﻿Firma Adi;Sehir;Islem Tipi;Form Kodu;Ekleyen;Tarih;Enlem;Boylam;Aciklama
+";
   tumFormlarGlobal.forEach(v => {
     const t = v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : "";
-    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.formKodu), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + "\n";
+    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.formKodu), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + "
+";
   });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
