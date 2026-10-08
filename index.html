@@ -449,6 +449,14 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
           <input type="text" id="aramaKutusu" placeholder=" " autocomplete="off">
           <label for="aramaKutusu">Ürün kodu, firma, şehir veya e-posta</label>
         </div>
+        <div id="filtreSatiri" style="display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 14px">
+          <label style="flex:1;min-width:140px;font-size:.75rem;font-weight:700;color:var(--text-muted)">Başlangıç
+            <input type="date" id="fltBaslangic" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"></label>
+          <label style="flex:1;min-width:140px;font-size:.75rem;font-weight:700;color:var(--text-muted)">Bitiş
+            <input type="date" id="fltBitis" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"></label>
+          <label style="flex:1;min-width:160px;font-size:.75rem;font-weight:700;color:var(--text-muted)">İşlem tipi
+            <select id="fltIslem" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"><option value="">Tümü</option></select></label>
+        </div>
         <button type="button" id="aramaButonu" class="btn btn-primary">Ara</button>
       </div>
       <div id="sonuclar"></div>
@@ -545,7 +553,7 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const $ = id => document.getElementById(id);
@@ -971,7 +979,11 @@ const app = initializeApp({
   messagingSenderId: "601360853063",
   appId: "1:601360853063:web:ec6fa97a46f3d00cfaa962"
 });
-const db = getFirestore(app);
+let db;
+try { db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
+catch (e) { console.warn("Çevrimdışı önbellek açılamadı:", e); db = getFirestore(app); }
+/* Çevrimdışıyken yazma sunucu onayını beklemez; bağlantı gelince Firestore kendisi gönderir */
+const kuyrugaAl = p => { if (navigator.onLine) return p; p.catch(console.error); return Promise.resolve({ id: "offline-" + Date.now() + Math.random().toString(36).slice(2, 7) }); };
 const auth = getAuth(app);
 
 window.showToast = function (msg, type = "info") {
@@ -1309,10 +1321,10 @@ const getLocation = () => new Promise(resolve => {
   );
 });
 
+window.addEventListener("online", () => showToast("Bağlantı geldi, bekleyen kayıtlar gönderiliyor…", "info"));
 const kaydetEtiket = "Konumla kaydet";
 $("isFormu").addEventListener("submit", async e => {
   e.preventDefault();
-  if (!navigator.onLine) { showToast("İnternet bağlantısı yok. Bağlanınca tekrar deneyin.", "error"); return; }
   const btn = $("ekleButonu");
   btn.disabled = true; btn.innerText = "📍 Konum alınıyor…";
 
@@ -1332,7 +1344,7 @@ $("isFormu").addEventListener("submit", async e => {
     for (let i = 0; i < dosyalar.length; i++) {
       btn.innerText = `Yükleniyor (${i + 1}/${dosyalar.length})…`;
       const foto = await compressImage(dosyalar[i]);
-      const fotoRef = await addDoc(collection(db, "formFotograflari"), { base64: foto });
+      const fotoRef = await kuyrugaAl(addDoc(collection(db, "formFotograflari"), { base64: foto }));
       const payload = {
           firmaAdi,
           aramaFirma,
@@ -1348,9 +1360,9 @@ $("isFormu").addEventListener("submit", async e => {
           eklenmeTarihi: new Date().toISOString()
       };
       if (konum) payload.konum = konum;
-      await addDoc(collection(db, "formlar"), payload);
+      await kuyrugaAl(addDoc(collection(db, "formlar"), payload));
     }
-    showToast("Başarıyla eklendi! 🎉", "success");
+    showToast(navigator.onLine ? "Başarıyla eklendi! 🎉" : "Çevrimdışı kaydedildi, bağlantı gelince otomatik gönderilecek 📡", navigator.onLine ? "success" : "info");
     $("isFormu").reset();
     $("formTarihi").value = tarihiInputaCevir();
     fotoPreviewContainer.innerHTML = ""; fotoLabel.classList.remove("active");
@@ -1488,6 +1500,26 @@ function kartDokumuHTML(docId, v, tarihSecenek, isAdmin) {
   return kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum, v.formKodu, v.tarih);
 }
 
+(function () {
+  const hedef = $("fltIslem");
+  [...$("islemTipi").options].forEach(o => { if (o.value) hedef.add(new Option(o.text, o.value)); });
+  ["fltBaslangic", "fltBitis", "fltIslem"].forEach(id => $(id).addEventListener("change", () => { if ($("aramaKutusu").value.trim()) $("aramaButonu").click(); }));
+})();
+window.sonuclariCsvIndir = function () {
+  const liste = window.sonAramaSonuclari || [];
+  if (!liste.length) { showToast("Dışa aktarılacak sonuç yok.", "error"); return; }
+  const h = x => '"' + String(x == null ? "" : x).replace(/"/g, '""').replace(/[\r\n]+/g, " ") + '"';
+  const satirlar = [["Form Kodu", "Firma", "Şehir", "İşlem Tipi", "Ekleyen", "Tarih", "Açıklama", "Konum"]];
+  liste.forEach(({ v }) => satirlar.push([v.formKodu, v.firmaAdi, v.sehir, v.islemTipi, v.ekleyen,
+    v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : "", v.aciklama, v.konum && v.konum.lat ? v.konum.lat + "," + v.konum.lng : ""]));
+  const csv = "\ufeff" + satirlar.map(r => r.map(h).join(";")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  a.download = "enorpa_formlar_" + tarihiInputaCevir() + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+
 $("aramaButonu").addEventListener("click", async () => {
   const ham = aramaKutusu.value.trim(), arama = metniNormalizeEt(ham), div = $("sonuclar");
   if (!ham) { showToast("Lütfen arama kelimesi yazın.", "error"); return; }
@@ -1506,8 +1538,15 @@ $("aramaButonu").addEventListener("click", async () => {
       getDocs(query(collection(db, "formlar"), where("firmaKodu", "==", aramaBuyuk)))
     ]);
 
-    const sonuc = [], gorulen = new Set();
+    let sonuc = [], gorulen = new Set();
     [s4, s5, s1, s2, s3].forEach(snap => snap.forEach(d => { if (!gorulen.has(d.id)) { gorulen.add(d.id); sonuc.push({ id: d.id, v: d.data() }); } }));
+
+    const fBas = $("fltBaslangic").value, fBit = $("fltBitis").value, fIsl = $("fltIslem").value;
+    if (fBas || fBit || fIsl) sonuc = sonuc.filter(x => {
+      const t = tarihiInputaCevir(x.v.tarih);
+      return (!fBas || t >= fBas) && (!fBit || t <= fBit) && (!fIsl || x.v.islemTipi === fIsl);
+    });
+    window.sonAramaSonuclari = sonuc;
 
     if (!sonuc.length) {
       div.innerHTML = `<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display='none'"><p>"${htmlGuvenli(ham)}" için form bulunamadı.</p></div>`;
@@ -1531,7 +1570,7 @@ $("aramaButonu").addEventListener("click", async () => {
 
     siraliGruplar.sort((a, b) => SIRA_YONU * (a.ilkTarih - b.ilkTarih));
 
-    let htmlOut = `<div class="sonuc-bilgisi">${sonuc.length} Form (${siraliGruplar.length} Firma) listelendi</div>`;
+    let htmlOut = `<div class="sonuc-bilgisi" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>${sonuc.length} Form (${siraliGruplar.length} Firma) listelendi</span><button type="button" class="btn-siralama" onclick="sonuclariCsvIndir()">⬇ Excel (CSV)</button></div>`;
 
     for (const grup of siraliGruplar) {
       const icerikHTML = grup.formlar.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("");
