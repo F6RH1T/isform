@@ -1074,7 +1074,7 @@ function raporHaritasiniCiz() {
 }
 
 function ilPaneliniCiz() {
-  const div = $("raporIlPaneli"), k = secilenIl, ad = sehirAdi[k] \vert{}\vert{} k, filtre = $("haritaFiltre").value;
+  const div = $("raporIlPaneli"), k = secilenIl, ad = sehirAdi[k] || k, filtre = $("haritaFiltre").value;
   const liste = (raporSehirVeri[k] || []).filter(x => !filtre || x.v.islemTipi === filtre);
   if (!liste.length) { div.innerHTML = `<div class="empty-state"><p>${htmlGuvenli(ad)} için kayıt yok.</p></div>`; return; }
   const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
