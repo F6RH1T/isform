@@ -2289,7 +2289,8 @@ $("btnExcelIndir").addEventListener("click", () => {
 
 /* ===== GEMINI YAPAY ZEKÂ ===== */
 const AI_ANAHTAR_SABIT = ""; // İsterseniz anahtarı buraya yazabilirsiniz (önerilmez; yazarsanız Google'da siteye göre kısıtlayın)
-let aiModel = localStorage.getItem("gemini_model") || "gemini-3.5-flash";
+let aiModel = localStorage.getItem("gemini_model2") || "gemini-3.1-flash-lite";
+const AI_YEDEK = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.5-flash"];
 const aiAnahtar = () => {
   if (AI_ANAHTAR_SABIT) return AI_ANAHTAR_SABIT;
   let k = localStorage.getItem("gemini_key");
@@ -2302,20 +2303,25 @@ async function aiModelBul(k) {
   const sur = m => parseFloat(m.name.match(/gemini-([\d.]+)-flash/)[1]);
   const l = ((await r.json()).models || []).filter(m => (m.supportedGenerationMethods || []).includes("generateContent") && /^models\/gemini-[\d.]+-flash$/.test(m.name)).sort((a, b) => sur(b) - sur(a));
   if (!l.length) throw new Error("Bu anahtarla kullanılabilir Gemini Flash modeli bulunamadı");
-  aiModel = l[0].name.replace("models/", ""); localStorage.setItem("gemini_model", aiModel);
+  aiModel = l[0].name.replace("models/", ""); localStorage.setItem("gemini_model2", aiModel);
 }
 async function gemini(parts, { json = false, sistem = "" } = {}) {
   if (!navigator.onLine) throw new Error("İnternet bağlantısı yok");
   const k = aiAnahtar(); if (!k) throw new Error("API anahtarı girilmedi");
   const body = { contents: [{ role: "user", parts }], generationConfig: { temperature: 0.3, ...(json ? { responseMimeType: "application/json" } : {}) } };
   if (sistem) body.systemInstruction = { parts: [{ text: sistem }] };
-  const ist = () => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${aiModel}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": k }, body: JSON.stringify(body) });
-  let r = await ist();
-  if (r.status === 404) { await aiModelBul(k); r = await ist(); }
+  const ist = md => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${md}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": k }, body: JSON.stringify(body) });
+  let r;
+  for (const md of [aiModel, ...AI_YEDEK.filter(x => x !== aiModel)]) {   // kota dolarsa / model kapanırsa sıradaki modele geç
+    r = await ist(md);
+    if (r.ok) { if (md !== aiModel) { aiModel = md; localStorage.setItem("gemini_model2", md); } break; }
+    if (r.status !== 429 && r.status !== 404) break;
+  }
+  if (r.status === 404) { await aiModelBul(k); r = await ist(aiModel); }
   if (!r.ok) {
     let ayrinti = ""; try { ayrinti = (await r.json()).error?.message || ""; } catch (e) { }
     if (!AI_ANAHTAR_SABIT && (r.status === 400 || r.status === 403) && /API key|permission|referer/i.test(ayrinti)) localStorage.removeItem("gemini_key");
-    throw new Error(r.status === 429 ? "Kota doldu, biraz sonra tekrar deneyin" : `Gemini hatası ${r.status}: ${ayrinti.slice(0, 160)}`);
+    throw new Error(r.status === 429 ? "Ücretsiz kota doldu (dakikalık veya günlük). Birkaç dakika sonra deneyin; sürerse AI Studio > Rate limit sayfasına bakın" : `Gemini hatası ${r.status}: ${ayrinti.slice(0, 160)}`);
   }
   const j = await r.json();
   const t = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("").trim();
@@ -2510,15 +2516,22 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
 /* Uygulamayla sohbet (Ara sekmesi) */
 {
   const k = document.createElement("div"); k.className = "card";
-  k.innerHTML = '<div class="card-title">✨ Asistana sor</div><div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Örn: Yılmaz Gıda\'ya en son ne yaptık?</label></div>';
+  k.innerHTML = '<div class="card-title">✨ Asistana sor</div><div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Firma kayıtları veya herhangi bir soru sorun</label></div>';
   $("sonuclar").insertAdjacentElement("beforebegin", k);
   aiButon(k, "beforeend", "✨ Sor", async () => {
     const soru = $("aiSoru").value.trim(); if (!soru) throw new Error("Bir soru yazın");
-    const snap = await raporVerisi(), L = []; snap.forEach(d => L.push(d.data()));
-    L.sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
-    const veri = L.slice(0, 1500).map(v => [(v.tarih || "").slice(0, 10), v.firmaAdi || v.aramaFirma, v.sehir, v.islemTipi, (v.aciklama || "").slice(0, 300), v.sonrakiBakim ? "sonraki:" + v.sonrakiBakim.slice(0, 10) : ""].join(" | ")).join("\n");
-    kutuYaz(cevap, await gemini([{ text: `Bugün: ${bugun()}. Aşağıdaki servis kayıtlarına (en yeni 1500 kayıt, ${L.length} kayıttan) dayanarak soruyu cevapla. Veride olmayanı söyleme, bulunamazsa bunu belirt.\n\nSoru: ${soru}\n\nKayıtlar (tarih | firma | şehir | işlem | not | sonraki bakım):\n${veri}` }], { sistem: aiSis }));
-  }, "margin-top:10px;");
+    const sq = metniNormalizeEt(soru);
+    const kayitli = /firma|m[uü]steri|kay[iı]t|form|bak[iı]m|ar[iı]za|kurulum|ke[sş]if|kaç|kac|ge[cç]en|bu ay|bu y[iı]l|yakla[sş]an|gecikmi[sş]|[sş]ehir|personel|en son|bizim|biz /i.test(soru.toLocaleLowerCase("tr-TR"))
+      || Object.values(window.formCache || {}).some(v => v.aramaFirma && v.aramaFirma.length >= 4 && sq.includes(v.aramaFirma));
+    let istem = soru;
+    if (kayitli) {
+      const snap = await raporVerisi(), L = []; snap.forEach(d => L.push(d.data()));
+      L.sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
+      const veri = L.slice(0, 1500).map(v => [(v.tarih || "").slice(0, 10), v.firmaAdi || v.aramaFirma, v.sehir, v.islemTipi, (v.aciklama || "").slice(0, 300), v.sonrakiBakim ? "sonraki:" + v.sonrakiBakim.slice(0, 10) : ""].join(" | ")).join("\n");
+      istem = `Bugün: ${bugun()}. Soru firmanın servis kayıtlarıyla ilgiliyse aşağıdaki kayıtlara (en yeni 1500 kayıt, toplam ${L.length}) dayanarak cevapla, kayıtta olmayanı uydurma. Soru kayıtlarla ilgili değilse kayıtları yok sayıp genel bilginle cevapla.\n\nSoru: ${soru}\n\nKayıtlar (tarih | firma | şehir | işlem | not | sonraki bakım):\n${veri}`;
+    }
+    kutuYaz(cevap, await gemini([{ text: istem }], { sistem: "Sen bir teknik servis firmasının yardımcısısın. Türkçe, kısa ve net cevap ver. Bilmediğin şeyi uydurma." }));
+}, "margin-top:10px;");
   var cevap = aiKutu(k, "beforeend");
 }
 
