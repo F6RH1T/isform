@@ -109,7 +109,7 @@ button.btn:active{transform:scale(.98)}
 button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;opacity:.6}
 
 /* Kayıt kartları */
-.liste-karti{background:var(--surface);padding:16px;border-radius:var(--r-md);margin-bottom:12px;border:1px solid var(--border);border-left:4px solid var(--primary);display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.liste-karti{min-width:0;max-width:100%;background:var(--surface);padding:16px;border-radius:var(--r-md);margin-bottom:12px;border:1px solid var(--border);border-left:4px solid var(--primary);display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
 .karti-ust{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .liste-karti-bilgi{flex:1;cursor:pointer;overflow:hidden}
 .liste-karti-bilgi h4{margin:0 0 8px;font-size:1rem;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -118,7 +118,7 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
 .badge{background:var(--surface-2);border:1px solid var(--border);color:var(--text-main);padding:4px 10px;border-radius:999px}
 .badge-konum{background:rgba(22,163,74,.12);color:var(--success);text-decoration:none;padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;transition:.2s}
 .badge-konum:hover{background:var(--success);color:#fff}
-.aciklama-kutusu{background:var(--surface-2);padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;line-height:1.5}
+.aciklama-kutusu{background:var(--surface-2);padding:10px 12px;border-radius:var(--r-sm);font-size:.85rem;line-height:1.5;max-width:100%;min-width:0;box-sizing:border-box;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
 .liste-karti-butonlar{display:flex;gap:6px}
 .btn-icon{width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;transition:.2s;flex-shrink:0;border:none}
 .btn-gor{background:rgba(59,130,246,.12);color:#3b82f6}.btn-gor:hover{background:#3b82f6;color:#fff}
@@ -130,6 +130,19 @@ button:disabled{background:var(--text-muted);box-shadow:none;cursor:not-allowed;
 .firma-grup { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
 .firma-baslik { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--surface-2); font-weight: 700; color: var(--text-main); font-size: 1.05rem; user-select: none; transition: 0.2s; }
 .firma-baslik:hover { background: var(--primary-soft); }
+/* ---- Firma başlığı: mobilde taşma / üst üste binme düzeltmesi ---- */
+.firma-baslik{gap:8px 10px;flex-wrap:wrap}
+.firma-baslik .fb-sol{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;flex:1 1 150px;min-width:0;white-space:normal;overflow:visible}
+.firma-baslik .fb-ad{overflow-wrap:anywhere;word-break:break-word;line-height:1.25}
+.firma-baslik .badge{flex:0 0 auto;white-space:nowrap}
+.firma-baslik .btn-firma{flex:0 0 auto;white-space:nowrap;margin-left:0}
+.firma-baslik svg{flex:0 0 auto}
+@media (max-width:480px){
+  .firma-baslik{padding:14px 12px;font-size:1rem}
+  .firma-baslik .fb-sol{flex-basis:100%}
+  .firma-baslik .btn-firma{margin-left:auto}
+}
+
 .firma-baslik svg { transition: transform 0.3s ease; width: 20px; height: 20px; color: var(--primary); }
 .firma-grup.acik .firma-baslik svg { transform: rotate(180deg); }
 .firma-icerik { display: none; padding: 16px; background: var(--surface); border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
@@ -434,7 +447,6 @@ window.addEventListener("load", () => setTimeout(() => { pdfKutuphaneleri().catc
             <label for="bakimTarihi">Bir sonraki bakım (isteğe bağlı)</label>
           </div>
           <label style="display:block;margin-bottom:14px;font-size:.75rem;font-weight:700;color:var(--text-muted)">🔁 Bakım tekrarı<select id="bakimAralik" style="width:100%;margin-top:4px;padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"><option value="">Tekrarlama yok</option><option value="1">Her ay</option><option value="3">3 ayda bir</option><option value="6">6 ayda bir</option><option value="12">Yılda bir</option></select></label>
-      <label style="display:block;margin-bottom:14px;font-size:.75rem;font-weight:700;color:var(--text-muted)">🧑‍🔧 Sorumlu personel (e-posta)<input type="email" id="sorumlu" autocomplete="off" style="width:100%;margin-top:4px;padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"></label>
           <div class="form-floating">
             <textarea id="aciklamaNotu" placeholder=" "></textarea>
             <label for="aciklamaNotu">Açıklama / not</label>
@@ -613,7 +625,6 @@ window.addEventListener("load", () => setTimeout(() => { pdfKutuphaneleri().catc
       </div>
       <div class="form-floating"><input type="date" id="editBakim" placeholder=" "><label for="editBakim">Bir sonraki bakım</label></div>
       <label style="display:block;margin-bottom:14px;font-size:.75rem;font-weight:700;color:var(--text-muted)">🔁 Bakım tekrarı<select id="editAralik" style="width:100%;margin-top:4px;padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"><option value="">Tekrarlama yok</option><option value="1">Her ay</option><option value="3">3 ayda bir</option><option value="6">6 ayda bir</option><option value="12">Yılda bir</option></select></label>
-      <label style="display:block;margin-bottom:14px;font-size:.75rem;font-weight:700;color:var(--text-muted)">🧑‍🔧 Sorumlu personel (e-posta)<input type="email" id="editSorumlu" autocomplete="off" style="width:100%;margin-top:4px;padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"></label>
       <div class="form-floating"><textarea id="editAciklama" placeholder=" "></textarea><label for="editAciklama">Açıklama</label></div>
       <div style="display:flex;gap:10px;margin-top:20px">
         <button id="btnEditCancel" class="btn" style="background:var(--border);color:var(--text-main)">İptal</button>
@@ -732,51 +743,56 @@ $("ofServis").innerHTML = chipler(SERVIS, "servis");
 $("ofServisAlan").innerHTML = fa("ofBasla", "Başlama saati", "time") + fa("ofBitis", "Bitiş saati", "time") + fa("ofGidis", "Gidiş km", "number") + fa("ofDonus", "Dönüş km", "number");
 $("ofPersonel").innerHTML = [1,2,3,4,5,6].map(i => fa("ofP" + i, i + ". personel")).join("");
 
-// İmza Alanı Ekleme
-const imzaHTML = `
+// İmza Alanları (Firma yetkilisi + Müşteri)
+const imzaBlok = (id, baslik) => `
 <div class="tam" style="margin-top:10px;">
-  <div class="alt-baslik">Müşteri İmzası</div>
+  <div class="alt-baslik">${baslik}</div>
   <div style="border:1.5px solid var(--border); border-radius:var(--r-md); background:#fff; overflow:hidden;">
-    <canvas id="imzaCanvas" height="150" style="width:100%; display:block; touch-action:none; cursor:crosshair;"></canvas>
+    <canvas id="${id}" height="150" style="width:100%; display:block; touch-action:none; cursor:crosshair;"></canvas>
     <div style="text-align:right; padding:6px; background:var(--surface-2); border-top:1px solid var(--border);">
-      <button type="button" id="btnImzaTemizle" style="background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;">Temizle</button>
+      <button type="button" data-imza-temizle="${id}" style="background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;">Temizle</button>
     </div>
   </div>
 </div>`;
-$("ofImza").innerHTML = fa("ofSorumlu", "Servis sorumlusu (ad, soyad)") + fa("ofMusteri", "Müşteri / firma yetkilisi (ad, soyad)") + imzaHTML;
+$("ofImza").innerHTML = fa("ofSorumlu", "Servis sorumlusu / firma yetkilisi (ad, soyad)") + imzaBlok("imzaSorumluCanvas", "Servis Sorumlusu (Firma Yetkilisi) İmzası") +
+  fa("ofMusteri", "Müşteri / firma yetkilisi (ad, soyad)") + imzaBlok("imzaCanvas", "Müşteri İmzası");
 
-let imzaCizildi = false, imzaHazir = false, imzaCtx = null;
-function imzaKur() {
-  const c = document.getElementById("imzaCanvas");
+const imzaDurum = {};
+function imzaKurTek(id) {
+  const c = document.getElementById(id);
   if (!c) return;
   const w = c.parentElement.clientWidth;
   if (!w) return;                       // form gizliyken ölçü alma
-  const stil = () => { imzaCtx.strokeStyle = "#000"; imzaCtx.lineWidth = 2.5; imzaCtx.lineCap = "round"; imzaCtx.lineJoin = "round"; };
-  if (!imzaHazir) {
-    imzaCtx = c.getContext("2d");
+  const st = imzaDurum[id] = imzaDurum[id] || { hazir: false, cizildi: false, ctx: null };
+  const stil = () => { st.ctx.strokeStyle = "#000"; st.ctx.lineWidth = 2.5; st.ctx.lineCap = "round"; st.ctx.lineJoin = "round"; };
+  if (!st.hazir) {
+    st.ctx = c.getContext("2d");
     const getP = (e) => {
       const r = c.getBoundingClientRect();
       const ev = e.touches ? e.touches[0] : e;
       return { x: (ev.clientX - r.left) * (c.width / r.width), y: (ev.clientY - r.top) * (c.height / r.height) };
     };
     let ciziyor = false;
-    const bsl = (e) => { e.preventDefault(); ciziyor = true; imzaCizildi = true; const p = getP(e); imzaCtx.beginPath(); imzaCtx.moveTo(p.x, p.y); };
-    const cz = (e) => { if (!ciziyor) return; e.preventDefault(); const p = getP(e); imzaCtx.lineTo(p.x, p.y); imzaCtx.stroke(); };
+    const bsl = (e) => { e.preventDefault(); ciziyor = true; st.cizildi = true; const p = getP(e); st.ctx.beginPath(); st.ctx.moveTo(p.x, p.y); };
+    const cz = (e) => { if (!ciziyor) return; e.preventDefault(); const p = getP(e); st.ctx.lineTo(p.x, p.y); st.ctx.stroke(); };
     const btr = (e) => { if (e) e.preventDefault(); ciziyor = false; };
     c.addEventListener("mousedown", bsl); c.addEventListener("mousemove", cz);
     c.addEventListener("mouseup", btr); c.addEventListener("mouseout", btr);
     c.addEventListener("touchstart", bsl, { passive: false });
     c.addEventListener("touchmove", cz, { passive: false });
     c.addEventListener("touchend", btr);
-    document.getElementById("btnImzaTemizle").addEventListener("click", () => {
-      imzaCtx.clearRect(0, 0, c.width, c.height);
-      imzaCizildi = false;
+    document.querySelector(`[data-imza-temizle="${id}"]`).addEventListener("click", () => {
+      st.ctx.clearRect(0, 0, c.width, c.height);
+      st.cizildi = false;
     });
-    imzaHazir = true;
+    st.hazir = true;
   }
-  if (!imzaCizildi && c.width !== w) { c.width = w; }
+  if (!st.cizildi && c.width !== w) { c.width = w; }
   stil();
 }
+function imzaKur() { imzaKurTek("imzaSorumluCanvas"); imzaKurTek("imzaCanvas"); }
+const imzaVarMi = id => !!(imzaDurum[id] && imzaDurum[id].cizildi);
+function imzalariTemizle() { document.querySelectorAll("[data-imza-temizle]").forEach(b => b.click()); }
 
 window.ekleModu = m => {
   $("ekleSecim").style.display = m ? "none" : "";
@@ -915,7 +931,7 @@ function sablonHTML(d, _logoKullanilmiyor, o = {}) {
 
 <div class="bx2 sec">
   <div class="sg">
-    <div>Servis Sorumlusu<br>Ad, Soyad, İmza<div class="v">${kir(d.sorumlu)}</div></div>
+    <div>Servis Sorumlusu<br>Ad, Soyad, İmza<div class="v">${kir(d.sorumlu)}</div>${d.imzaSorumlu ? `<img src="${d.imzaSorumlu}" style="max-height:40px;max-width:100%;margin-top:3px;object-fit:contain">` : ""}</div>
     <div>Tarih<div class="v">${tr}</div></div>
     <div>Müşteri / Firma<br>Ad, Soyad, Tarih, İmza<div class="v">${kir(d.musteri)}</div>${d.imza ? `<img src="${d.imza}" style="max-height:40px;max-width:100%;margin-top:3px;object-fit:contain">` : ""}</div>
   </div>
@@ -977,10 +993,15 @@ $("olusturFormu").addEventListener("submit", async e => {
     cihaz: isl("cihaz"), marka: v("ofMarka"), kapasite: v("ofKapasite"), seri: v("ofSeri"), proje: v("ofProje"),
     servis: isl("servis"), basla: v("ofBasla"), bitis: v("ofBitis"), gidis: v("ofGidis"), donus: v("ofDonus"),
     aciklama: v("ofAciklama"), p: [1,2,3,4,5,6].map(i => v("ofP" + i)), sorumlu: v("ofSorumlu"), musteri: v("ofMusteri"),
-    imza: imzaCizildi ? document.getElementById("imzaCanvas").toDataURL("image/png") : "" 
+    imza: imzaVarMi("imzaCanvas") ? document.getElementById("imzaCanvas").toDataURL("image/png") : "",
+    imzaSorumlu: imzaVarMi("imzaSorumluCanvas") ? document.getElementById("imzaSorumluCanvas").toDataURL("image/png") : ""
   };
   
   if (!d.firma || !d.sehir || !d.tarih) { showToast("Firma, şehir ve tarih zorunlu.", "error"); return; }
+  if (window.ofKilit) return;
+  if (!d.imzaSorumlu && !confirm("Servis sorumlusu (firma yetkilisi) imzası atılmadı. Yine de devam edilsin mi?")) return;
+  if (!d.imza && !confirm("Müşteri imzası atılmadı. Yine de devam edilsin mi?")) return;
+  window.ofKilit = true;
 
   const btn = $("ofKaydet"); btn.disabled = true; btn.innerText = "PDF hazırlanıyor…";
   try {
@@ -1037,10 +1058,10 @@ $("olusturFormu").addEventListener("submit", async e => {
     showToast("PDF oluşturuldu ve kaydedildi 🎉", "success");
     $("olusturFormu").reset(); 
     $("ofTarih").value = tarihiInputaCevir();
-    document.getElementById("btnImzaTemizle").click();
+    imzalariTemizle();
     ekleModu(null);
   } catch (err) { console.error(err); showToast("Hata: " + err.message, "error"); }
-  finally { btn.disabled = false; btn.innerText = "PDF oluştur ve kaydet"; }
+  finally { window.ofKilit = false; btn.disabled = false; btn.innerText = "PDF oluştur ve kaydet"; }
 });
 
 const tumSehirler = sehirIsimleri.map(metniNormalizeEt).concat("belirsiz");
@@ -1303,7 +1324,6 @@ window.formDuzenle = function (docId, eskiFirma, eskiSehir, eskiIslem, eskiAcikl
   $("editAciklama").value = eskiAciklama && eskiAciklama !== "undefined" ? eskiAciklama : "";
   $("editTarih").value = tarihiInputaCevir(eskiTarih);
   const onceki = (window.formCache || {})[docId];
-  $("editSorumlu").value = onceki && onceki.sorumlu ? onceki.sorumlu : "";
   $("editAralik").value = onceki && onceki.bakimAralik ? String(onceki.bakimAralik) : "";
   $("editBakim").value = onceki && onceki.sonrakiBakim ? tarihiInputaCevir(onceki.sonrakiBakim) : "";
   $("editModal").style.display = "flex";
@@ -1318,7 +1338,7 @@ $("btnEditSave").addEventListener("click", async () => {
   try {
     $("btnEditSave").innerText = "⏳…";
     const yeniArama = metniNormalizeEt(firma);
-    const g = { firmaAdi: firma, aramaFirma: yeniArama, sehir, islemTipi: islem, aciklama, tarih: inputtanIsoYap(editTarih), sorumlu: $("editSorumlu").value.trim().toLowerCase() || deleteField(), bakimAralik: $("editAralik").value ? Number($("editAralik").value) : deleteField(),
+    const g = { firmaAdi: firma, aramaFirma: yeniArama, sehir, islemTipi: islem, aciklama, tarih: inputtanIsoYap(editTarih), bakimAralik: $("editAralik").value ? Number($("editAralik").value) : deleteField(),
       sonrakiBakim: $("editBakim").value ? inputtanIsoYap($("editBakim").value) : ($("editAralik").value ? ayEkle(inputtanIsoYap(editTarih), $("editAralik").value) : deleteField()) };
     if (yeniArama !== guncellenecekEskiAramaFirma) {
       const { firmaKodu, sonNo } = await firmaKodunuBul(yeniArama);
@@ -1413,18 +1433,24 @@ const kaydetEtiket = "Konumla kaydet";
 $("isFormu").addEventListener("submit", async e => {
   e.preventDefault();
   const btn = $("ekleButonu");
+  if (window.kayitKilit) return;            // çift tıklama / çift submit koruması
+  window.kayitKilit = true;
   btn.disabled = true; btn.innerText = "📍 Konum alınıyor…";
 
   const firmaAdi = $("firmaAdi").value.trim(), sehir = $("sehir").value, islemTipi = $("islemTipi").value, aciklama = aciklamaNotu.value.trim();
   const aramaFirma = metniNormalizeEt(firmaAdi);
   const formTarihi = $("formTarihi").value;
-  if (!formTarihi) { showToast("Lütfen form tarihini girin.", "error"); btn.disabled = false; btn.innerText = kaydetEtiket; return; }
+  if (!formTarihi) { showToast("Lütfen form tarihini girin.", "error"); window.kayitKilit = false; btn.disabled = false; btn.innerText = kaydetEtiket; return; }
   const tarihIso = inputtanIsoYap(formTarihi);
   const dosyalar = fotoGirdisi.files;
 
-  const konum = await getLocation();
-
   try {
+    const imza = [aramaFirma, tarihIso, islemTipi, aciklama, dosyalar.length].join("|");
+    if (window.sonKayitImza && window.sonKayitImza.k === imza && Date.now() - window.sonKayitImza.t < 120000 &&
+        !confirm("Aynı firma için aynı bilgilerle az önce kayıt eklendi. Yine de tekrar eklensin mi?")) {
+      return;
+    }
+    const konum = await getLocation();
     const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
     const siradakiNo = sonNo + 1;
 
@@ -1447,19 +1473,19 @@ $("isFormu").addEventListener("submit", async e => {
           eklenmeTarihi: new Date().toISOString()
       };
       if (konum) payload.konum = konum;
-      if ($("sorumlu").value.trim()) payload.sorumlu = $("sorumlu").value.trim().toLowerCase();
       const aralik = $("bakimAralik").value; if (aralik) payload.bakimAralik = Number(aralik);
       if ($("bakimTarihi").value) payload.sonrakiBakim = inputtanIsoYap($("bakimTarihi").value);
       else if (aralik) payload.sonrakiBakim = ayEkle(tarihIso, aralik);
       await kuyrugaAl(addDoc(collection(db, "formlar"), payload));
     }
     if (window.bakimKaynakId) { try { await kuyrugaAl(updateDoc(doc(db, "formlar", window.bakimKaynakId), { sonrakiBakim: deleteField() })); } catch (e) { console.error(e); } window.bakimKaynakId = null; }
+    window.sonKayitImza = { k: imza, t: Date.now() };
     showToast(navigator.onLine ? "Başarıyla eklendi! 🎉" : "Çevrimdışı kaydedildi, bağlantı gelince otomatik gönderilecek 📡", navigator.onLine ? "success" : "info");
     $("isFormu").reset();
     $("formTarihi").value = tarihiInputaCevir();
     fotoPreviewContainer.innerHTML = ""; fotoLabel.classList.remove("active");
   } catch (err) { console.error(err); showToast("Kayıt sırasında hata: " + err.message, "error"); }
-  finally { btn.disabled = false; btn.innerText = kaydetEtiket; }
+  finally { window.kayitKilit = false; btn.disabled = false; btn.innerText = kaydetEtiket; }
 });
 
 const aramaKutusu = $("aramaKutusu");
@@ -1598,7 +1624,7 @@ function kartDokumuHTML(docId, v, tarihSecenek, isAdmin) {
   if (v.tarih && !isNaN(new Date(v.tarih).getTime())) tarih = new Date(v.tarih).toLocaleDateString("tr-TR", tarihSecenek);
   (window.formCache = window.formCache || {})[docId] = v;
   const kartHtml = kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum, v.formKodu, v.tarih);
-  const ek = (v.sonrakiBakim ? bakimRozeti(v.sonrakiBakim, true) + " " : "") + (v.sorumlu ? '<span class="badge" style="margin-bottom:6px">🧑‍🔧 ' + htmlGuvenli(v.sorumlu.split("@")[0]) + "</span> " : "") +
+  const ek = (v.sonrakiBakim ? bakimRozeti(v.sonrakiBakim, true) + " " : "") +
     `<button type="button" class="btn-firma" style="margin:0 0 6px 0" onclick="event.stopPropagation();kaydiKopyala('${docId}')">⎘ Kopyala</button>`;
   return kartHtml.replace("<p>🕒", () => ek + "<p>🕒");
 }
@@ -1685,10 +1711,7 @@ $("aramaButonu").addEventListener("click", async () => {
       htmlOut += `
       <div class="firma-grup">
         <div class="firma-baslik" onclick="this.parentElement.classList.toggle('acik')">
-          <span style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-            🏢 ${htmlGuvenli(grup.firmaAd)} ${grup.firmaKodu ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}
-            <span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${grup.formlar.length}</span>
-          </span>
+          <span class="fb-sol"><span class="fb-ad">🏢 ${htmlGuvenli(grup.firmaAd)}</span>${grup.firmaKodu ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}<span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${grup.formlar.length}</span></span>
           <button type="button" class="btn-firma" onclick="event.stopPropagation();firmaKartiAc('${jsGuvenliMetin(grup.formlar[0].v.aramaFirma || metniNormalizeEt(grup.firmaAd))}','${jsGuvenliMetin(grup.firmaAd)}','${jsGuvenliMetin(grup.formlar[0].v.sehir || "")}')">ℹ Firma kartı</button>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
@@ -1719,7 +1742,7 @@ function yaklasanBaslat() {
     });
     if (gec && !window.gecUyarildi) { window.gecUyarildi = true; showToast("⚠ " + gec + " gecikmiş bakım var", "error"); }
     let h = '<div class="card-title" style="font-size:1.1rem;margin-bottom:8px">📅 Yaklaşan bakımlar</div>' +
-      `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span class="bakim-rozet gec">⚠ ${gec} gecikmiş</span><span class="bakim-rozet yakin">🔧 ${hafta} bu hafta</span><span class="bakim-rozet">${snap.size} toplam</span><label style="font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:4px"><input type="checkbox" ${window.banaModu ? "checked" : ""} onchange="banaToggle(this.checked)">Bana atananlar</label><button type="button" class="btn-firma" style="margin:0" onclick="gunRotasi()">🧭 Günün rotası</button></div>` + h2;
+      `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span class="bakim-rozet gec">⚠ ${gec} gecikmiş</span><span class="bakim-rozet yakin">🔧 ${hafta} bu hafta</span><span class="bakim-rozet">${snap.size} toplam</span><button type="button" class="btn-firma" style="margin:0" onclick="gunRotasi()">🧭 Günün rotası</button></div>` + h2;
     kutu.innerHTML = h; kutu.classList.toggle("bana-modu", !!window.banaModu); kutu.style.display = "block";
   }, err => { bakimDinleyici = null; console.error("Bakım listesi hatası:", err); });
 }
@@ -1731,7 +1754,7 @@ window.bakimYapildi = function (id) {
   $("firmaAdi").value = v.firmaAdi || ""; $("sehir").value = v.sehir || "";
   if (!$("sehir").value) $("sehir").value = metniNormalizeEt(v.sehir || "");
   $("islemTipi").value = v.islemTipi || ""; $("formTarihi").value = tarihiInputaCevir();
-  $("bakimTarihi").value = ""; $("bakimAralik").value = v.bakimAralik ? String(v.bakimAralik) : ""; $("sorumlu").value = v.sorumlu || "";
+  $("bakimTarihi").value = ""; $("bakimAralik").value = v.bakimAralik ? String(v.bakimAralik) : "";
   window.scrollTo({ top: $("isFormu").offsetTop - 80, behavior: "smooth" });
   showToast("Bakım formu hazırlandı, kontrol edip kaydedin", "info");
 };
@@ -1773,7 +1796,7 @@ window.kaydiKopyala = function (id) {
   const v = (window.formCache || {})[id]; if (!v) return;
   $("firmaAdi").value = v.firmaAdi || ""; $("sehir").value = v.sehir || ""; if (!$("sehir").value) $("sehir").value = metniNormalizeEt(v.sehir || "");
   $("islemTipi").value = v.islemTipi || ""; aciklamaNotu.value = v.aciklama || ""; $("formTarihi").value = tarihiInputaCevir();
-  $("bakimTarihi").value = ""; $("bakimAralik").value = v.bakimAralik ? String(v.bakimAralik) : ""; $("sorumlu").value = v.sorumlu || "";
+  $("bakimTarihi").value = ""; $("bakimAralik").value = v.bakimAralik ? String(v.bakimAralik) : "";
   sekmeyiDegistir("ekle", document.querySelectorAll(".nav-item")[0]);
   window.scrollTo({ top: $("isFormu").offsetTop - 80, behavior: "smooth" });
   showToast("Kayıt kopyalandı, düzenleyip kaydedin", "info");
@@ -1994,9 +2017,7 @@ function ilPaneliniCiz() {
     const kod = (formlar.find(x => x.v.firmaKodu) || { v: {} }).v.firmaKodu;
     h += `<div class="firma-grup">
       <div class="firma-baslik" onclick="this.parentElement.classList.toggle('acik')">
-        <span style="display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏢 ${htmlGuvenli(firma)}
-          ${kod ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(kod)}</span>` : ""}
-          <span class="badge" style="background:var(--primary);color:#fff;border:none;padding:2px 8px;">${formlar.length}</span></span>
+        <span class="fb-sol"><span class="fb-ad">🏢 ${htmlGuvenli(firma)}</span>${kod ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(kod)}</span>` : ""}<span class="badge" style="background:var(--primary);color:#fff;border:none;padding:2px 8px;">${formlar.length}</span></span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </div>
       <div class="firma-icerik">${formlar.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("")}</div></div>`;
