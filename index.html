@@ -2288,21 +2288,34 @@ $("btnExcelIndir").addEventListener("click", () => {
 });
 
 /* ===== GEMINI YAPAY ZEKÂ ===== */
-const AI_MODEL = "gemini-2.5-flash";
+const AI_ANAHTAR_SABIT = ""; // İsterseniz anahtarı buraya yazabilirsiniz (önerilmez; yazarsanız Google'da siteye göre kısıtlayın)
+let aiModel = localStorage.getItem("gemini_model") || "gemini-3.5-flash";
 const aiAnahtar = () => {
+  if (AI_ANAHTAR_SABIT) return AI_ANAHTAR_SABIT;
   let k = localStorage.getItem("gemini_key");
   if (!k) { k = (prompt("Gemini API anahtarını girin (yalnızca bu cihazda saklanır):") || "").trim(); if (k) localStorage.setItem("gemini_key", k); }
   return k;
 };
+async function aiModelBul(k) {
+  const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": k } });
+  if (!r.ok) throw new Error("Model listesi alınamadı (" + r.status + ")");
+  const sur = m => parseFloat(m.name.match(/gemini-([\d.]+)-flash/)[1]);
+  const l = ((await r.json()).models || []).filter(m => (m.supportedGenerationMethods || []).includes("generateContent") && /^models\/gemini-[\d.]+-flash$/.test(m.name)).sort((a, b) => sur(b) - sur(a));
+  if (!l.length) throw new Error("Bu anahtarla kullanılabilir Gemini Flash modeli bulunamadı");
+  aiModel = l[0].name.replace("models/", ""); localStorage.setItem("gemini_model", aiModel);
+}
 async function gemini(parts, { json = false, sistem = "" } = {}) {
   if (!navigator.onLine) throw new Error("İnternet bağlantısı yok");
   const k = aiAnahtar(); if (!k) throw new Error("API anahtarı girilmedi");
   const body = { contents: [{ role: "user", parts }], generationConfig: { temperature: 0.3, ...(json ? { responseMimeType: "application/json" } : {}) } };
   if (sistem) body.systemInstruction = { parts: [{ text: sistem }] };
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": k }, body: JSON.stringify(body) });
+  const ist = () => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${aiModel}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": k }, body: JSON.stringify(body) });
+  let r = await ist();
+  if (r.status === 404) { await aiModelBul(k); r = await ist(); }
   if (!r.ok) {
-    if (r.status === 400 || r.status === 403) localStorage.removeItem("gemini_key");
-    throw new Error(r.status === 429 ? "Çok fazla istek, biraz sonra tekrar deneyin" : "Gemini hatası (" + r.status + "). Anahtarı kontrol edin");
+    let ayrinti = ""; try { ayrinti = (await r.json()).error?.message || ""; } catch (e) { }
+    if (!AI_ANAHTAR_SABIT && (r.status === 400 || r.status === 403) && /API key|permission|referer/i.test(ayrinti)) localStorage.removeItem("gemini_key");
+    throw new Error(r.status === 429 ? "Kota doldu, biraz sonra tekrar deneyin" : `Gemini hatası ${r.status}: ${ayrinti.slice(0, 160)}`);
   }
   const j = await r.json();
   const t = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("").trim();
