@@ -402,6 +402,7 @@ window.addEventListener("load", () => setTimeout(() => { pdfKutuphaneleri().catc
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
       <button class="optimize-btn" id="btnOptimize" onclick="eskiKayitlariOptimizeEt()" title="Eski kayıtları yeni hızlı sisteme taşır">⚡ Op.</button>
+      <button class="optimize-btn" id="btnKullanicilar" style="display:none" onclick="kullaniciPaneliAc()" title="Kullanıcılar ve yetkiler">👥</button>
       <button class="logout-btn" id="logoutBtn">Çıkış</button>
     </div>
   </header>
@@ -684,7 +685,10 @@ const tarihKarsilastir = (a, b) => {
   return tB - tA; 
 };
 
-const yoneticiMailleri = ["saha@enorpa.com", "servis@enorpa.com", "stajyer@enorpa.com", "turuncu@enorpa.com", "eflatun@enorpa.com"];
+/* Roller Firestore'daki kullanicilar/{e-posta} kaydından gelir: yonetici | duzenleyen | goruntuleyen */
+let aktifRol = "", rolHazir = Promise.resolve(false);
+const yoneticiMi = () => aktifRol === "yonetici";
+const duzenleyebilirMi = () => aktifRol === "yonetici" || aktifRol === "duzenleyen";
 const sehirIsimleri = "Adana,Adıyaman,Afyonkarahisar,Ağrı,Aksaray,Amasya,Ankara,Antalya,Ardahan,Artvin,Aydın,Balıkesir,Bartın,Batman,Bayburt,Bilecik,Bingöl,Bitlis,Bolu,Burdur,Bursa,Çanakkale,Çankırı,Çorum,Denizli,Diyarbakır,Düzce,Edirne,Elazığ,Erzincan,Erzurum,Eskişehir,Gaziantep,Giresun,Gümüşhane,Hakkari,Hatay,Iğdır,Isparta,İstanbul,İzmir,Kahramanmaraş,Karabük,Karaman,Kars,Kastamonu,Kayseri,Kilis,Kırıkkale,Kırklareli,Kırşehir,Kocaeli,Konya,Kütahya,Malatya,Manisa,Mardin,Mersin,Muğla,Muş,Nevşehir,Niğde,Ordu,Osmaniye,Rize,Sakarya,Samsun,Şanlıurfa,Siirt,Sinop,Şırnak,Sivas,Tekirdağ,Tokat,Trabzon,Tunceli,Uşak,Van,Yalova,Yozgat,Zonguldak".split(",");
 
 function metniNormalizeEt(m) {
@@ -1221,13 +1225,35 @@ $("btnTheme").addEventListener("click", () => {
 onAuthStateChanged(auth, user => {
   if (user) {
     aktifKullaniciMail = (user.email || "").toLowerCase();
-    $("loginScreen").style.display = "none";
-    $("mainApp").style.display = "block";
-    if (!$("formTarihi").value) $("formTarihi").value = tarihiInputaCevir();
-    showToast("Giriş başarılı, hoş geldin!", "success");
-    if (yoneticiMailleri.includes(aktifKullaniciMail)) $("btnOptimize").style.display = "block";
+    rolHazir = (async () => {
+      const onbellekAnahtari = "rol_" + aktifKullaniciMail;
+      try {
+        const sn = await getDoc(doc(db, "kullanicilar", aktifKullaniciMail));
+        const v = sn.exists() ? sn.data() : null;
+        if (!v || v.aktif !== true || !["yonetici", "duzenleyen", "goruntuleyen"].includes(v.rol)) { localStorage.removeItem(onbellekAnahtari); aktifRol = ""; return false; }
+        aktifRol = v.rol; localStorage.setItem(onbellekAnahtari, v.rol); return true;
+      } catch (e) {
+        console.warn("Rol okunamadı:", e.code || e);
+        if (e.code === "permission-denied") { localStorage.removeItem(onbellekAnahtari); aktifRol = ""; return false; }
+        const eski = localStorage.getItem(onbellekAnahtari);   // internet yoksa son bilinen rol
+        if (eski) { aktifRol = eski; return true; }
+        aktifRol = ""; return false;
+      }
+    })();
+    rolHazir.then(ok => {
+      if (!ok) { showToast("Hesabınız yetkilendirilmemiş. Lütfen yöneticiyle görüşün.", "error"); signOut(auth); return; }
+      $("loginScreen").style.display = "none";
+      $("mainApp").style.display = "block";
+      if (!$("formTarihi").value) $("formTarihi").value = tarihiInputaCevir();
+      showToast("Giriş başarılı, hoş geldin!", "success");
+      $("btnOptimize").style.display = yoneticiMi() ? "block" : "none";
+      $("btnKullanicilar").style.display = yoneticiMi() ? "block" : "none";
+      const navlar = document.querySelectorAll(".nav-item");
+      if (navlar[0]) navlar[0].style.display = duzenleyebilirMi() ? "" : "none";   // görüntüleyen form ekleyemez
+      if (!duzenleyebilirMi() && navlar[1]) sekmeyiDegistir("ara", navlar[1]);
+    });
   } else {
-    aktifKullaniciMail = "";
+    aktifKullaniciMail = ""; aktifRol = ""; rolHazir = Promise.resolve(false);
     $("loginScreen").style.display = "flex";
     $("mainApp").style.display = "none";
   }
@@ -1251,6 +1277,71 @@ $("loginForm").addEventListener("submit", e => {
     .finally(() => { btn.innerText = "Giriş yap"; btn.disabled = false; });
 });
 $("logoutBtn").addEventListener("click", () => signOut(auth));
+
+/* ===== KULLANICI YÖNETİMİ (yalnızca yönetici) ===== */
+const ROL_ADI = { yonetici: "Yönetici", duzenleyen: "Düzenleyen", goruntuleyen: "Görüntüleyen" };
+function kullaniciModalHazirla() {
+  if ($("kullaniciModal")) return $("kullaniciModal");
+  const m = document.createElement("div"); m.id = "kullaniciModal";
+  m.style.cssText = "display:none;position:fixed;inset:0;background:rgba(10,9,8,.7);z-index:2000;justify-content:center;align-items:center;padding:16px;backdrop-filter:blur(6px)";
+  m.innerHTML = `<div style="background:var(--surface);color:var(--text-main);border:1px solid var(--border);border-radius:20px;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.35)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:1.15rem">👥 Kullanıcılar ve yetkiler</b><button type="button" id="kmKapat" class="btn-firma" style="margin:0">Kapat</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <input id="kmMail" type="email" placeholder="e-posta" style="flex:1 1 200px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)">
+      <select id="kmRol" style="padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)"><option value="goruntuleyen">Görüntüleyen</option><option value="duzenleyen">Düzenleyen</option><option value="yonetici">Yönetici</option></select>
+      <button type="button" id="kmEkle" class="btn-firma" style="margin:0;background:var(--primary);color:#fff;border-color:var(--primary)">Ekle</button>
+    </div>
+    <div id="kmListe" style="display:flex;flex-direction:column;gap:8px"></div>
+    <p style="font-size:.75rem;opacity:.7;margin:12px 0 0">Not: Yeni kişinin giriş hesabı (e-posta/şifre) Firebase Authentication'dan ayrıca açılmalıdır. Burada sadece uygulamadaki yetkisi belirlenir. Kendi kaydınızı buradan değiştiremezsiniz.</p>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click", e => { if (e.target === m) m.style.display = "none"; });
+  $("kmKapat").addEventListener("click", () => m.style.display = "none");
+  $("kmEkle").addEventListener("click", async () => {
+    const mail = $("kmMail").value.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { showToast("Geçerli bir e-posta girin", "error"); return; }
+    if (mail === aktifKullaniciMail) { showToast("Kendi kaydınızı buradan değiştiremezsiniz", "error"); return; }
+    try { await setDoc(doc(db, "kullanicilar", mail), { rol: $("kmRol").value, aktif: true, guncelleyen: aktifKullaniciMail }); $("kmMail").value = ""; showToast("Kullanıcı kaydedildi", "success"); kullaniciListele(); }
+    catch (e) { console.error(e); showToast("Kaydedilemedi: " + e.message, "error"); }
+  });
+  return m;
+}
+async function kullaniciListele() {
+  const kutu = $("kmListe"); kutu.textContent = "Yükleniyor…";
+  try {
+    const snap = await getDocs(collection(db, "kullanicilar"));
+    const l = []; snap.forEach(d => l.push({ id: d.id, ...d.data() }));
+    l.sort((a, b) => a.id.localeCompare(b.id));
+    kutu.innerHTML = l.map(k => {
+      const ben = k.id === aktifKullaniciMail;
+      const sec = Object.entries(ROL_ADI).map(([v, ad]) => `<option value="${v}"${k.rol === v ? " selected" : ""}>${ad}</option>`).join("");
+      const id = htmlGuvenli(k.id);
+      return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--border);border-radius:12px;opacity:${k.aktif ? 1 : .55}">
+        <span style="flex:1 1 180px;word-break:break-all;font-size:.85rem">${id}${ben ? " <i>(siz)</i>" : ""}</span>
+        <select data-km-rol="${id}" ${ben ? "disabled" : ""} style="padding:6px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)">${sec}</select>
+        <button type="button" data-km-aktif="${id}" data-durum="${k.aktif ? 1 : 0}" class="btn-firma" style="margin:0" ${ben ? "disabled" : ""}>${k.aktif ? "Pasif yap" : "Aktif yap"}</button>
+        <button type="button" data-km-sil="${id}" class="btn-firma" style="margin:0;color:var(--danger)" ${ben ? "disabled" : ""}>Sil</button></div>`;
+    }).join("") || "Kayıt yok";
+    kutu.querySelectorAll("[data-km-rol]").forEach(el => el.addEventListener("change", async () => {
+      try { await updateDoc(doc(db, "kullanicilar", el.dataset.kmRol), { rol: el.value, guncelleyen: aktifKullaniciMail }); showToast("Rol güncellendi", "success"); }
+      catch (e) { showToast("Hata: " + e.message, "error"); kullaniciListele(); }
+    }));
+    kutu.querySelectorAll("[data-km-aktif]").forEach(el => el.addEventListener("click", async () => {
+      try { await updateDoc(doc(db, "kullanicilar", el.dataset.kmAktif), { aktif: el.dataset.durum !== "1", guncelleyen: aktifKullaniciMail }); kullaniciListele(); }
+      catch (e) { showToast("Hata: " + e.message, "error"); }
+    }));
+    kutu.querySelectorAll("[data-km-sil]").forEach(el => el.addEventListener("click", async () => {
+      if (!confirm(el.dataset.kmSil + " listeden silinsin mi? Uygulamaya erişimi kapanır.")) return;
+      try { await deleteDoc(doc(db, "kullanicilar", el.dataset.kmSil)); showToast("Silindi", "success"); kullaniciListele(); }
+      catch (e) { showToast("Hata: " + e.message, "error"); }
+    }));
+  } catch (e) { console.error(e); kutu.textContent = "Liste alınamadı: " + e.message; }
+}
+window.kullaniciPaneliAc = function () {
+  if (!yoneticiMi()) { showToast("Yetkiniz yok!", "error"); return; }
+  kullaniciModalHazirla().style.display = "flex"; kullaniciListele();
+};
+
 
 $("forgotPasswordLink").addEventListener("click", (e) => {
     e.preventDefault();
@@ -1475,7 +1566,7 @@ $("btnEditSave").addEventListener("click", async () => {
 });
 
 window.formSil = async function (docId, fotoId) {
-  if (!yoneticiMailleri.includes(aktifKullaniciMail)) { showToast("Yetkiniz yok!", "error"); return; }
+  if (!yoneticiMi()) { showToast("Yetkiniz yok!", "error"); return; }
   if (!confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) return;
   try {
     if (fotoId && fotoId !== "null" && fotoId !== "undefined") await deleteDoc(doc(db, "formFotograflari", fotoId));
@@ -1818,7 +1909,7 @@ $("aramaButonu").addEventListener("click", async () => {
       return;
     }
 
-    const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
+    const isAdmin = yoneticiMi();
     const opt = { day: "numeric", month: "short", year: "numeric" };
 
     const gruplar = {};
@@ -1901,7 +1992,7 @@ function yaklasanBaslat() {
     kutu.innerHTML = h; kutu.classList.toggle("bana-modu", !!window.banaModu); kutu.style.display = "block";
   }, err => { bakimDinleyici = null; console.error("Bakım listesi hatası:", err); });
 }
-onAuthStateChanged(auth, u => { if (u) yaklasanBaslat(); else { if (bakimDinleyici) bakimDinleyici(); bakimDinleyici = null; } });
+onAuthStateChanged(auth, u => { if (u) rolHazir.then(ok => { if (ok) yaklasanBaslat(); }); else { if (bakimDinleyici) bakimDinleyici(); bakimDinleyici = null; } });
 const ayEkle = (iso, n) => { const d = new Date(iso); d.setMonth(d.getMonth() + Number(n)); return d.toISOString(); };
 window.bakimYapildi = function (id) {
   const v = (window.bakimVeri || {})[id]; if (!v) return;
@@ -1957,7 +2048,7 @@ window.kaydiKopyala = function (id) {
   showToast("Kayıt kopyalandı, düzenleyip kaydedin", "info");
 };
 $("btnYedek").addEventListener("click", async () => {
-  if (!yoneticiMailleri.includes(aktifKullaniciMail)) { showToast("Yetkiniz yok!", "error"); return; }
+  if (!yoneticiMi()) { showToast("Yetkiniz yok!", "error"); return; }
   showToast("Yedek hazırlanıyor…", "info");
   try {
     const out = { tarih: new Date().toISOString(), formlar: [], firmalar: [] };
@@ -2024,7 +2115,7 @@ onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10))
     div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display=\'none\'"><p>Henüz form eklenmemiş.</p></div>';
     return;
   }
-  const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
+  const isAdmin = yoneticiMi();
   const opt = { day: "numeric", month: "short", year: "numeric" };
   const docs = []; snapshot.forEach(d => docs.push({ id: d.id, v: d.data() }));
   docs.sort((a, b) => SIRA_YONU * tarihKarsilastir(a.v, b.v));
@@ -2162,7 +2253,7 @@ function ilPaneliniCiz() {
   const div = document.getElementById("raporIlPaneli"), k = secilenIl, ad = sehirAdi[k] ? sehirAdi[k] : k, filtre = document.getElementById("haritaFiltre").value;
   const liste = (raporSehirVeri[k] || []).filter(x => !filtre || x.v.islemTipi === filtre);
   if (!liste.length) { div.innerHTML = `<div class="empty-state"><p>${htmlGuvenli(ad)} için kayıt yok.</p></div>`; return; }
-  const isAdmin = yoneticiMailleri.includes(aktifKullaniciMail);
+  const isAdmin = yoneticiMi();
   const opt = { day: "numeric", month: "short", year: "numeric" };
   const gruplar = {};
   liste.forEach(x => { const f = (x.v.firmaAdi || "İSİMSİZ FİRMA").toLocaleUpperCase("tr-TR"); (gruplar[f] = gruplar[f] || []).push(x); });
@@ -2318,7 +2409,7 @@ async function aiAnahtarHazirla(zorla = false) {
     if (k) {
       localStorage.setItem("gemini_key", k); aiBulutAtla = false;
       try { await setDoc(doc(db, "ayarlar", "gemini"), { anahtar: k, guncelleyen: auth.currentUser?.email || "" }); }
-      catch (e) { console.warn("Anahtar buluta kaydedilemedi:", e); showToast("Anahtar yalnızca bu cihaza kaydedildi (Firestore kuralında 'ayarlar' izni yok)", "info"); }
+      catch (e) { console.warn("Anahtar buluta kaydedilemedi:", e); showToast("Anahtar yalnızca bu cihaza kaydedildi (buluta sadece yönetici kaydedebilir)", "info"); }
     }
   }
   return k;
@@ -2604,7 +2695,7 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
     const t = (await gemini([{ inlineData: { mimeType: src.slice(5, src.indexOf(";")), data: src.split(",")[1] } }, { text: "Bu bir servis iş formu fotoğrafı (el yazısı olabilir, ters/yan çekilmiş olabilir). Formda yazan yapılan işlem, arıza, değişen parça ve notları okuyup 'Açıklama' alanına yazılacak düzgün ve kısa bir Türkçe metin olarak yaz. Okunamayan veya görünmeyen bilgiyi uydurma. Hiç okunabilir açıklama yoksa sadece OKUNAMADI yaz. Sadece metni ver." }], { sistem: aiSis })).trim();
     kutu.style.display = "block"; kutu.textContent = t;
     if (/^OKUNAMADI/i.test(t)) { showToast("Formdan açıklama okunamadı", "info"); return; }
-    if (!yoneticiMailleri.includes(aktifKullaniciMail)) { showToast("Okundu, ancak kaydetme yetkiniz yok", "info"); return; }
+    if (!yoneticiMi()) { showToast("Okundu, ancak kaydetme yetkiniz yok", "info"); return; }
     await updateDoc(doc(db, "formlar", id), { aciklama: t });
     if (window.formCache?.[id]) window.formCache[id].aciklama = t;
     const kart = $("kart-" + id);
@@ -2620,7 +2711,7 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
     await ra.apply(this, arguments);
     panel.style.display = "flex";
     const v = window.formCache?.[id];   // sadece açıklaması boş kayıtlar otomatik okunur
-    if (v && !v.aciklama && yoneticiMailleri.includes(aktifKullaniciMail) && navigator.onLine && $("modalImage").src.startsWith("data:")) btn.click();
+    if (v && !v.aciklama && yoneticiMi() && navigator.onLine && $("modalImage").src.startsWith("data:")) btn.click();
   };
 }
 </script>
