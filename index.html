@@ -2303,10 +2303,26 @@ let aiModel = localStorage.getItem("gemini_model2") || "gemini-3.1-flash-lite";
 const AI_YEDEK = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.5-flash"];
 const aiAnahtar = () => {
   if (AI_ANAHTAR_SABIT) return AI_ANAHTAR_SABIT;
-  let k = localStorage.getItem("gemini_key");
-  if (!k) { k = (prompt("Gemini API anahtarını girin (yalnızca bu cihazda saklanır):") || "").trim(); if (k) localStorage.setItem("gemini_key", k); }
-  return k;
+  return localStorage.getItem("gemini_key");
 };
+let aiBulutAtla = false;   // kayıtlı anahtar geçersiz çıktıysa buluttan tekrar çekme, yeni anahtar sor
+async function aiAnahtarHazirla(zorla = false) {
+  if (AI_ANAHTAR_SABIT) return AI_ANAHTAR_SABIT;
+  let k = zorla ? "" : localStorage.getItem("gemini_key");
+  if (!k && !zorla && !aiBulutAtla) {   // başka cihazda girilmiş anahtarı Firestore'dan al
+    try { const d = await getDoc(doc(db, "ayarlar", "gemini")); k = (d.exists() && d.data().anahtar || "").trim(); if (k) localStorage.setItem("gemini_key", k); }
+    catch (e) { console.warn("Bulut anahtarı okunamadı:", e); }
+  }
+  if (!k) {
+    k = (prompt("Gemini API anahtarını girin (bir kez girmeniz yeterli, tüm cihazlarda kullanılır):") || "").trim();
+    if (k) {
+      localStorage.setItem("gemini_key", k); aiBulutAtla = false;
+      try { await setDoc(doc(db, "ayarlar", "gemini"), { anahtar: k, guncelleyen: auth.currentUser?.email || "" }); }
+      catch (e) { console.warn("Anahtar buluta kaydedilemedi:", e); showToast("Anahtar yalnızca bu cihaza kaydedildi (Firestore kuralında 'ayarlar' izni yok)", "info"); }
+    }
+  }
+  return k;
+}
 async function aiModelBul(k) {
   const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": k } });
   if (!r.ok) throw new Error("Model listesi alınamadı (" + r.status + ")");
@@ -2317,7 +2333,7 @@ async function aiModelBul(k) {
 }
 async function gemini(parts, { json = false, sistem = "" } = {}) {
   if (!navigator.onLine) throw new Error("İnternet bağlantısı yok");
-  const k = aiAnahtar(); if (!k) throw new Error("API anahtarı girilmedi");
+  const k = await aiAnahtarHazirla(); if (!k) throw new Error("API anahtarı girilmedi");
   const body = { contents: [{ role: "user", parts }], generationConfig: { temperature: 0.3, ...(json ? { responseMimeType: "application/json" } : {}) } };
   if (sistem) body.systemInstruction = { parts: [{ text: sistem }] };
   const ist = md => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${md}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": k }, body: JSON.stringify(body) });
@@ -2330,7 +2346,7 @@ async function gemini(parts, { json = false, sistem = "" } = {}) {
   if (r.status === 404) { await aiModelBul(k); r = await ist(aiModel); }
   if (!r.ok) {
     let ayrinti = ""; try { ayrinti = (await r.json()).error?.message || ""; } catch (e) { }
-    if (!AI_ANAHTAR_SABIT && (r.status === 400 || r.status === 403) && /API key|permission|referer/i.test(ayrinti)) localStorage.removeItem("gemini_key");
+    if (!AI_ANAHTAR_SABIT && (r.status === 400 || r.status === 403) && /API key|permission|referer/i.test(ayrinti)) { localStorage.removeItem("gemini_key"); aiBulutAtla = true; }
     throw new Error(r.status === 429 ? "Ücretsiz kota doldu (dakikalık veya günlük). Birkaç dakika sonra deneyin; sürerse AI Studio > Rate limit sayfasına bakın" : `Gemini hatası ${r.status}: ${ayrinti.slice(0, 160)}`);
   }
   const j = await r.json();
@@ -2450,7 +2466,7 @@ aiButon($("aramaButonu"), "afterend", "✨ Akıllı ara (cümleyle yaz)", async 
     const veri = { toplam: snap.size, sehir: say(v => v.sehir), islem: say(v => v.islemTipi), personel: say(v => v.ekleyen), aylik: say(v => (v.tarih || "").slice(0, 7)) };
     kutu.style.display = "block"; kutu.textContent = await gemini([{ text: `Bugün: ${bugun()}. Bu servis kayıt istatistiklerini yöneticiye 5-6 maddede yorumla: öne çıkanlar, artış/azalış, dikkat edilmesi gerekenler. Sayıları aynen kullan.\n${JSON.stringify(veri)}` }], { sistem: aiSis });
   });
-  aiButon(yenile, "afterend", "🔑 Gemini anahtarını değiştir", () => { localStorage.removeItem("gemini_key"); aiAnahtar(); }, "background:var(--border);color:var(--text-main);border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;text-shadow:none;font-size:.8rem;");
+  aiButon(yenile, "afterend", "🔑 Gemini anahtarını değiştir", async () => { localStorage.removeItem("gemini_key"); await aiAnahtarHazirla(true); }, "background:var(--border);color:var(--text-main);border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;text-shadow:none;font-size:.8rem;");
 }
 
 /* ===== AI EK ÖZELLİKLER ===== */
