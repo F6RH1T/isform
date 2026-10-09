@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>ENORPA İş Formları</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <meta name="theme-color" content="#f26522">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ENORPA">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -401,6 +409,7 @@ window.addEventListener("load", () => setTimeout(() => { pdfKutuphaneleri().catc
       <button class="theme-btn" id="btnTheme" title="Karanlık mod" aria-label="Karanlık mod">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
+      <button class="optimize-btn" id="btnYukle" style="display:none" title="Uygulamayı ana ekrana yükle">📲</button>
       <button class="optimize-btn" id="btnOptimize" onclick="eskiKayitlariOptimizeEt()" title="Eski kayıtları yeni hızlı sisteme taşır">⚡ Op.</button>
       <button class="optimize-btn" id="btnKullanicilar" style="display:none" onclick="kullaniciPaneliAc()" title="Kullanıcılar ve yetkiler">👥</button>
       <button class="logout-btn" id="logoutBtn">Çıkış</button>
@@ -658,14 +667,14 @@ $("btnSiraYeni").addEventListener("click", function() {
     SIRA_YONU = 1;
     this.classList.add("active");
     $("btnSiraEski").classList.remove("active");
-    if($("aramaKutusu").value !== "") $("aramaButonu").click();
+    if($("aramaKutusu").value !== "") sessizAra();
 });
 
 $("btnSiraEski").addEventListener("click", function() {
     SIRA_YONU = -1;
     this.classList.add("active");
     $("btnSiraYeni").classList.remove("active");
-    if($("aramaKutusu").value !== "") $("aramaButonu").click();
+    if($("aramaKutusu").value !== "") sessizAra();
 });
 
 const tarihiInputaCevir = iso => {
@@ -688,6 +697,12 @@ const tarihKarsilastir = (a, b) => {
 /* Roller Firestore'daki kullanicilar/{e-posta} kaydından gelir: yonetici | duzenleyen | goruntuleyen */
 let aktifRol = "", rolHazir = Promise.resolve(false);
 const yoneticiMi = () => aktifRol === "yonetici";
+/* İşlem geçmişi: kim, ne zaman, ne yaptı (yalnızca yönetici okuyabilir, kimse değiştiremez/silemez) */
+function logYaz(islem, hedef = "", detay = "") {
+  if (!aktifKullaniciMail) return;
+  addDoc(collection(db, "islemGecmisi"), { zaman: new Date().toISOString(), kim: aktifKullaniciMail, islem, hedef: String(hedef).slice(0, 200), detay: String(detay).slice(0, 500) })
+    .catch(e => console.warn("Geçmiş yazılamadı:", e.code || e));
+}
 const duzenleyebilirMi = () => aktifRol === "yonetici" || aktifRol === "duzenleyen";
 const sehirIsimleri = "Adana,Adıyaman,Afyonkarahisar,Ağrı,Aksaray,Amasya,Ankara,Antalya,Ardahan,Artvin,Aydın,Balıkesir,Bartın,Batman,Bayburt,Bilecik,Bingöl,Bitlis,Bolu,Burdur,Bursa,Çanakkale,Çankırı,Çorum,Denizli,Diyarbakır,Düzce,Edirne,Elazığ,Erzincan,Erzurum,Eskişehir,Gaziantep,Giresun,Gümüşhane,Hakkari,Hatay,Iğdır,Isparta,İstanbul,İzmir,Kahramanmaraş,Karabük,Karaman,Kars,Kastamonu,Kayseri,Kilis,Kırıkkale,Kırklareli,Kırşehir,Kocaeli,Konya,Kütahya,Malatya,Manisa,Mardin,Mersin,Muğla,Muş,Nevşehir,Niğde,Ordu,Osmaniye,Rize,Sakarya,Samsun,Şanlıurfa,Siirt,Sinop,Şırnak,Sivas,Tekirdağ,Tokat,Trabzon,Tunceli,Uşak,Van,Yalova,Yozgat,Zonguldak".split(",");
 
@@ -1096,6 +1111,7 @@ $("olusturFormu").addEventListener("submit", async e => {
     if (ekIdler.length) payload.ekFotoIdler = ekIdler;
     if (konum) payload.konum = konum;
     await addDoc(collection(db, "formlar"), payload);
+    logYaz("Form (PDF) oluşturuldu", payload.formKodu || "", payload.firmaAdi || "");
 
     showToast("PDF oluşturuldu ve kaydedildi 🎉", "success");
     pdfPaylasKartiAc(pdfDosya, d.firma);
@@ -1278,31 +1294,52 @@ $("loginForm").addEventListener("submit", e => {
 });
 $("logoutBtn").addEventListener("click", () => signOut(auth));
 
-/* ===== KULLANICI YÖNETİMİ (yalnızca yönetici) ===== */
+/* ===== YÖNETİM: KULLANICILAR + İŞLEM GEÇMİŞİ (yalnızca yönetici) ===== */
 const ROL_ADI = { yonetici: "Yönetici", duzenleyen: "Düzenleyen", goruntuleyen: "Görüntüleyen" };
 function kullaniciModalHazirla() {
   if ($("kullaniciModal")) return $("kullaniciModal");
   const m = document.createElement("div"); m.id = "kullaniciModal";
   m.style.cssText = "display:none;position:fixed;inset:0;background:rgba(10,9,8,.7);z-index:2000;justify-content:center;align-items:center;padding:16px;backdrop-filter:blur(6px)";
-  m.innerHTML = `<div style="background:var(--surface);color:var(--text-main);border:1px solid var(--border);border-radius:20px;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.35)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:1.15rem">👥 Kullanıcılar ve yetkiler</b><button type="button" id="kmKapat" class="btn-firma" style="margin:0">Kapat</button></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-      <input id="kmMail" type="email" placeholder="e-posta" style="flex:1 1 200px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)">
-      <select id="kmRol" style="padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)"><option value="goruntuleyen">Görüntüleyen</option><option value="duzenleyen">Düzenleyen</option><option value="yonetici">Yönetici</option></select>
-      <button type="button" id="kmEkle" class="btn-firma" style="margin:0;background:var(--primary);color:#fff;border-color:var(--primary)">Ekle</button>
+  const girdi = "padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)";
+  m.innerHTML = `<div style="background:var(--surface);color:var(--text-main);border:1px solid var(--border);border-radius:20px;width:100%;max-width:600px;max-height:88vh;overflow:auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.35)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:1.15rem">👥 Yönetim</b><button type="button" id="kmKapat" class="btn-firma" style="margin:0">Kapat</button></div>
+    <div style="display:flex;gap:6px;margin-bottom:14px"><button type="button" id="kmSekK" class="btn-firma" style="margin:0">Kullanıcılar</button><button type="button" id="kmSekG" class="btn-firma" style="margin:0">📜 İşlem geçmişi</button></div>
+    <div id="kmPanelK">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <input id="kmMail" type="email" placeholder="e-posta" style="flex:1 1 200px;${girdi}">
+        <select id="kmRol" style="${girdi}"><option value="goruntuleyen">Görüntüleyen</option><option value="duzenleyen">Düzenleyen</option><option value="yonetici">Yönetici</option></select>
+        <button type="button" id="kmEkle" class="btn-firma" style="margin:0;background:var(--primary);color:#fff;border-color:var(--primary)">Ekle</button>
+      </div>
+      <div id="kmListe" style="display:flex;flex-direction:column;gap:8px"></div>
+      <p style="font-size:.75rem;opacity:.7;margin:12px 0 0">Not: Yeni kişinin giriş hesabı (e-posta/şifre) Firebase Authentication'dan ayrıca açılmalıdır. Burada sadece uygulamadaki yetkisi belirlenir. Kendi kaydınızı buradan değiştiremezsiniz.</p>
     </div>
-    <div id="kmListe" style="display:flex;flex-direction:column;gap:8px"></div>
-    <p style="font-size:.75rem;opacity:.7;margin:12px 0 0">Not: Yeni kişinin giriş hesabı (e-posta/şifre) Firebase Authentication'dan ayrıca açılmalıdır. Burada sadece uygulamadaki yetkisi belirlenir. Kendi kaydınızı buradan değiştiremezsiniz.</p>
+    <div id="kmPanelG" style="display:none">
+      <input id="kmGFiltre" type="search" placeholder="Süz: kişi, işlem, firma, form kodu…" style="width:100%;box-sizing:border-box;margin-bottom:10px;${girdi}">
+      <div id="kmGListe" style="display:flex;flex-direction:column;gap:8px"></div>
+      <button type="button" id="kmGDaha" class="btn-firma" style="margin:10px 0 0;display:none">Daha eski kayıtlar</button>
+    </div>
   </div>`;
   document.body.appendChild(m);
   m.addEventListener("click", e => { if (e.target === m) m.style.display = "none"; });
   $("kmKapat").addEventListener("click", () => m.style.display = "none");
+  const sekme = g => {
+    $("kmPanelK").style.display = g ? "none" : "block"; $("kmPanelG").style.display = g ? "block" : "none";
+    for (const [id, aktif] of [["kmSekK", !g], ["kmSekG", g]]) { const b = $(id); b.style.background = aktif ? "var(--primary)" : ""; b.style.color = aktif ? "#fff" : ""; b.style.borderColor = aktif ? "var(--primary)" : ""; }
+    if (g) gecmisYukle(true); else kullaniciListele();
+  };
+  $("kmSekK").addEventListener("click", () => sekme(false)); $("kmSekG").addEventListener("click", () => sekme(true));
+  m._sekme = sekme;
+  $("kmGFiltre").addEventListener("input", gecmisCiz);
+  $("kmGDaha").addEventListener("click", () => gecmisYukle(false));
   $("kmEkle").addEventListener("click", async () => {
     const mail = $("kmMail").value.trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { showToast("Geçerli bir e-posta girin", "error"); return; }
     if (mail === aktifKullaniciMail) { showToast("Kendi kaydınızı buradan değiştiremezsiniz", "error"); return; }
-    try { await setDoc(doc(db, "kullanicilar", mail), { rol: $("kmRol").value, aktif: true, guncelleyen: aktifKullaniciMail }); $("kmMail").value = ""; showToast("Kullanıcı kaydedildi", "success"); kullaniciListele(); }
-    catch (e) { console.error(e); showToast("Kaydedilemedi: " + e.message, "error"); }
+    try {
+      await setDoc(doc(db, "kullanicilar", mail), { rol: $("kmRol").value, aktif: true, guncelleyen: aktifKullaniciMail });
+      logYaz("Kullanıcı eklendi / güncellendi", mail, "rol: " + ROL_ADI[$("kmRol").value]);
+      $("kmMail").value = ""; showToast("Kullanıcı kaydedildi", "success"); kullaniciListele();
+    } catch (e) { console.error(e); showToast("Kaydedilemedi: " + e.message, "error"); }
   });
   return m;
 }
@@ -1318,29 +1355,73 @@ async function kullaniciListele() {
       const id = htmlGuvenli(k.id);
       return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--border);border-radius:12px;opacity:${k.aktif ? 1 : .55}">
         <span style="flex:1 1 180px;word-break:break-all;font-size:.85rem">${id}${ben ? " <i>(siz)</i>" : ""}</span>
-        <select data-km-rol="${id}" ${ben ? "disabled" : ""} style="padding:6px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)">${sec}</select>
+        <select data-km-rol="${id}" data-eski="${htmlGuvenli(k.rol || "")}" ${ben ? "disabled" : ""} style="padding:6px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)">${sec}</select>
         <button type="button" data-km-aktif="${id}" data-durum="${k.aktif ? 1 : 0}" class="btn-firma" style="margin:0" ${ben ? "disabled" : ""}>${k.aktif ? "Pasif yap" : "Aktif yap"}</button>
         <button type="button" data-km-sil="${id}" class="btn-firma" style="margin:0;color:var(--danger)" ${ben ? "disabled" : ""}>Sil</button></div>`;
     }).join("") || "Kayıt yok";
     kutu.querySelectorAll("[data-km-rol]").forEach(el => el.addEventListener("change", async () => {
-      try { await updateDoc(doc(db, "kullanicilar", el.dataset.kmRol), { rol: el.value, guncelleyen: aktifKullaniciMail }); showToast("Rol güncellendi", "success"); }
-      catch (e) { showToast("Hata: " + e.message, "error"); kullaniciListele(); }
+      try {
+        await updateDoc(doc(db, "kullanicilar", el.dataset.kmRol), { rol: el.value, guncelleyen: aktifKullaniciMail });
+        logYaz("Rol değiştirildi", el.dataset.kmRol, `${ROL_ADI[el.dataset.eski] || el.dataset.eski || "?"} → ${ROL_ADI[el.value]}`);
+        el.dataset.eski = el.value; showToast("Rol güncellendi", "success");
+      } catch (e) { showToast("Hata: " + e.message, "error"); kullaniciListele(); }
     }));
     kutu.querySelectorAll("[data-km-aktif]").forEach(el => el.addEventListener("click", async () => {
-      try { await updateDoc(doc(db, "kullanicilar", el.dataset.kmAktif), { aktif: el.dataset.durum !== "1", guncelleyen: aktifKullaniciMail }); kullaniciListele(); }
+      const yeni = el.dataset.durum !== "1";
+      try { await updateDoc(doc(db, "kullanicilar", el.dataset.kmAktif), { aktif: yeni, guncelleyen: aktifKullaniciMail }); logYaz(yeni ? "Kullanıcı aktif yapıldı" : "Kullanıcı pasif yapıldı", el.dataset.kmAktif); kullaniciListele(); }
       catch (e) { showToast("Hata: " + e.message, "error"); }
     }));
     kutu.querySelectorAll("[data-km-sil]").forEach(el => el.addEventListener("click", async () => {
       if (!confirm(el.dataset.kmSil + " listeden silinsin mi? Uygulamaya erişimi kapanır.")) return;
-      try { await deleteDoc(doc(db, "kullanicilar", el.dataset.kmSil)); showToast("Silindi", "success"); kullaniciListele(); }
+      try { await deleteDoc(doc(db, "kullanicilar", el.dataset.kmSil)); logYaz("Kullanıcı silindi", el.dataset.kmSil); showToast("Silindi", "success"); kullaniciListele(); }
       catch (e) { showToast("Hata: " + e.message, "error"); }
     }));
   } catch (e) { console.error(e); kutu.textContent = "Liste alınamadı: " + e.message; }
 }
+let gecmisTum = [], gecmisSon = "", gecmisBitti = false;
+async function gecmisYukle(sifirla) {
+  const kutu = $("kmGListe");
+  if (sifirla) { gecmisTum = []; gecmisSon = ""; gecmisBitti = false; kutu.textContent = "Yükleniyor…"; }
+  try {
+    const q = gecmisSon
+      ? query(collection(db, "islemGecmisi"), where("zaman", "<", gecmisSon), orderBy("zaman", "desc"), limit(100))
+      : query(collection(db, "islemGecmisi"), orderBy("zaman", "desc"), limit(100));
+    const snap = await getDocs(q);
+    snap.forEach(d => gecmisTum.push({ id: d.id, ...d.data() }));
+    if (snap.size < 100) gecmisBitti = true;
+    if (gecmisTum.length) gecmisSon = gecmisTum[gecmisTum.length - 1].zaman;
+    gecmisCiz();
+  } catch (e) { console.error(e); kutu.textContent = "Geçmiş alınamadı: " + e.message + " (Firestore kurallarında islemGecmisi izni var mı?)"; }
+}
+function gecmisCiz() {
+  const kutu = $("kmGListe"), f = ($("kmGFiltre").value || "").trim().toLocaleLowerCase("tr-TR");
+  const l = f ? gecmisTum.filter(x => [x.kim, x.islem, x.hedef, x.detay].join(" ").toLocaleLowerCase("tr-TR").includes(f)) : gecmisTum;
+  kutu.innerHTML = l.map(x => {
+    const t = x.zaman ? new Date(x.zaman).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" }) : "";
+    return `<div style="padding:8px 10px;border:1px solid var(--border);border-radius:12px">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b style="font-size:.88rem">${htmlGuvenli(x.islem || "")}</b><span style="font-size:.75rem;opacity:.7">${htmlGuvenli(t)}</span></div>
+      <div style="font-size:.82rem;word-break:break-word">${htmlGuvenli(x.kim || "")}${x.hedef ? " · " + htmlGuvenli(x.hedef) : ""}</div>
+      ${x.detay ? `<div style="font-size:.78rem;opacity:.75;word-break:break-word">${htmlGuvenli(x.detay)}</div>` : ""}</div>`;
+  }).join("") || "Kayıt yok";
+  $("kmGDaha").style.display = gecmisBitti ? "none" : "block";
+}
 window.kullaniciPaneliAc = function () {
   if (!yoneticiMi()) { showToast("Yetkiniz yok!", "error"); return; }
-  kullaniciModalHazirla().style.display = "flex"; kullaniciListele();
+  const m = kullaniciModalHazirla(); m.style.display = "flex"; m._sekme(false);
 };
+
+/* ===== PWA: uygulama olarak yükleme + çevrimdışı önbellek ===== */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  const kaydet = () => navigator.serviceWorker.register("sw.js").catch(e => console.warn("Service worker kaydedilemedi:", e));
+  if (document.readyState === "complete") kaydet(); else window.addEventListener("load", kaydet);
+}
+let kurulumOlayi = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); kurulumOlayi = e; $("btnYukle").style.display = "block"; });
+window.addEventListener("appinstalled", () => { kurulumOlayi = null; $("btnYukle").style.display = "none"; });
+$("btnYukle").addEventListener("click", async () => {
+  if (!kurulumOlayi) return;
+  kurulumOlayi.prompt(); await kurulumOlayi.userChoice.catch(() => { }); kurulumOlayi = null; $("btnYukle").style.display = "none";
+});
 
 
 $("forgotPasswordLink").addEventListener("click", (e) => {
@@ -1417,7 +1498,7 @@ window.eskiKayitlariOptimizeEt = async function () {
         if (Object.keys(g).length) { await updateDoc(doc(db, "formlar", item.id), g); n++; }
       }
     }
-    showToast(`${n} kayıt optimize edildi ve kodlandı!`, "success");
+    showToast(`${n} kayıt optimize edildi ve kodlandı!`, "success"); logYaz("Toplu optimize çalıştırıldı", "", `${n} kayıt`);
     btn.style.display = "none";
   } catch (e) { showToast("Hata: " + e.message, "error"); }
   finally { btn.disabled = false; btn.innerText = "⚡ Op."; }
@@ -1557,10 +1638,14 @@ $("btnEditSave").addEventListener("click", async () => {
       const { firmaKodu, sonNo } = await firmaKodunuBul(yeniArama);
       g.firmaKodu = firmaKodu; g.formNo = sonNo + 1; g.formKodu = `${firmaKodu}${sonNo + 1}`;
     }
+    const eskiKayit = (window.formCache || {})[guncellenecekDocId] || {};
+    const alanAdlari = { firmaAdi: "firma", sehir: "şehir", islemTipi: "işlem tipi", aciklama: "açıklama", tarih: "tarih" };
+    const degisenler = Object.keys(alanAdlari).filter(a => eskiKayit[a] !== undefined && (a === "tarih" ? tarihiInputaCevir(eskiKayit[a]) !== tarihiInputaCevir(g[a]) : String(eskiKayit[a] ?? "") !== String(g[a] ?? ""))).map(a => alanAdlari[a]);
     await updateDoc(doc(db, "formlar", guncellenecekDocId), g);
+    logYaz("Form düzenlendi", `${eskiKayit.formKodu || g.formKodu || guncellenecekDocId} · ${firma}`, degisenler.length ? "Değişen: " + degisenler.join(", ") : "");
     window.modaliKapatEdit();
     showToast("Kayıt güncellendi", "success");
-    if ($("aramaKutusu").value !== "") $("aramaButonu").click();
+    if ($("aramaKutusu").value !== "") sessizAra();
   } catch (e) { showToast("Hata: " + e.message, "error"); }
   finally { $("btnEditSave").innerText = "Kaydet"; }
 });
@@ -1570,7 +1655,9 @@ window.formSil = async function (docId, fotoId) {
   if (!confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) return;
   try {
     if (fotoId && fotoId !== "null" && fotoId !== "undefined") await deleteDoc(doc(db, "formFotograflari", fotoId));
+    const silinen = (window.formCache || {})[docId] || {};
     await deleteDoc(doc(db, "formlar", docId));
+    logYaz("Form silindi", `${silinen.formKodu || docId} · ${silinen.firmaAdi || ""}`, [silinen.islemTipi, (silinen.tarih || "").slice(0, 10), (silinen.aciklama || "").slice(0, 120)].filter(Boolean).join(" · "));
     const k = $("kart-" + docId); if (k) k.style.display = "none";
     showToast("Form silindi", "success");
   } catch (e) { showToast("Hata: " + e.message, "error"); }
@@ -1699,6 +1786,7 @@ $("isFormu").addEventListener("submit", async e => {
       if ($("bakimTarihi").value) payload.sonrakiBakim = inputtanIsoYap($("bakimTarihi").value);
       else if (aralik) payload.sonrakiBakim = ayEkle(tarihIso, aralik);
       await kuyrugaAl(addDoc(collection(db, "formlar"), payload));
+      logYaz("Form eklendi", payload.formKodu || "", [payload.firmaAdi, payload.islemTipi].filter(Boolean).join(" · "));
     }
     if (window.bakimKaynakId) { try { await kuyrugaAl(updateDoc(doc(db, "formlar", window.bakimKaynakId), { sonrakiBakim: deleteField() })); } catch (e) { console.error(e); } window.bakimKaynakId = null; }
     window.sonKayitImza = { k: imza, t: Date.now() };
@@ -1854,7 +1942,7 @@ function kartDokumuHTML(docId, v, tarihSecenek, isAdmin) {
 (function () {
   const hedef = $("fltIslem");
   [...$("islemTipi").options].forEach(o => { if (o.value) hedef.add(new Option(o.text, o.value)); });
-  ["fltBaslangic", "fltBitis", "fltIslem"].forEach(id => $(id).addEventListener("change", () => { if ($("aramaKutusu").value.trim()) $("aramaButonu").click(); }));
+  ["fltBaslangic", "fltBitis", "fltIslem"].forEach(id => $(id).addEventListener("change", () => { if ($("aramaKutusu").value.trim()) sessizAra(); }));
 })();
 window.aramaOnbellek = window.aramaOnbellek || new Map();
 async function onbellekliSorgu(k, fn) {
@@ -1876,11 +1964,16 @@ window.sonuclariCsvIndir = function () {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
 
+/* Listeyi yenilemek için arama (sayfayı kaydırmaz) */
+function sessizAra() { window._aramaSessiz = true; try { $("aramaButonu").click(); } finally { window._aramaSessiz = false; } }
+
 $("aramaButonu").addEventListener("click", async () => {
+  const kaydir = !window._aramaSessiz;   // kullanıcı kendisi aradıysa sonuçlara in
   const ham = aramaKutusu.value.trim(), arama = metniNormalizeEt(ham), div = $("sonuclar");
   if (!ham) { showToast("Lütfen arama kelimesi yazın.", "error"); return; }
   div.innerHTML = '<div class="skeleton skel-card"></div><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div>';
   autoList.innerHTML = "";
+  if (kaydir) { div.style.scrollMarginTop = "78px"; setTimeout(() => div.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }
   try {
     const hi = String.fromCharCode(63743);
     const bos = { empty: true, forEach() {} };
@@ -2102,7 +2195,7 @@ $("firmaModal").addEventListener("click", e => { if (e.target === $("firmaModal"
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("firmaModal").style.display === "flex") fkKapat(); });
 $("fkKaydet").addEventListener("click", async () => {
   try {
-    await setDoc(doc(db, "firmalar", fkId), { yetkili: $("fkYetkili").value.trim(), telefon: $("fkTelefon").value.trim(), adres: $("fkAdres").value.trim(), notlar: $("fkNot").value.trim(), etiketler: $("fkEtiket").value.trim(), guncelleyen: aktifKullaniciMail, guncellemeTarihi: new Date().toISOString() }, { merge: true });
+    await setDoc(doc(db, "firmalar", fkId), { yetkili: $("fkYetkili").value.trim(), telefon: $("fkTelefon").value.trim(), adres: $("fkAdres").value.trim(), notlar: $("fkNot").value.trim(), etiketler: $("fkEtiket").value.trim(), guncelleyen: aktifKullaniciMail, guncellemeTarihi: new Date().toISOString() }, { merge: true }); logYaz("Firma kartı güncellendi", fkId, "");
     showToast("Firma kartı kaydedildi", "success"); $("firmaModal").style.display = "none";
   } catch (e) { showToast("Kaydedilemedi: " + e.message, "error"); }
 });
@@ -2408,7 +2501,7 @@ async function aiAnahtarHazirla(zorla = false) {
     k = (prompt("Gemini API anahtarını girin (bir kez girmeniz yeterli, tüm cihazlarda kullanılır):") || "").trim();
     if (k) {
       localStorage.setItem("gemini_key", k); aiBulutAtla = false;
-      try { await setDoc(doc(db, "ayarlar", "gemini"), { anahtar: k, guncelleyen: auth.currentUser?.email || "" }); }
+      try { await setDoc(doc(db, "ayarlar", "gemini"), { anahtar: k, guncelleyen: auth.currentUser?.email || "" }); logYaz("Gemini anahtarı kaydedildi"); }
       catch (e) { console.warn("Anahtar buluta kaydedilemedi:", e); showToast("Anahtar yalnızca bu cihaza kaydedildi (buluta sadece yönetici kaydedebilir)", "info"); }
     }
   }
@@ -2499,37 +2592,6 @@ aiButon($("fotoPreviewContainer"), "afterend", "✨ Fotoğrafı oku (etiket / ar
   const t = await gemini([{ inlineData: { mimeType: "image/jpeg", data } }, { text: "Fotoğraftaki cihaz etiketinden marka, model, seri no, güç/kapasite gibi okunabilen bilgileri; etiket yoksa görünen belirgin arıza/hasarı tek kısa paragrafta yaz. Okuyamadığını yazma, uydurma." }], { sistem: aiSis });
   const n = $("aciklamaNotu"); n.value = (n.value.trim() ? n.value.trim() + "\n" : "") + t; olay(n, "input"); showToast("Not'a eklendi", "success");
 });
-
-/* 4) Doğal dille arama */
-aiButon($("aramaButonu"), "afterend", "✨ Akıllı ara (cümleyle yaz)", async () => {
-  const q = $("aramaKutusu").value.trim(); if (!q) throw new Error("Arama kutusuna bir cümle yazın");
-  const r = await gemini([{ text: `Bugün: ${bugun()}. Aramayı filtrelere çevir. JSON: {"firma":"","sehir":"","islemTipi":"Bakım|Arıza|Kurulum|Keşif|Diğer veya boş","baslangic":"YYYY-MM-DD veya boş","bitis":"YYYY-MM-DD veya boş","anahtar":["nottta aranacak kelimelerin KÖK hali, ek almamış, örn. kompresör"]}. "Geçen yıl", "son 3 ay" gibi ifadeleri tarihe çevir. Sadece sorulanı doldur, fazlasını ekleme.\n\nArama: ${q}` }], { json: true });
-  const n = x => metniNormalizeEt(x || ""), kel = (r.anahtar || []).map(n).filter(Boolean), snap = await raporVerisi(), out = [];
-  snap.forEach(d => {
-    const v = d.data(), t = (v.tarih || "").slice(0, 10);
-    if (r.firma && !n(v.firmaAdi || v.aramaFirma).includes(n(r.firma))) return;
-    if (r.sehir && n(v.sehir) !== n(r.sehir)) return;
-    if (r.islemTipi && v.islemTipi !== r.islemTipi) return;
-    if (r.baslangic && t < r.baslangic) return; if (r.bitis && t > r.bitis) return;
-    if (kel.length) { const m = n(v.aciklama); if (!kel.some(k => m.includes(k))) return; }
-    out.push(v);
-  });
-  out.sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
-  let kt = $("aiAramaSonuc"); if (!kt) { kt = document.createElement("div"); kt.id = "aiAramaSonuc"; kt.className = "card"; $("sonuclar").insertAdjacentElement("beforebegin", kt); }
-  kt.textContent = "";
-  const bas = document.createElement("div"); bas.style.cssText = "font-size:.85rem;margin-bottom:10px;color:var(--text-muted)";
-  bas.textContent = `✨ ${out.length} kayıt bulundu. Anlaşılan filtre: ` + [r.firma && "firma: " + r.firma, r.sehir && "şehir: " + r.sehir, r.islemTipi, r.baslangic && "başlangıç: " + r.baslangic, r.bitis && "bitiş: " + r.bitis, kel.length && "kelime: " + kel.join(", ")].filter(Boolean).join(" · ");
-  kt.appendChild(bas);
-  out.slice(0, 40).forEach(v => {
-    const s = document.createElement("div"); s.style.cssText = "padding:10px 0;border-top:1px solid var(--border);cursor:pointer";
-    const a = document.createElement("div"); a.style.fontWeight = "700"; a.textContent = `${v.firmaAdi || v.aramaFirma} · ${sehirAdi[n(v.sehir)] || v.sehir || ""} · ${v.islemTipi || ""} · ${(v.tarih || "").slice(0, 10)}`;
-    const b = document.createElement("div"); b.style.cssText = "font-size:.85rem;color:var(--text-muted)"; b.textContent = (v.aciklama || "").slice(0, 140);
-    s.append(a, b); s.addEventListener("click", () => window.firmaKartiAc(v.aramaFirma, v.firmaAdi || v.aramaFirma, sehirAdi[n(v.sehir)] || v.sehir || ""));
-    kt.appendChild(s);
-  });
-  if (out.length > 40) { const m = document.createElement("div"); m.style.cssText = "font-size:.8rem;padding-top:8px;color:var(--text-muted)"; m.textContent = `İlk 40 kayıt gösteriliyor. Daraltmak için aramayı detaylandırın.`; kt.appendChild(m); }
-  kt.scrollIntoView({ behavior: "smooth", block: "start" });
-}, "margin-top:10px;");
 
 /* 5) Firma özeti + müşteri mesajı */
 {
@@ -2630,27 +2692,134 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
   });
 }
 
-/* Uygulamayla sohbet (Ara sekmesi) */
+/* Asistan (Ara sekmesi): kayıtlarda arar, sayar, özetler, taslak yazar, uygulamayı anlatır */
 {
-  const k = document.createElement("div"); k.className = "card";
-  k.innerHTML = '<div class="card-title">✨ Asistana sor</div><div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Firma kayıtları veya herhangi bir soru sorun</label></div>';
+  const k = document.createElement("div"); k.className = "card"; k.id = "asistanKart";
+  k.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div class="card-title" style="margin:0">✨ Asistan</div><button type="button" id="asTemizle" class="btn-firma" style="margin:0;display:none">Sohbeti temizle</button></div>'
+    + '<div id="asSohbet" style="display:none;max-height:420px;overflow:auto;flex-direction:column;gap:8px;margin-bottom:10px"></div>'
+    + '<div id="asOneri" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>'
+    + '<div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Sorun veya ne bulmak istediğinizi yazın</label></div>';
   $("sonuclar").insertAdjacentElement("beforebegin", k);
-  const sorBtn = aiButon(k, "beforeend", "✨ Sor", async () => {
+  const sohbetEl = $("asSohbet"), asGecmis = [], nrm = x => metniNormalizeEt(x || "");
+
+  const asYaz = (el, m) => {
+    el.textContent = "";
+    String(m).replace(/^\s*[*-] /gm, "• ").split(/\*\*(.+?)\*\*/g).forEach((p, i) => {
+      if (i % 2) { const b = document.createElement("b"); b.textContent = p; el.appendChild(b); } else el.appendChild(document.createTextNode(p));
+    });
+  };
+  const asBalon = (rol, metin) => {
+    sohbetEl.style.display = "flex"; $("asTemizle").style.display = "inline-block";
+    const b = document.createElement("div");
+    b.style.cssText = "max-width:94%;padding:10px 13px;border-radius:16px;font-size:.9rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;" + (rol === "k"
+      ? "align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:4px"
+      : "align-self:flex-start;background:var(--surface-2);border:1px solid var(--border);border-bottom-left-radius:4px");
+    asYaz(b, metin); sohbetEl.appendChild(b); sohbetEl.scrollTop = sohbetEl.scrollHeight; return b;
+  };
+  const konusma = () => asGecmis.slice(-8).map(x => (x.r === "k" ? "Kullanıcı: " : "Asistan: ") + x.t.slice(0, 400)).join("\n") || "-";
+
+  async function asPlan(soru) {
+    return gemini([{ text: `Bugün: ${bugun()}. Bir servis kayıt uygulamasının asistanısın. Kullanıcının son mesajının servis kayıtlarına bakmayı gerektirip gerektirmediğine karar ver ve filtreleri çıkar. Önceki konuşma varsa ("peki Konya'da?", "onların hepsi") bağlamdan tamamla.
+Sadece JSON ver: {"kayit":true,"firma":"","sehir":"","islemTipi":"Bakım|Arıza|Kurulum|Keşif|Diğer veya boş","baslangic":"YYYY-MM-DD veya boş","bitis":"YYYY-MM-DD veya boş","anahtar":["notlarda geçecek kelimelerin KÖK hali, ek almamış"],"ekleyen":"e-posta parçası veya boş","bakim":"gecikmis|yaklasan|boş","yaklasanGun":7,"gruplama":"firma|sehir|islemTipi|ay|ekleyen|boş","sirala":"yeni|eski"}
+"Geçen yıl", "son 3 ay", "bu ay", "geçen hafta" gibi ifadeleri tarihe çevir. Sadece sorulanı doldur, fazlasını ekleme. Sayma, "en çok", "dağılım" soruları için gruplama doldur. Genel sohbet, mesaj/e-posta taslağı yazma, uygulama nasıl kullanılır gibi sorularda kayit=false.\n\nÖnceki konuşma:\n${konusma()}\n\nSon mesaj: ${soru}` }], { json: true });
+  }
+  function asFiltrele(snap, p) {
+    const kel = (p.anahtar || []).map(nrm).filter(Boolean), bg = bugun(), out = [];
+    const lim = p.bakim === "yaklasan" ? new Date(Date.now() + (Number(p.yaklasanGun) || 7) * 864e5).toISOString().slice(0, 10) : "";
+    snap.forEach(d => {
+      const v = d.data(), t = (v.tarih || "").slice(0, 10), sb = (v.sonrakiBakim || "").slice(0, 10);
+      if (p.firma && !nrm(v.firmaAdi || v.aramaFirma).includes(nrm(p.firma))) return;
+      if (p.sehir && nrm(v.sehir) !== nrm(p.sehir)) return;
+      if (p.islemTipi && v.islemTipi !== p.islemTipi) return;
+      if (p.baslangic && t < p.baslangic) return; if (p.bitis && t > p.bitis) return;
+      if (p.ekleyen && !(v.ekleyen || "").toLowerCase().includes(String(p.ekleyen).toLowerCase())) return;
+      if (p.bakim === "gecikmis" && !(sb && sb < bg)) return;
+      if (p.bakim === "yaklasan" && !(sb && sb >= bg && sb <= lim)) return;
+      if (kel.length) { const m = nrm(v.aciklama); if (!kel.some(x => m.includes(x))) return; }
+      out.push({ id: d.id, v });
+    });
+    if (p.bakim === "gecikmis" || p.bakim === "yaklasan") out.sort((a, b) => (a.v.sonrakiBakim || "").localeCompare(b.v.sonrakiBakim || ""));
+    else { const yon = p.sirala === "eski" ? 1 : -1; out.sort((a, b) => yon * (a.v.tarih || "").localeCompare(b.v.tarih || "")); }
+    return out;
+  }
+  const anahtarlar = {
+    firma: v => (v.firmaAdi || v.aramaFirma || "?").toLocaleUpperCase("tr-TR"),
+    sehir: v => sehirAdi[nrm(v.sehir)] || v.sehir || "?",
+    islemTipi: v => v.islemTipi || "?",
+    ay: v => (v.tarih || "").slice(0, 7) || "?",
+    ekleyen: v => v.ekleyen || "?"
+  };
+  const asSay = (out, g, en = 25) => {
+    const f = anahtarlar[g]; if (!f) return "";
+    const c = {}; out.forEach(x => { const a = f(x.v); c[a] = (c[a] || 0) + 1; });
+    return Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, en).map(([a, b]) => `${a}: ${b}`).join("\n");
+  };
+  const satirYap = v => {
+    const s = document.createElement("div"); s.style.cssText = "padding:8px 0;border-top:1px solid var(--border);cursor:pointer";
+    const a = document.createElement("div"); a.style.cssText = "font-weight:700;font-size:.85rem";
+    const sb = (v.sonrakiBakim || "").slice(0, 10);
+    a.textContent = `${v.firmaAdi || v.aramaFirma} · ${sehirAdi[nrm(v.sehir)] || v.sehir || ""} · ${v.islemTipi || ""} · ${(v.tarih || "").slice(0, 10)}` + (sb ? ` · bakım: ${sb}` : "");
+    const b = document.createElement("div"); b.style.cssText = "font-size:.8rem;color:var(--text-muted)"; b.textContent = (v.aciklama || "").slice(0, 140);
+    s.append(a, b);
+    s.addEventListener("click", () => window.firmaKartiAc(v.aramaFirma, v.firmaAdi || v.aramaFirma, sehirAdi[nrm(v.sehir)] || v.sehir || ""));
+    return s;
+  };
+  function asEylemler(bal, out, p) {
+    const satir = document.createElement("div"); satir.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;margin-top:10px";
+    const mk = (t, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn-firma"; b.style.margin = "0"; b.textContent = t; b.addEventListener("click", fn); satir.appendChild(b); return b; };
+    const liste = document.createElement("div"); liste.style.cssText = "display:none;margin-top:8px";
+    const dahaB = document.createElement("button"); dahaB.type = "button"; dahaB.className = "btn-firma"; dahaB.style.cssText = "margin:8px 0 0;display:none";
+    liste.appendChild(dahaB);
+    let cizilen = 0, hedef = 0;
+    const ciz = () => {
+      while (cizilen < Math.min(out.length, hedef)) liste.insertBefore(satirYap(out[cizilen++].v), dahaB);
+      dahaB.style.display = cizilen < out.length ? "block" : "none"; dahaB.textContent = `Daha fazla göster (${out.length - cizilen})`;
+    };
+    dahaB.addEventListener("click", () => { hedef += 20; ciz(); sohbetEl.scrollTop = sohbetEl.scrollHeight; });
+    const goster = mk(`📄 Kayıtları göster (${out.length})`, () => {
+      if (liste.style.display === "none") { if (!hedef) hedef = 15; ciz(); liste.style.display = "block"; goster.textContent = "🔼 Kayıtları gizle"; }
+      else { liste.style.display = "none"; goster.textContent = `📄 Kayıtları göster (${out.length})`; }
+    });
+    mk("⬇ Excel (CSV)", () => { window.sonAramaSonuclari = out; window.sonuclariCsvIndir(); });
+    if (p.firma) mk("🔍 Ara sekmesinde aç", () => { aramaKutusu.value = p.firma; $("aramaButonu").click(); });
+    bal.append(satir, liste);
+  }
+
+  const gonder = aiButon(k, "beforeend", "✨ Sor", async () => {
     const soru = $("aiSoru").value.trim(); if (!soru) throw new Error("Bir soru yazın");
-    const sq = metniNormalizeEt(soru);
-    const kayitli = /firma|m[uü]steri|kay[iı]t|form|bak[iı]m|ar[iı]za|kurulum|ke[sş]if|kaç|kac|ge[cç]en|bu ay|bu y[iı]l|yakla[sş]an|gecikmi[sş]|[sş]ehir|personel|en son|bizim|biz /i.test(soru.toLocaleLowerCase("tr-TR"))
-      || Object.values(window.formCache || {}).some(v => v.aramaFirma && v.aramaFirma.length >= 4 && sq.includes(v.aramaFirma));
-    let istem = soru;
-    if (kayitli) {
-      const snap = await raporVerisi(), L = []; snap.forEach(d => L.push(d.data()));
-      L.sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
-      const veri = L.slice(0, 1500).map(v => [(v.tarih || "").slice(0, 10), v.firmaAdi || v.aramaFirma, v.sehir, v.islemTipi, (v.aciklama || "").slice(0, 300), v.sonrakiBakim ? "sonraki:" + v.sonrakiBakim.slice(0, 10) : ""].join(" | ")).join("\n");
-      istem = `Bugün: ${bugun()}. Soru firmanın servis kayıtlarıyla ilgiliyse aşağıdaki kayıtlara (en yeni 1500 kayıt, toplam ${L.length}) dayanarak cevapla, kayıtta olmayanı uydurma. Soru kayıtlarla ilgili değilse kayıtları yok sayıp genel bilginle cevapla.\n\nSoru: ${soru}\n\nKayıtlar (tarih | firma | şehir | işlem | not | sonraki bakım):\n${veri}`;
-    }
-    kutuYaz(cevap, await gemini([{ text: istem }], { sistem: "Sen bir teknik servis firmasının yardımcısısın. Türkçe, kısa ve net cevap ver. Bilmediğin şeyi uydurma." }));
-}, "margin-top:10px;");
-  var cevap = aiKutu(k, "beforeend");
-  $("aiSoru").addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); sorBtn.click(); } });
+    $("aiSoru").value = "";
+    asBalon("k", soru);
+    const bal = asBalon("a", "✨ Düşünüyor…");
+    try {
+      let p;
+      try { p = await asPlan(soru); }
+      catch (e) { if (/kota|bağlantı|Gemini hatası|anahtar/i.test(e.message)) throw e; p = { kayit: false }; }
+      let istem, out = [];
+      if (p && p.kayit) {
+        const snap = await raporVerisi(); out = asFiltrele(snap, p);
+        const f = [p.firma && "firma: " + p.firma, p.sehir && "şehir: " + p.sehir, p.islemTipi && "işlem: " + p.islemTipi, p.baslangic && "başlangıç: " + p.baslangic, p.bitis && "bitiş: " + p.bitis, p.ekleyen && "ekleyen: " + p.ekleyen, p.bakim && "bakım: " + p.bakim, (p.anahtar || []).length && "notta geçen: " + p.anahtar.join(", ")].filter(Boolean).join(" · ");
+        const firmaSay = new Set(out.map(x => nrm(x.v.firmaAdi || x.v.aramaFirma))).size;
+        const grup = asSay(out, p.gruplama), tip = asSay(out, "islemTipi");
+        const veri = out.slice(0, 60).map(({ v }) => [(v.tarih || "").slice(0, 10), v.firmaAdi || v.aramaFirma, sehirAdi[nrm(v.sehir)] || v.sehir, v.islemTipi, (v.aciklama || "").slice(0, 220), v.sonrakiBakim ? "sonraki bakım:" + v.sonrakiBakim.slice(0, 10) : ""].join(" | ")).join("\n");
+        istem = `Bugün: ${bugun()}.\nÖnceki konuşma:\n${konusma()}\n\nKullanıcının sorusu: ${soru}\n\nUygulamadaki toplam kayıt: ${snap.size}. Uygulanan filtreler: ${f || "yok"}.\nEşleşen kayıt sayısı: ${out.length}, firma sayısı: ${firmaSay}.\n${tip ? "İşlem tipi dağılımı:\n" + tip + "\n" : ""}${grup ? "Gruplama (" + p.gruplama + "):\n" + grup + "\n" : ""}\nKayıtlar (en fazla 60; tarih | firma | şehir | işlem | not | sonraki bakım):\n${veri || "(eşleşen kayıt yok)"}`;
+      } else {
+        istem = `Bugün: ${bugun()}.\nÖnceki konuşma:\n${konusma()}\n\nKullanıcının mesajı: ${soru}`;
+      }
+      const cevap = await gemini([{ text: istem }], { sistem: "Sen ENORPA teknik servis firmasının uygulama asistanısın. Türkçe, kısa ve net yaz. Sayıları ve listeleri yalnızca sana verilen sayımlardan ve kayıtlardan al, kendin sayma, kayıtta olmayanı uydurma. Eşleşme yoksa bunu söyle ve yazımı kontrol etmesini öner. Gerekirse madde işareti kullan, önemli yerleri **kalın** yaz. Uygulamada Yeni (form ekleme), Ara (firma, şehir, ürün kodu, e-posta ile arama), Akış ve Rapor sekmeleri, firma kartı, bakım takibi ve yönetici paneli vardır; nasıl kullanılır diye sorulursa buna göre anlat. Mesaj, e-posta veya teklif taslağı istenirse doğrudan taslağı yaz." });
+      asYaz(bal, cevap);
+      asGecmis.push({ r: "k", t: soru }, { r: "a", t: cevap });
+      if (out.length) asEylemler(bal, out, p);
+      sohbetEl.scrollTop = sohbetEl.scrollHeight;
+    } catch (e) { bal.remove(); sohbetEl.lastElementChild && sohbetEl.lastElementChild.remove(); $("aiSoru").value = soru; throw e; }
+  }, "margin-top:10px;");
+
+  ["Gecikmiş bakımlar hangileri?", "Önümüzdeki 7 gün içinde bakımı gelen firmalar", "Bu ay kaç işlem yapıldı? Tiplerine göre dağılımı ver", "Geçen ay en çok arıza kaydı olan firmalar"].forEach(t => {
+    const c = document.createElement("button"); c.type = "button"; c.className = "btn-firma"; c.style.cssText = "margin:0;font-size:.75rem"; c.textContent = t;
+    c.addEventListener("click", () => { $("aiSoru").value = t; gonder.click(); });
+    $("asOneri").appendChild(c);
+  });
+  $("asTemizle").addEventListener("click", () => { asGecmis.length = 0; sohbetEl.textContent = ""; sohbetEl.style.display = "none"; $("asTemizle").style.display = "none"; });
+  $("aiSoru").addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); gonder.click(); } });
 }
 
 /* Kartvizitten firma kartı */
@@ -2697,6 +2866,7 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
     if (/^OKUNAMADI/i.test(t)) { showToast("Formdan açıklama okunamadı", "info"); return; }
     if (!yoneticiMi()) { showToast("Okundu, ancak kaydetme yetkiniz yok", "info"); return; }
     await updateDoc(doc(db, "formlar", id), { aciklama: t });
+    logYaz("Not AI ile yazıldı", (window.formCache?.[id] || {}).formKodu || id, "Form fotoğrafından okundu");
     if (window.formCache?.[id]) window.formCache[id].aciklama = t;
     const kart = $("kart-" + id);
     if (kart) { let x = kart.querySelector(".aciklama-kutusu"); if (!x) { x = document.createElement("div"); x.className = "aciklama-kutusu"; kart.appendChild(x); } x.textContent = t; }
