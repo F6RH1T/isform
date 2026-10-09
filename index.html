@@ -643,6 +643,7 @@ window.addEventListener("load", () => setTimeout(() => { pdfKutuphaneleri().catc
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app-check.js";
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, addDoc, getDocs, query, where, onSnapshot, orderBy, limit, doc, deleteDoc, updateDoc, getDoc, setDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
@@ -1184,6 +1185,14 @@ const app = initializeApp({
   messagingSenderId: "601360853063",
   appId: "1:601360853063:web:ec6fa97a46f3d00cfaa962"
 });
+/* App Check: istekler sadece bu siteden gelen gerçek tarayıcılardan kabul edilsin.
+   Başlatılamazsa uygulama yine çalışır (sadece koruma devre dışı kalır). */
+try {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider("6Ldxg-YtAAAAAFLJEzwdIIBCw_i3-Tb5Pcvaqg5N"),
+    isTokenAutoRefreshEnabled: true
+  });
+} catch (e) { console.warn("App Check başlatılamadı:", e); }
 let db;
 try { db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
 catch (e) { console.warn("Çevrimdışı önbellek açılamadı:", e); db = getFirestore(app); }
@@ -1229,7 +1238,15 @@ $("loginForm").addEventListener("submit", e => {
   btn.innerText = "Bekleyin…"; btn.disabled = true;
   $("loginError").style.display = "none";
   signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value)
-    .catch(err => { console.error("Giriş hatası:", err.message); $("loginError").style.display = "block"; })
+    .catch(err => {
+      console.error("Giriş hatası:", err.code, err.message);
+      const kod = err.code || "";
+      const dogruMu = ["auth/invalid-credential", "auth/wrong-password", "auth/user-not-found", "auth/invalid-email"].includes(kod);
+      $("loginError").textContent = dogruMu
+        ? "Giriş başarısız. E-posta ve şifreyi kontrol edin."
+        : "Giriş yapılamadı (" + (kod || "bilinmeyen hata") + "). Bu hata e-posta/şifreden değil, ayarlardan olabilir.";
+      $("loginError").style.display = "block";
+    })
     .finally(() => { btn.innerText = "Giriş yap"; btn.disabled = false; });
 });
 $("logoutBtn").addEventListener("click", () => signOut(auth));
