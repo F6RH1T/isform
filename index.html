@@ -2325,15 +2325,15 @@ async function gemini(parts, { json = false, sistem = "" } = {}) {
 function aiButon(hedef, yer, metin, fn, stil = "") {
   if (!hedef) return null;
   const b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.textContent = metin;
-  b.style.cssText = "background:var(--border);color:var(--text-main);margin:0 0 12px;" + stil;
+  b.style.cssText = "background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border:0;box-shadow:0 2px 8px rgba(37,99,235,.35);width:auto;display:inline-block;padding:10px 14px;font-size:.85rem;margin:0 8px 12px 0;" + stil;
   b.addEventListener("click", async () => {
     const eski = b.textContent; b.disabled = true; b.textContent = "✨ Düşünüyor…";
     try { await fn(); } catch (e) { console.error(e); showToast("AI: " + e.message, "error"); }
-    b.disabled = false; b.textContent = eski;
+    b.disabled = false; b.textContent = b.dataset.etiket || eski;
   });
   hedef.insertAdjacentElement(yer, b); return b;
 }
-const aiKutu = (hedef, yer) => { const d = document.createElement("div"); d.style.cssText = "white-space:pre-wrap;font-size:.9rem;line-height:1.5;margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:var(--r-md);display:none"; hedef.insertAdjacentElement(yer, d); return d; };
+const aiKutu = (hedef, yer) => { const d = document.createElement("div"); d.style.cssText = "white-space:pre-wrap;font-size:.9rem;line-height:1.5;margin:0 0 12px;padding:12px;border:1px solid #93b4f5;background:rgba(37,99,235,.07);border-radius:var(--r-md);display:none"; hedef.insertAdjacentElement(yer, d); return d; };
 const aiSis = "Sen bir teknik servis firmasının yardımcısısın. Türkçe yaz. Verilmeyen bilgiyi asla uydurma.";
 const bugun = () => new Date().toISOString().slice(0, 10);
 const olay = (el, t) => el.dispatchEvent(new Event(t, { bubbles: true }));
@@ -2412,7 +2412,110 @@ aiButon($("aramaButonu"), "afterend", "✨ Akıllı ara (cümleyle yaz)", async 
     const veri = { toplam: snap.size, sehir: say(v => v.sehir), islem: say(v => v.islemTipi), personel: say(v => v.ekleyen), aylik: say(v => (v.tarih || "").slice(0, 7)) };
     kutu.style.display = "block"; kutu.textContent = await gemini([{ text: `Bugün: ${bugun()}. Bu servis kayıt istatistiklerini yöneticiye 5-6 maddede yorumla: öne çıkanlar, artış/azalış, dikkat edilmesi gerekenler. Sayıları aynen kullan.\n${JSON.stringify(veri)}` }], { sistem: aiSis });
   });
-  aiButon(yenile, "afterend", "🔑 Gemini anahtarını değiştir", () => { localStorage.removeItem("gemini_key"); aiAnahtar(); }, "font-size:.8rem;");
+  aiButon(yenile, "afterend", "🔑 Gemini anahtarını değiştir", () => { localStorage.removeItem("gemini_key"); aiAnahtar(); }, "background:var(--border);color:var(--text-main);box-shadow:none;font-size:.8rem;");
+}
+
+/* ===== AI EK ÖZELLİKLER ===== */
+const kutuYaz = (k, m) => {
+  k.style.display = "block"; k.textContent = m;
+  const c = document.createElement("a"); c.textContent = "\n\n📋 Kopyala"; c.href = "#"; c.style.cssText = "display:inline-block;color:var(--primary);font-weight:700;margin-top:8px";
+  c.addEventListener("click", e => { e.preventDefault(); navigator.clipboard?.writeText(m); showToast("Kopyalandı", "success"); }); k.appendChild(c);
+};
+async function aiResim(f) {
+  const bmp = await createImageBitmap(f).catch(() => { throw new Error("Bu fotoğraf biçimi okunamadı"); });
+  const o = Math.min(1, 1280 / Math.max(bmp.width, bmp.height)), c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * o); c.height = Math.round(bmp.height * o); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.85).split(",")[1];
+}
+async function wavBase64(blob) {
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  const buf = await ac.decodeAudioData(await blob.arrayBuffer()); ac.close && ac.close();
+  const oc = new OfflineAudioContext(1, Math.max(1, Math.ceil(buf.duration * 16000)), 16000), src = oc.createBufferSource();
+  src.buffer = buf; src.connect(oc.destination); src.start();
+  const x = (await oc.startRendering()).getChannelData(0), d = new DataView(new ArrayBuffer(44 + x.length * 2));
+  const w = (o, t) => [...t].forEach((c, i) => d.setUint8(o + i, c.charCodeAt(0)));
+  w(0, "RIFF"); d.setUint32(4, 36 + x.length * 2, true); w(8, "WAVEfmt "); d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
+  d.setUint32(24, 16000, true); d.setUint32(28, 32000, true); d.setUint16(32, 2, true); d.setUint16(34, 16, true); w(36, "data"); d.setUint32(40, x.length * 2, true);
+  for (let i = 0; i < x.length; i++) d.setInt16(44 + i * 2, Math.max(-1, Math.min(1, x[i])) * 0x7fff, true);
+  const u = new Uint8Array(d.buffer); let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+
+/* Not alanları: kontrol, teklif taslağı, çeviri (+ dikte, tekrarlayan arıza) */
+for (const id of ["aciklamaNotu", "ofAciklama"]) {
+  const ta = $(id); if (!ta) continue;
+  const alan = ta.closest(".form-floating") || ta, sub = ta.closest("form")?.querySelector('button[type="submit"]');
+  if (!sub) continue;
+  const kutu = aiKutu(sub, "beforebegin");
+  const notVar = () => { if (!ta.value.trim()) throw new Error("Önce bir not yazın"); };
+  aiButon(alan, "afterend", "✨ Notu kontrol et", async () => {
+    notVar(); kutuYaz(kutu, await gemini([{ text: `İşlem tipi: ${$("islemTipi")?.value || "belirtilmemiş"}. Bu servis notunda eksik kalmış önemli bilgileri (arıza nedeni, değişen parça, yapılan işlem, test/sonuç, müşteriye bildirilen durum) kısa sorular halinde listele. Eksik yoksa sadece "Eksik görünmüyor" yaz.\n\nNot: ${ta.value}` }], { sistem: aiSis }));
+  });
+  aiButon(alan, "afterend", "✨ Teklif / e-posta taslağı", async () => {
+    notVar(); kutuYaz(kutu, await gemini([{ text: `Aşağıdaki servis/keşif notuna göre müşteriye gönderilecek nazik ve kısa bir e-posta (konu satırı + metin) yaz. Firma: ${$("firmaAdi")?.value || "belirtilmemiş"}, işlem: ${$("islemTipi")?.value || "belirtilmemiş"}. Fiyat uydurma, fiyat yerine "teklifiniz ekte" de.\n\nNot: ${ta.value}` }], { sistem: aiSis }));
+  });
+  aiButon(alan, "afterend", "✨ İngilizceye çevir", async () => {
+    notVar(); const t = await gemini([{ text: "Aşağıdaki servis notunu profesyonel İngilizceye çevir. Sadece çeviriyi ver.\n\n" + ta.value }], { sistem: aiSis });
+    ta.value += "\n\n--- English ---\n" + t; olay(ta, "input"); showToast("Çeviri nota eklendi", "success");
+  });
+  if (id !== "aciklamaNotu") continue;
+  aiButon(alan, "afterend", "✨ Tekrarlayan arıza mı?", async () => {
+    const ad = $("firmaAdi").value.trim(); if (!ad || !ta.value.trim()) throw new Error("Firma adı ve not gerekli");
+    const q = await getDocs(query(collection(db, "formlar"), where("aramaFirma", "==", metniNormalizeEt(ad)), limit(40)));
+    const eski = []; q.forEach(d => { const v = d.data(); if (v.islemTipi === "Arıza") eski.push({ tarih: (v.tarih || "").slice(0, 10), not: (v.aciklama || "").slice(0, 250) }); });
+    if (!eski.length) { showToast("Bu firmada kayıtlı önceki arıza yok", "info"); return; }
+    kutuYaz(kutu, await gemini([{ text: `Yeni arıza notu ile aynı firmanın geçmiş arızalarını karşılaştır. Aynı/benzer sorun daha önce kaç kez çıkmış, ne zaman, kalıcı bir çözüm gerekir mi? 3-4 cümleyle yaz. Benzer yoksa bunu söyle.\n\nYeni not: ${ta.value}\nGeçmiş arızalar: ${JSON.stringify(eski)}` }], { sistem: aiSis }));
+  });
+  /* Gemini ile sesli dikte (kaydı WAV'a çevirip gönderir) */
+  let mr = null, parca = [];
+  const bd = aiButon(alan, "afterend", "✨ AI ile dikte", async () => {
+    if (mr && mr.state === "recording") { mr.stop(); return; }
+    const st = await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => { throw new Error("Mikrofon izni verilmedi"); });
+    parca = []; mr = new MediaRecorder(st); mr.ondataavailable = e => parca.push(e.data);
+    mr.onstop = async () => {
+      st.getTracks().forEach(t => t.stop()); delete bd.dataset.etiket; bd.textContent = "✨ Yazıya çevriliyor…"; bd.disabled = true;
+      try {
+        const wav = await wavBase64(new Blob(parca, { type: mr.mimeType }));
+        const t = await gemini([{ inlineData: { mimeType: "audio/wav", data: wav } }, { text: "Bu Türkçe ses kaydını aynen yazıya çevir. Sadece metni ver." }]);
+        ta.value += (ta.value ? " " : "") + t; olay(ta, "input"); showToast("Dikte eklendi", "success");
+      } catch (e) { console.error(e); showToast("AI: " + e.message, "error"); }
+      bd.disabled = false; bd.textContent = "✨ AI ile dikte";
+    };
+    mr.start(); bd.dataset.etiket = "⏹ Kaydı bitir";
+  });
+}
+
+/* Uygulamayla sohbet (Ara sekmesi) */
+{
+  const k = document.createElement("div"); k.className = "card";
+  k.innerHTML = '<div class="card-title">✨ Asistana sor</div><div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Örn: Yılmaz Gıda\'ya en son ne yaptık?</label></div>';
+  $("sonuclar").insertAdjacentElement("beforebegin", k);
+  aiButon(k, "beforeend", "✨ Sor", async () => {
+    const soru = $("aiSoru").value.trim(); if (!soru) throw new Error("Bir soru yazın");
+    const snap = await raporVerisi(), L = []; snap.forEach(d => L.push(d.data()));
+    L.sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
+    const veri = L.slice(0, 400).map(v => [(v.tarih || "").slice(0, 10), v.firmaAdi || v.aramaFirma, v.sehir, v.islemTipi, (v.aciklama || "").slice(0, 160), v.sonrakiBakim ? "sonraki:" + v.sonrakiBakim.slice(0, 10) : ""].join(" | ")).join("\n");
+    kutuYaz(cevap, await gemini([{ text: `Bugün: ${bugun()}. Aşağıdaki servis kayıtlarına (en yeni 400 kayıt, ${L.length} kayıttan) dayanarak soruyu cevapla. Veride olmayanı söyleme, bulunamazsa bunu belirt.\n\nSoru: ${soru}\n\nKayıtlar (tarih | firma | şehir | işlem | not | sonraki bakım):\n${veri}` }], { sistem: aiSis }));
+  }, "margin-top:10px;");
+  var cevap = aiKutu(k, "beforeend");
+}
+
+/* Kartvizitten firma kartı */
+{
+  const satir = $("fkZaman").previousElementSibling; satir.style.display = "flex"; satir.style.flexWrap = "wrap";
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.style.display = "none"; satir.appendChild(inp);
+  aiButon(satir, "beforeend", "✨ Kartvizitten doldur", () => { inp.value = ""; inp.click(); });
+  inp.addEventListener("change", async () => {
+    const f = inp.files[0]; if (!f) return; showToast("Kartvizit okunuyor…", "info");
+    try {
+      const r = await gemini([{ inlineData: { mimeType: "image/jpeg", data: await aiResim(f) } }, { text: 'Kartvizitten JSON çıkar: {"yetkili":"","firma":"","telefon":"","eposta":"","adres":""}. Okunamayanı boş bırak, uydurma.' }], { json: true });
+      if (r.yetkili) $("fkYetkili").value = r.yetkili;
+      if (r.telefon) { $("fkTelefon").value = r.telefon; olay($("fkTelefon"), "input"); }
+      if (r.adres) { $("fkAdres").value = r.adres; olay($("fkAdres"), "input"); }
+      if (r.eposta) $("fkNot").value = ($("fkNot").value ? $("fkNot").value + "\n" : "") + "E-posta: " + r.eposta;
+      showToast("Kartvizit okundu, kontrol edip kaydedin", "success");
+    } catch (e) { console.error(e); showToast("AI: " + e.message, "error"); }
+  });
 }
 </script>
 </body>
