@@ -56,7 +56,7 @@ body{background:var(--bg);color:var(--text-main);-webkit-font-smoothing:antialia
 header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
   padding:calc(12px + env(safe-area-inset-top,0px)) 18px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border)}
 .header-brand{display:flex;align-items:center;gap:12px}
-.header-brand img{height:30px;object-fit:contain}
+.header-brand img{height:36px;object-fit:contain}
 .header-title{font-weight:700;font-size:1rem;letter-spacing:-.02em;border-left:1.5px solid var(--border);padding-left:12px}
 .header-actions{display:flex;align-items:center;gap:8px}
 .theme-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;transition:.2s}
@@ -272,7 +272,7 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
   @keyframes slideDownTop{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
   @keyframes fadeOutTop{to{opacity:0;transform:translateY(-16px)}}
   header{padding:calc(14px + env(safe-area-inset-top,0px)) 40px 14px}
-  .header-brand img{height:40px}
+  .header-brand img{height:46px}
   .header-title{font-size:1.15rem}
   .theme-btn,.logout-btn,.optimize-btn{height:42px}
   .theme-btn{width:42px}
@@ -402,7 +402,7 @@ window.addEventListener("load", () => setTimeout(() => { pdfKutuphaneleri().catc
 <div id="mainApp">
   <header>
     <div class="header-brand">
-      <img src="logo.png" alt="ENORPA Logo" onerror="this.style.display='none'">
+      <img src="logo-enorpa.png" alt="ENORPA Logo" onerror="this.style.display='none'">
       <div class="header-title">İş Formları</div>
     </div>
     <div class="header-actions">
