@@ -56,7 +56,7 @@ body{background:var(--bg);color:var(--text-main);-webkit-font-smoothing:antialia
 header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
   padding:calc(12px + env(safe-area-inset-top,0px)) 18px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border)}
 .header-brand{display:flex;align-items:center;gap:12px}
-.header-brand img{height:36px;object-fit:contain}
+.header-brand img{height:30px;object-fit:contain}
 .header-title{font-weight:700;font-size:1rem;letter-spacing:-.02em;border-left:1.5px solid var(--border);padding-left:12px}
 .header-actions{display:flex;align-items:center;gap:8px}
 .theme-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;transition:.2s}
@@ -272,7 +272,7 @@ details.gidilmeyen summary{cursor:pointer;font-size:.85rem;font-weight:700;color
   @keyframes slideDownTop{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
   @keyframes fadeOutTop{to{opacity:0;transform:translateY(-16px)}}
   header{padding:calc(14px + env(safe-area-inset-top,0px)) 40px 14px}
-  .header-brand img{height:46px}
+  .header-brand img{height:40px}
   .header-title{font-size:1.15rem}
   .theme-btn,.logout-btn,.optimize-btn{height:42px}
   .theme-btn{width:42px}
@@ -402,7 +402,7 @@ window.addEventListener("load", () => setTimeout(() => { pdfKutuphaneleri().catc
 <div id="mainApp">
   <header>
     <div class="header-brand">
-      <img src="logo-enorpa.png" alt="ENORPA Logo" onerror="this.style.display='none'">
+      <img src="logo.png" alt="ENORPA Logo" onerror="this.style.display='none'">
       <div class="header-title">İş Formları</div>
     </div>
     <div class="header-actions">
@@ -875,9 +875,9 @@ const kir = (s, n = 14) => String(s ?? "").split(/(\s+)/).map(t => {
 }).join("");
 
 /* ENORPA logosu — gömülü (logo.png dosyasına bağımlı değil) */
-/* !!! ESKİ DOSYANIZDAKİ İKİ LOGO SATIRINI AŞAĞIDAKİLERİN YERİNE AYNEN YAPIŞTIRIN (PDF logosu) !!! */
-const ENORPA_LOGO_URI = "";
-const ENORPA_LOGO_YAZISIZ_URI = "";
+const ENORPA_LOGO_URI = "data:image/png;base64,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";
+const ENORPA_LOGO_YAZISIZ_URI = "data:image/png;base64,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";
+
 function sablonHTML(d, _logoKullanilmiyor, o = {}) {
   const ac = o.ac !== undefined ? o.ac : d.aciklama, fs = o.fs || 13, sayfa = o.sayfa || 1, toplam = o.toplam || 1;
   const tr = new Date(d.tarih + "T12:00:00").toLocaleDateString("tr-TR");
@@ -2200,30 +2200,21 @@ $("fkKaydet").addEventListener("click", async () => {
   } catch (e) { showToast("Kaydedilemedi: " + e.message, "error"); }
 });
 
-/* Canlı akış: giriş yapıldıktan sonra başlar, çıkışta kapanır (giriş öncesi izin hatası oluşmaz) */
-let akisDinleyici = null;
-function akisBaslat() {
-  if (akisDinleyici) return;
-  akisDinleyici = onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), { includeMetadataChanges: true }, snapshot => {
-    const div = $("canliAkanlar"), bar = $("bekleyenBar"); let bekleyen = 0;
-    snapshot.forEach(d => { if (d.metadata.hasPendingWrites) bekleyen++; });
-    bar.textContent = `📡 ${bekleyen} kayıt gönderilmeyi bekliyor`; bar.style.display = bekleyen ? "inline-block" : "none";
-    if (snapshot.empty) {
-      div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display=\'none\'"><p>Henüz form eklenmemiş.</p></div>';
-      return;
-    }
-    const isAdmin = yoneticiMi();
-    const opt = { day: "numeric", month: "short", year: "numeric" };
-    const docs = []; snapshot.forEach(d => docs.push({ id: d.id, v: d.data() }));
-    docs.sort((a, b) => SIRA_YONU * tarihKarsilastir(a.v, b.v));
-    let html = docs.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("");
-    div.innerHTML = html;
-  }, err => { akisDinleyici = null; console.error("Canlı akış hatası:", err); });
-}
-onAuthStateChanged(auth, u => {
-  if (u) rolHazir.then(ok => { if (ok) akisBaslat(); });
-  else { if (akisDinleyici) akisDinleyici(); akisDinleyici = null; }
-});
+onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), { includeMetadataChanges: true }, snapshot => {
+  const div = $("canliAkanlar"), bar = $("bekleyenBar"); let bekleyen = 0;
+  snapshot.forEach(d => { if (d.metadata.hasPendingWrites) bekleyen++; });
+  bar.textContent = `📡 ${bekleyen} kayıt gönderilmeyi bekliyor`; bar.style.display = bekleyen ? "inline-block" : "none";
+  if (snapshot.empty) {
+    div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display=\'none\'"><p>Henüz form eklenmemiş.</p></div>';
+    return;
+  }
+  const isAdmin = yoneticiMi();
+  const opt = { day: "numeric", month: "short", year: "numeric" };
+  const docs = []; snapshot.forEach(d => docs.push({ id: d.id, v: d.data() }));
+  docs.sort((a, b) => SIRA_YONU * tarihKarsilastir(a.v, b.v));
+  let html = docs.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("");
+  div.innerHTML = html;
+}, err => console.error("Canlı akış hatası:", err));
 
 /* ===== RAPOR: TÜRKİYE HARİTASI ===== */
 let _raporSnap = null, _raporZaman = 0;
@@ -2700,3 +2691,199 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
     mr.start(); bd.dataset.etiket = "⏹ Kaydı bitir";
   });
 }
+
+/* Asistan (Ara sekmesi): kayıtlarda arar, sayar, özetler, taslak yazar, uygulamayı anlatır */
+{
+  const k = document.createElement("div"); k.className = "card"; k.id = "asistanKart";
+  k.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div class="card-title" style="margin:0">✨ Asistan</div><button type="button" id="asTemizle" class="btn-firma" style="margin:0;display:none">Sohbeti temizle</button></div>'
+    + '<div id="asSohbet" style="display:none;max-height:420px;overflow:auto;flex-direction:column;gap:8px;margin-bottom:10px"></div>'
+    + '<div id="asOneri" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>'
+    + '<div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Sorun veya ne bulmak istediğinizi yazın</label></div>';
+  $("sonuclar").insertAdjacentElement("beforebegin", k);
+  const sohbetEl = $("asSohbet"), asGecmis = [], nrm = x => metniNormalizeEt(x || "");
+
+  const asYaz = (el, m) => {
+    el.textContent = "";
+    String(m).replace(/^\s*[*-] /gm, "• ").split(/\*\*(.+?)\*\*/g).forEach((p, i) => {
+      if (i % 2) { const b = document.createElement("b"); b.textContent = p; el.appendChild(b); } else el.appendChild(document.createTextNode(p));
+    });
+  };
+  const asBalon = (rol, metin) => {
+    sohbetEl.style.display = "flex"; $("asTemizle").style.display = "inline-block";
+    const b = document.createElement("div");
+    b.style.cssText = "max-width:94%;padding:10px 13px;border-radius:16px;font-size:.9rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;" + (rol === "k"
+      ? "align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:4px"
+      : "align-self:flex-start;background:var(--surface-2);border:1px solid var(--border);border-bottom-left-radius:4px");
+    asYaz(b, metin); sohbetEl.appendChild(b); sohbetEl.scrollTop = sohbetEl.scrollHeight; return b;
+  };
+  const konusma = () => asGecmis.slice(-8).map(x => (x.r === "k" ? "Kullanıcı: " : "Asistan: ") + x.t.slice(0, 400)).join("\n") || "-";
+
+  async function asPlan(soru) {
+    return gemini([{ text: `Bugün: ${bugun()}. Bir servis kayıt uygulamasının asistanısın. Kullanıcının son mesajının servis kayıtlarına bakmayı gerektirip gerektirmediğine karar ver ve filtreleri çıkar. Önceki konuşma varsa ("peki Konya'da?", "onların hepsi") bağlamdan tamamla.
+Sadece JSON ver: {"kayit":true,"firma":"","sehir":"","islemTipi":"Bakım|Arıza|Kurulum|Keşif|Diğer veya boş","baslangic":"YYYY-MM-DD veya boş","bitis":"YYYY-MM-DD veya boş","anahtar":["notlarda geçecek kelimelerin KÖK hali, ek almamış"],"ekleyen":"e-posta parçası veya boş","bakim":"gecikmis|yaklasan|boş","yaklasanGun":7,"gruplama":"firma|sehir|islemTipi|ay|ekleyen|boş","sirala":"yeni|eski"}
+"Geçen yıl", "son 3 ay", "bu ay", "geçen hafta" gibi ifadeleri tarihe çevir. Sadece sorulanı doldur, fazlasını ekleme. Sayma, "en çok", "dağılım" soruları için gruplama doldur. Genel sohbet, mesaj/e-posta taslağı yazma, uygulama nasıl kullanılır gibi sorularda kayit=false.\n\nÖnceki konuşma:\n${konusma()}\n\nSon mesaj: ${soru}` }], { json: true });
+  }
+  function asFiltrele(snap, p) {
+    const kel = (p.anahtar || []).map(nrm).filter(Boolean), bg = bugun(), out = [];
+    const lim = p.bakim === "yaklasan" ? new Date(Date.now() + (Number(p.yaklasanGun) || 7) * 864e5).toISOString().slice(0, 10) : "";
+    snap.forEach(d => {
+      const v = d.data(), t = (v.tarih || "").slice(0, 10), sb = (v.sonrakiBakim || "").slice(0, 10);
+      if (p.firma && !nrm(v.firmaAdi || v.aramaFirma).includes(nrm(p.firma))) return;
+      if (p.sehir && nrm(v.sehir) !== nrm(p.sehir)) return;
+      if (p.islemTipi && v.islemTipi !== p.islemTipi) return;
+      if (p.baslangic && t < p.baslangic) return; if (p.bitis && t > p.bitis) return;
+      if (p.ekleyen && !(v.ekleyen || "").toLowerCase().includes(String(p.ekleyen).toLowerCase())) return;
+      if (p.bakim === "gecikmis" && !(sb && sb < bg)) return;
+      if (p.bakim === "yaklasan" && !(sb && sb >= bg && sb <= lim)) return;
+      if (kel.length) { const m = nrm(v.aciklama); if (!kel.some(x => m.includes(x))) return; }
+      out.push({ id: d.id, v });
+    });
+    if (p.bakim === "gecikmis" || p.bakim === "yaklasan") out.sort((a, b) => (a.v.sonrakiBakim || "").localeCompare(b.v.sonrakiBakim || ""));
+    else { const yon = p.sirala === "eski" ? 1 : -1; out.sort((a, b) => yon * (a.v.tarih || "").localeCompare(b.v.tarih || "")); }
+    return out;
+  }
+  const anahtarlar = {
+    firma: v => (v.firmaAdi || v.aramaFirma || "?").toLocaleUpperCase("tr-TR"),
+    sehir: v => sehirAdi[nrm(v.sehir)] || v.sehir || "?",
+    islemTipi: v => v.islemTipi || "?",
+    ay: v => (v.tarih || "").slice(0, 7) || "?",
+    ekleyen: v => v.ekleyen || "?"
+  };
+  const asSay = (out, g, en = 25) => {
+    const f = anahtarlar[g]; if (!f) return "";
+    const c = {}; out.forEach(x => { const a = f(x.v); c[a] = (c[a] || 0) + 1; });
+    return Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, en).map(([a, b]) => `${a}: ${b}`).join("\n");
+  };
+  const satirYap = v => {
+    const s = document.createElement("div"); s.style.cssText = "padding:8px 0;border-top:1px solid var(--border);cursor:pointer";
+    const a = document.createElement("div"); a.style.cssText = "font-weight:700;font-size:.85rem";
+    const sb = (v.sonrakiBakim || "").slice(0, 10);
+    a.textContent = `${v.firmaAdi || v.aramaFirma} · ${sehirAdi[nrm(v.sehir)] || v.sehir || ""} · ${v.islemTipi || ""} · ${(v.tarih || "").slice(0, 10)}` + (sb ? ` · bakım: ${sb}` : "");
+    const b = document.createElement("div"); b.style.cssText = "font-size:.8rem;color:var(--text-muted)"; b.textContent = (v.aciklama || "").slice(0, 140);
+    s.append(a, b);
+    s.addEventListener("click", () => window.firmaKartiAc(v.aramaFirma, v.firmaAdi || v.aramaFirma, sehirAdi[nrm(v.sehir)] || v.sehir || ""));
+    return s;
+  };
+  function asEylemler(bal, out, p) {
+    const satir = document.createElement("div"); satir.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;margin-top:10px";
+    const mk = (t, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn-firma"; b.style.margin = "0"; b.textContent = t; b.addEventListener("click", fn); satir.appendChild(b); return b; };
+    const liste = document.createElement("div"); liste.style.cssText = "display:none;margin-top:8px";
+    const dahaB = document.createElement("button"); dahaB.type = "button"; dahaB.className = "btn-firma"; dahaB.style.cssText = "margin:8px 0 0;display:none";
+    liste.appendChild(dahaB);
+    let cizilen = 0, hedef = 0;
+    const ciz = () => {
+      while (cizilen < Math.min(out.length, hedef)) liste.insertBefore(satirYap(out[cizilen++].v), dahaB);
+      dahaB.style.display = cizilen < out.length ? "block" : "none"; dahaB.textContent = `Daha fazla göster (${out.length - cizilen})`;
+    };
+    dahaB.addEventListener("click", () => { hedef += 20; ciz(); sohbetEl.scrollTop = sohbetEl.scrollHeight; });
+    const goster = mk(`📄 Kayıtları göster (${out.length})`, () => {
+      if (liste.style.display === "none") { if (!hedef) hedef = 15; ciz(); liste.style.display = "block"; goster.textContent = "🔼 Kayıtları gizle"; }
+      else { liste.style.display = "none"; goster.textContent = `📄 Kayıtları göster (${out.length})`; }
+    });
+    mk("⬇ Excel (CSV)", () => { window.sonAramaSonuclari = out; window.sonuclariCsvIndir(); });
+    if (p.firma) mk("🔍 Ara sekmesinde aç", () => { aramaKutusu.value = p.firma; $("aramaButonu").click(); });
+    bal.append(satir, liste);
+  }
+
+  const gonder = aiButon(k, "beforeend", "✨ Sor", async () => {
+    const soru = $("aiSoru").value.trim(); if (!soru) throw new Error("Bir soru yazın");
+    $("aiSoru").value = "";
+    asBalon("k", soru);
+    const bal = asBalon("a", "✨ Düşünüyor…");
+    try {
+      let p;
+      try { p = await asPlan(soru); }
+      catch (e) { if (/kota|bağlantı|Gemini hatası|anahtar/i.test(e.message)) throw e; p = { kayit: false }; }
+      let istem, out = [];
+      if (p && p.kayit) {
+        const snap = await raporVerisi(); out = asFiltrele(snap, p);
+        const f = [p.firma && "firma: " + p.firma, p.sehir && "şehir: " + p.sehir, p.islemTipi && "işlem: " + p.islemTipi, p.baslangic && "başlangıç: " + p.baslangic, p.bitis && "bitiş: " + p.bitis, p.ekleyen && "ekleyen: " + p.ekleyen, p.bakim && "bakım: " + p.bakim, (p.anahtar || []).length && "notta geçen: " + p.anahtar.join(", ")].filter(Boolean).join(" · ");
+        const firmaSay = new Set(out.map(x => nrm(x.v.firmaAdi || x.v.aramaFirma))).size;
+        const grup = asSay(out, p.gruplama), tip = asSay(out, "islemTipi");
+        const veri = out.slice(0, 60).map(({ v }) => [(v.tarih || "").slice(0, 10), v.firmaAdi || v.aramaFirma, sehirAdi[nrm(v.sehir)] || v.sehir, v.islemTipi, (v.aciklama || "").slice(0, 220), v.sonrakiBakim ? "sonraki bakım:" + v.sonrakiBakim.slice(0, 10) : ""].join(" | ")).join("\n");
+        istem = `Bugün: ${bugun()}.\nÖnceki konuşma:\n${konusma()}\n\nKullanıcının sorusu: ${soru}\n\nUygulamadaki toplam kayıt: ${snap.size}. Uygulanan filtreler: ${f || "yok"}.\nEşleşen kayıt sayısı: ${out.length}, firma sayısı: ${firmaSay}.\n${tip ? "İşlem tipi dağılımı:\n" + tip + "\n" : ""}${grup ? "Gruplama (" + p.gruplama + "):\n" + grup + "\n" : ""}\nKayıtlar (en fazla 60; tarih | firma | şehir | işlem | not | sonraki bakım):\n${veri || "(eşleşen kayıt yok)"}`;
+      } else {
+        istem = `Bugün: ${bugun()}.\nÖnceki konuşma:\n${konusma()}\n\nKullanıcının mesajı: ${soru}`;
+      }
+      const cevap = await gemini([{ text: istem }], { sistem: "Sen ENORPA teknik servis firmasının uygulama asistanısın. Türkçe, kısa ve net yaz. Sayıları ve listeleri yalnızca sana verilen sayımlardan ve kayıtlardan al, kendin sayma, kayıtta olmayanı uydurma. Eşleşme yoksa bunu söyle ve yazımı kontrol etmesini öner. Gerekirse madde işareti kullan, önemli yerleri **kalın** yaz. Uygulamada Yeni (form ekleme), Ara (firma, şehir, ürün kodu, e-posta ile arama), Akış ve Rapor sekmeleri, firma kartı, bakım takibi ve yönetici paneli vardır; nasıl kullanılır diye sorulursa buna göre anlat. Mesaj, e-posta veya teklif taslağı istenirse doğrudan taslağı yaz." });
+      asYaz(bal, cevap);
+      asGecmis.push({ r: "k", t: soru }, { r: "a", t: cevap });
+      if (out.length) asEylemler(bal, out, p);
+      sohbetEl.scrollTop = sohbetEl.scrollHeight;
+    } catch (e) { bal.remove(); sohbetEl.lastElementChild && sohbetEl.lastElementChild.remove(); $("aiSoru").value = soru; throw e; }
+  }, "margin-top:10px;");
+
+  ["Gecikmiş bakımlar hangileri?", "Önümüzdeki 7 gün içinde bakımı gelen firmalar", "Bu ay kaç işlem yapıldı? Tiplerine göre dağılımı ver", "Geçen ay en çok arıza kaydı olan firmalar"].forEach(t => {
+    const c = document.createElement("button"); c.type = "button"; c.className = "btn-firma"; c.style.cssText = "margin:0;font-size:.75rem"; c.textContent = t;
+    c.addEventListener("click", () => { $("aiSoru").value = t; gonder.click(); });
+    $("asOneri").appendChild(c);
+  });
+  $("asTemizle").addEventListener("click", () => { asGecmis.length = 0; sohbetEl.textContent = ""; sohbetEl.style.display = "none"; $("asTemizle").style.display = "none"; });
+  $("aiSoru").addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); gonder.click(); } });
+}
+
+/* Kartvizitten firma kartı */
+{
+  const satir = $("fkZaman").previousElementSibling; satir.style.display = "flex"; satir.style.flexWrap = "wrap";
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.style.display = "none"; satir.appendChild(inp);
+  aiButon(satir, "beforeend", "✨ Kartvizitten doldur", () => { inp.value = ""; inp.click(); });
+  inp.addEventListener("change", async () => {
+    const f = inp.files[0]; if (!f) return; showToast("Kartvizit okunuyor…", "info");
+    try {
+      const r = await gemini([{ inlineData: { mimeType: "image/jpeg", data: await aiResim(f) } }, { text: 'Kartvizitten JSON çıkar: {"yetkili":"","firma":"","telefon":"","eposta":"","adres":""}. Okunamayanı boş bırak, uydurma.' }], { json: true });
+      if (r.yetkili) $("fkYetkili").value = r.yetkili;
+      if (r.telefon) { $("fkTelefon").value = r.telefon; olay($("fkTelefon"), "input"); }
+      if (r.adres) { $("fkAdres").value = r.adres; olay($("fkAdres"), "input"); }
+      if (r.eposta) $("fkNot").value = ($("fkNot").value ? $("fkNot").value + "\n" : "") + "E-posta: " + r.eposta;
+      showToast("Kartvizit okundu, kontrol edip kaydedin", "success");
+    } catch (e) { console.error(e); showToast("AI: " + e.message, "error"); }
+  });
+}
+
+/* ===== FOTOĞRAF GÖRÜNTÜLEYİCİ: DÖNDÜRME + AI İLE FORM OKUMA ===== */
+{
+  const img = $("modalImage"); let d = 0;
+  const uyg = () => { const odd = d % 180 !== 0, w = img.offsetWidth, h = img.offsetHeight; img.style.transition = "rotate .25s, scale .25s"; img.style.rotate = d ? d + "deg" : ""; img.style.scale = odd && w && h ? Math.min(1, w / h, h / w) : ""; };
+  const sifirla = () => { d = 0; img.style.transition = ""; img.style.rotate = ""; img.style.scale = ""; };
+  $("imgDondur").addEventListener("click", () => { d = (d + 90) % 360; uyg(); });
+  const a = window.resmiAc; window.resmiAc = async function () { sifirla(); return a.apply(this, arguments); };
+  const k = window.modaliKapat; window.modaliKapat = () => { sifirla(); k(); };
+}
+{
+  const panel = document.createElement("div");
+  panel.style.cssText = "display:none;flex-direction:column;align-items:center;gap:8px;margin-top:12px;width:min(560px,100%)";
+  const kutu = document.createElement("div");
+  kutu.style.cssText = "display:none;color:#fff;font-size:.85rem;line-height:1.45;white-space:pre-wrap;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:10px 12px;max-height:22vh;overflow:auto;width:100%";
+  $("downloadLink").insertAdjacentElement("beforebegin", panel);
+  let docId = null;
+  const oku = async () => {
+    const id = docId, src = $("modalImage").src;
+    if (!id || !src.startsWith("data:")) throw new Error("Fotoğraf henüz yüklenmedi");
+    const v = window.formCache?.[id] || (await getDoc(doc(db, "formlar", id))).data() || {};
+    if (v.aciklama && !confirm("Bu formda zaten açıklama var. AI okuması üzerine yazılsın mı?")) return;
+    const t = (await gemini([{ inlineData: { mimeType: src.slice(5, src.indexOf(";")), data: src.split(",")[1] } }, { text: "Bu bir servis iş formu fotoğrafı (el yazısı olabilir, ters/yan çekilmiş olabilir). Formda yazan yapılan işlem, arıza, değişen parça ve notları okuyup 'Açıklama' alanına yazılacak düzgün ve kısa bir Türkçe metin olarak yaz. Okunamayan veya görünmeyen bilgiyi uydurma. Hiç okunabilir açıklama yoksa sadece OKUNAMADI yaz. Sadece metni ver." }], { sistem: aiSis })).trim();
+    kutu.style.display = "block"; kutu.textContent = t;
+    if (/^OKUNAMADI/i.test(t)) { showToast("Formdan açıklama okunamadı", "info"); return; }
+    if (!yoneticiMi()) { showToast("Okundu, ancak kaydetme yetkiniz yok", "info"); return; }
+    await updateDoc(doc(db, "formlar", id), { aciklama: t });
+    logYaz("Not AI ile yazıldı", (window.formCache?.[id] || {}).formKodu || id, "Form fotoğrafından okundu");
+    if (window.formCache?.[id]) window.formCache[id].aciklama = t;
+    const kart = $("kart-" + id);
+    if (kart) { let x = kart.querySelector(".aciklama-kutusu"); if (!x) { x = document.createElement("div"); x.className = "aciklama-kutusu"; kart.appendChild(x); } x.textContent = t; }
+    if (window.aramaOnbellek) window.aramaOnbellek.clear();
+    showToast("Açıklama yazıldı ve kaydedildi", "success");
+  };
+  const btn = aiButon(panel, "afterbegin", "✨ Formu oku, açıklamayı yaz", oku, "margin:0;");
+  panel.appendChild(kutu);
+  const ra = window.resmiAc;
+  window.resmiAc = async function (id) {
+    docId = id; kutu.style.display = "none"; kutu.textContent = ""; panel.style.display = "none";
+    await ra.apply(this, arguments);
+    panel.style.display = "flex";
+    const v = window.formCache?.[id];   // sadece açıklaması boş kayıtlar otomatik okunur
+    if (v && !v.aciklama && yoneticiMi() && navigator.onLine && $("modalImage").src.startsWith("data:")) btn.click();
+  };
+}
+</script>
+</body>
+</html>
