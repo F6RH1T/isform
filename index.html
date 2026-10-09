@@ -744,17 +744,21 @@ $("ofServisAlan").innerHTML = fa("ofBasla", "Başlama saati", "time") + fa("ofBi
 $("ofPersonel").innerHTML = [1,2,3,4,5,6].map(i => fa("ofP" + i, i + ". personel")).join("");
 
 // İmza Alanları (Firma yetkilisi + Müşteri)
-const imzaBlok = (id, baslik) => `
+const imzaBlok = (id, baslik, ekler = "") => `
 <div class="tam" style="margin-top:10px;">
   <div class="alt-baslik">${baslik}</div>
   <div style="border:1.5px solid var(--border); border-radius:var(--r-md); background:#fff; overflow:hidden;">
     <canvas id="${id}" height="150" style="width:100%; display:block; touch-action:none; cursor:crosshair;"></canvas>
-    <div style="text-align:right; padding:6px; background:var(--surface-2); border-top:1px solid var(--border);">
+    <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; padding:6px; background:var(--surface-2); border-top:1px solid var(--border);">
+      ${ekler}
       <button type="button" data-imza-temizle="${id}" style="background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;">Temizle</button>
     </div>
   </div>
 </div>`;
-$("ofImza").innerHTML = fa("ofSorumlu", "Servis sorumlusu / firma yetkilisi (ad, soyad)") + imzaBlok("imzaSorumluCanvas", "Servis Sorumlusu (Firma Yetkilisi) İmzası") +
+$("ofImza").innerHTML = fa("ofSorumlu", "Servis sorumlusu / firma yetkilisi (ad, soyad)") + imzaBlok("imzaSorumluCanvas", "Servis Sorumlusu (Firma Yetkilisi) İmzası",
+    `<button type="button" id="btnImzaKullan" style="background:var(--primary); color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;">✍ Kayıtlı imzamı kullan</button>
+     <button type="button" id="btnImzaKaydet" style="background:var(--surface); color:var(--text-main); border:1px solid var(--border); padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;">💾 Bu imzayı kaydet</button>
+     <button type="button" id="btnImzaSil" style="background:var(--surface); color:var(--text-muted); border:1px solid var(--border); padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;">Kayıtlı imzayı sil</button>`) +
   fa("ofMusteri", "Müşteri / firma yetkilisi (ad, soyad)") + imzaBlok("imzaCanvas", "Müşteri İmzası");
 
 const imzaDurum = {};
@@ -790,6 +794,36 @@ function imzaKurTek(id) {
   if (!st.cizildi && c.width !== w) { c.width = w; }
   stil();
 }
+/* Firma yetkilisi imzası bu cihazda (localStorage) saklanır; sunucuya gitmez */
+const IMZA_ANAHTAR = "enorpa_yetkili_imza";
+(function () {
+  const id = "imzaSorumluCanvas";
+  $("btnImzaKaydet").addEventListener("click", () => {
+    if (!imzaVarMi(id)) { showToast("Önce imzayı atın.", "error"); return; }
+    try { localStorage.setItem(IMZA_ANAHTAR, document.getElementById(id).toDataURL("image/png")); showToast("İmza bu cihaza kaydedildi", "success"); }
+    catch (_) { showToast("İmza kaydedilemedi (tarayıcı izin vermiyor).", "error"); }
+  });
+  $("btnImzaSil").addEventListener("click", () => {
+    try { localStorage.removeItem(IMZA_ANAHTAR); } catch (_) {}
+    showToast("Kayıtlı imza silindi", "info");
+  });
+  $("btnImzaKullan").addEventListener("click", () => {
+    let veri = null; try { veri = localStorage.getItem(IMZA_ANAHTAR); } catch (_) {}
+    if (!veri) { showToast("Kayıtlı imza yok. Önce imzalayıp “Bu imzayı kaydet”e basın.", "error"); return; }
+    imzaKurTek(id);
+    const c = document.getElementById(id), st = imzaDurum[id];
+    if (!st || !st.ctx) { showToast("Önce formu açın.", "error"); return; }
+    const img = new Image();
+    img.onload = () => {
+      st.ctx.clearRect(0, 0, c.width, c.height);
+      const oran = Math.min(c.width / img.width, c.height / img.height);
+      const w = img.width * oran, h = img.height * oran;
+      st.ctx.drawImage(img, (c.width - w) / 2, (c.height - h) / 2, w, h);
+      st.cizildi = true;
+    };
+    img.src = veri;
+  });
+})();
 function imzaKur() { imzaKurTek("imzaSorumluCanvas"); imzaKurTek("imzaCanvas"); }
 const imzaVarMi = id => !!(imzaDurum[id] && imzaDurum[id].cizildi);
 function imzalariTemizle() { document.querySelectorAll("[data-imza-temizle]").forEach(b => b.click()); }
@@ -1033,7 +1067,9 @@ $("olusturFormu").addEventListener("submit", async e => {
       pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297);
       canvaslar.push(canvas);
     }
-    pdf.save(`ENORPA_${firmaKodu}${no}.pdf`);
+    const pdfAdi = `ENORPA_${firmaKodu}${no}.pdf`;
+    pdf.save(pdfAdi);
+    const pdfDosya = new File([pdf.output("blob")], pdfAdi, { type: "application/pdf" });
 
     const kucult = canvas => {
       const k = document.createElement("canvas"), s = 1100 / canvas.width;
@@ -1056,6 +1092,7 @@ $("olusturFormu").addEventListener("submit", async e => {
     await addDoc(collection(db, "formlar"), payload);
 
     showToast("PDF oluşturuldu ve kaydedildi 🎉", "success");
+    pdfPaylasKartiAc(pdfDosya, d.firma);
     $("olusturFormu").reset(); 
     $("ofTarih").value = tarihiInputaCevir();
     imzalariTemizle();
@@ -1063,6 +1100,73 @@ $("olusturFormu").addEventListener("submit", async e => {
   } catch (err) { console.error(err); showToast("Hata: " + err.message, "error"); }
   finally { window.ofKilit = false; btn.disabled = false; btn.innerText = "PDF oluştur ve kaydet"; }
 });
+
+/* ===== PDF PAYLAŞ (telefonun paylaş menüsü / WhatsApp) ===== */
+window.pdfPaylasKartiAc = function (dosya, firma) {
+  const eski = document.getElementById("pdfPaylasKarti"); if (eski) eski.remove();
+  const paylasilabilir = !!(navigator.canShare && navigator.canShare({ files: [dosya] }));
+  const k = document.createElement("div");
+  k.id = "pdfPaylasKarti";
+  k.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px);max-width:420px;z-index:10000;background:var(--surface);color:var(--text-main);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:0 14px 40px -8px rgba(0,0,0,.4);padding:16px";
+  k.innerHTML = `<div style="font-weight:700;margin-bottom:4px">📄 PDF hazır</div>
+    <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">${htmlGuvenli(firma)} · ${htmlGuvenli(dosya.name)}</div>
+    <div style="display:flex;gap:8px">
+      ${paylasilabilir ? '<button type="button" id="btnPdfPaylas" class="btn btn-primary" style="flex:1">📤 Paylaş / WhatsApp</button>'
+        : '<div style="flex:1;font-size:.8rem;color:var(--text-muted)">Bu tarayıcı dosya paylaşımını desteklemiyor; PDF cihaza indirildi, WhatsApp’tan elle ekleyebilirsiniz.</div>'}
+      <button type="button" id="btnPdfKapat" class="btn" style="background:var(--border);color:var(--text-main)">Kapat</button>
+    </div>`;
+  document.body.appendChild(k);
+  $("btnPdfKapat").onclick = () => k.remove();
+  const b = $("btnPdfPaylas");
+  if (b) b.onclick = async () => {
+    try { await navigator.share({ files: [dosya], title: dosya.name, text: "ENORPA servis formu" }); k.remove(); }
+    catch (e) { if (e && e.name !== "AbortError") showToast("Paylaşılamadı: " + e.message, "error"); }
+  };
+};
+
+/* ===== BENZER FİRMA UYARISI ===== */
+const levenshtein = (a, b) => {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let onceki = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    const simdiki = [i];
+    for (let j = 1; j <= n; j++) simdiki[j] = Math.min(onceki[j] + 1, simdiki[j - 1] + 1, onceki[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    onceki = simdiki;
+  }
+  return onceki[n];
+};
+function benzerFirmaUyarisiKur(girdi) {
+  const kutu = document.createElement("div");
+  kutu.style.cssText = "display:none;grid-column:1/-1;margin:-6px 0 14px;padding:10px 12px;border-radius:var(--r-sm);background:var(--primary-soft);font-size:.82rem;line-height:1.5";
+  girdi.closest(".form-floating").insertAdjacentElement("afterend", kutu);
+  let zaman, sira = 0;
+  girdi.addEventListener("input", () => {
+    clearTimeout(zaman);
+    const na = metniNormalizeEt(girdi.value);
+    if (na.length < 3) { kutu.style.display = "none"; return; }
+    zaman = setTimeout(async () => {
+      const bu = ++sira;
+      try {
+        const hi = String.fromCharCode(63743), on = na.slice(0, 3);
+        const snap = await getDocs(query(collection(db, "formlar"), where("aramaFirma", ">=", on), where("aramaFirma", "<=", on + hi), limit(60)));
+        if (bu !== sira) return;
+        const firmalar = new Map();
+        snap.forEach(d => { const x = d.data(); if (x.aramaFirma && x.firmaAdi && !firmalar.has(x.aramaFirma)) firmalar.set(x.aramaFirma, x); });
+        const tam = firmalar.get(na);
+        const benzer = [...firmalar.entries()].filter(([k]) => k !== na && (k.startsWith(na) || na.startsWith(k) || levenshtein(k, na) <= Math.max(1, Math.floor(na.length / 6)))).slice(0, 3);
+        if (!tam && !benzer.length) { kutu.style.display = "none"; return; }
+        const satir = ([k, x]) => `<button type="button" class="btn-firma" style="margin:2px 4px 2px 0" data-ad="${htmlGuvenli(x.firmaAdi)}">${htmlGuvenli(x.firmaAdi.toLocaleUpperCase("tr-TR"))}${x.firmaKodu ? " (" + htmlGuvenli(x.firmaKodu) + ")" : ""} ✔ Seç</button>`;
+        kutu.innerHTML = tam
+          ? `✅ <b>${htmlGuvenli(tam.firmaAdi.toLocaleUpperCase("tr-TR"))}</b> zaten kayıtlı${tam.firmaKodu ? " (" + htmlGuvenli(tam.firmaKodu) + ")" : ""}; yeni form bu firmanın altına eklenecek.`
+          : `⚠ Benzer firma var, onu mu seçmek istedin?<br>${benzer.map(satir).join("")}`;
+        kutu.style.display = "block";
+        kutu.querySelectorAll("[data-ad]").forEach(b => b.addEventListener("click", () => { girdi.value = b.dataset.ad; kutu.style.display = "none"; girdi.dispatchEvent(new Event("input")); }));
+      } catch (e) { console.warn("Benzer firma kontrolü:", e); }
+    }, 350);
+  });
+}
+benzerFirmaUyarisiKur($("firmaAdi"));
+benzerFirmaUyarisiKur($("ofFirma"));
 
 const tumSehirler = sehirIsimleri.map(metniNormalizeEt).concat("belirsiz");
 [$("sehir"), $("editSehir"), $("ofSehir")].forEach(sel => {
@@ -1706,9 +1810,10 @@ $("aramaButonu").addEventListener("click", async () => {
 
     let htmlOut = `<div class="sonuc-bilgisi" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>${sonuc.length} Form (${siraliGruplar.length} Firma) listelendi</span><button type="button" class="btn-siralama" onclick="sonuclariCsvIndir()">⬇ Excel (CSV)</button></div>`;
 
-    for (const grup of siraliGruplar) {
+    const SAYFA_BOYU = 20;                       // bir seferde gösterilecek firma sayısı
+    const grupHTML = grup => {
       const icerikHTML = grup.formlar.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("");
-      htmlOut += `
+      return `
       <div class="firma-grup">
         <div class="firma-baslik" onclick="this.parentElement.classList.toggle('acik')">
           <span class="fb-sol"><span class="fb-ad">🏢 ${htmlGuvenli(grup.firmaAd)}</span>${grup.firmaKodu ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}<span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${grup.formlar.length}</span></span>
@@ -1719,13 +1824,36 @@ $("aramaButonu").addEventListener("click", async () => {
           ${icerikHTML}
         </div>
       </div>`;
-    }
+    };
+    window.aramaSayfa = { gruplar: siraliGruplar, goster: 0, grupHTML, boy: SAYFA_BOYU };
+    const ilk = siraliGruplar.slice(0, SAYFA_BOYU);
+    window.aramaSayfa.goster = ilk.length;
+    htmlOut += ilk.map(grupHTML).join("");
+    htmlOut += '<div id="dahaFazlaKutu"></div>';
     div.innerHTML = htmlOut;
+    dahaFazlaButonuGuncelle();
   } catch (err) {
     console.error("Arama hatası:", err);
     div.innerHTML = `<p style="text-align:center;color:var(--danger);padding:20px">Arama sırasında hata oluştu: ${htmlGuvenli(err.message)}</p>`;
   }
 });
+
+function dahaFazlaButonuGuncelle() {
+  const k = $("dahaFazlaKutu"), a = window.aramaSayfa;
+  if (!k || !a) return;
+  const kalan = a.gruplar.length - a.goster;
+  k.innerHTML = kalan > 0
+    ? `<button type="button" class="btn btn-primary" style="margin:6px 0 14px" onclick="dahaFazlaGoster()">Daha fazla göster (${kalan} firma kaldı)</button>`
+    : "";
+}
+window.dahaFazlaGoster = function () {
+  const a = window.aramaSayfa, k = $("dahaFazlaKutu");
+  if (!a || !k) return;
+  const parca = a.gruplar.slice(a.goster, a.goster + a.boy);
+  a.goster += parca.length;
+  k.insertAdjacentHTML("beforebegin", parca.map(a.grupHTML).join(""));
+  dahaFazlaButonuGuncelle();
+};
 
 /* ===== YAKLAŞAN BAKIMLAR ===== */
 let bakimDinleyici = null;
