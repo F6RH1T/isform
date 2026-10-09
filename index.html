@@ -569,8 +569,7 @@ window.addEventListener("load", () => setTimeout(() => { pdfKutuphaneleri().catc
     <div class="img-zoom-kutu" id="imgZoomKutu">
       <button type="button" class="zoom-btn" data-izoom="+" aria-label="Yakınlaştır">+</button>
       <button type="button" class="zoom-btn" data-izoom="-" aria-label="Uzaklaştır">−</button>
-      <button type="button" class="zoom-btn" data-izoom="0" aria-label="Yakınlaştırmayı sıfırla" title="Yakınlaştırmayı sıfırla" style="font-size:.8rem">1×</button>
-      <button type="button" class="zoom-btn" id="imgDondur" aria-label="Döndür" title="Döndür" style="font-size:1.3rem">↻</button>
+      <button type="button" class="zoom-btn" data-izoom="0" aria-label="Sıfırla" style="font-size:1rem">⟲</button>
     </div>
     <div id="zoomSahne"><img id="modalImage" src="" alt="Form fotoğrafı" draggable="false"></div>
     <p class="img-zoom-ipucu" id="imgZoomIpucu">İki parmakla yakınlaştır · çift dokun · sürükle</p>
@@ -1507,20 +1506,12 @@ if (SR) {
   rec.onend = () => btnMic.classList.remove("listening");
 } else btnMic.style.display = "none";
 
-const fotoDonus = new WeakMap();
 const fotoGirdisi = $("fotoGirdisi"), fotoPreviewContainer = $("fotoPreviewContainer"), fotoLabel = $("fotoLabel");
 fotoGirdisi.addEventListener("change", e => {
   fotoPreviewContainer.innerHTML = "";
   const files = Array.from(e.target.files);
   fotoLabel.classList.toggle("active", files.length > 0);
-  files.forEach(f => {
-    const w = document.createElement("span"); w.style.cssText = "position:relative;display:inline-block;width:64px;height:64px";
-    const img = document.createElement("img"); img.src = URL.createObjectURL(f);
-    const b = document.createElement("button"); b.type = "button"; b.textContent = "↻"; b.setAttribute("aria-label", "Döndür");
-    b.style.cssText = "position:absolute;right:-6px;top:-6px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.92);color:#111;font-size:16px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:2;padding:0";
-    b.addEventListener("click", ev => { ev.preventDefault(); ev.stopPropagation(); const d = ((fotoDonus.get(f) || 0) + 90) % 360; fotoDonus.set(f, d); img.style.transition = "transform .25s"; img.style.transform = `rotate(${d}deg)`; });
-    w.append(img, b); fotoPreviewContainer.appendChild(w);
-  });
+  files.forEach(f => { const img = document.createElement("img"); img.src = URL.createObjectURL(f); fotoPreviewContainer.appendChild(img); });
 });
 
 const compressImage = async file => {
@@ -1537,9 +1528,8 @@ const compressImage = async file => {
       const img = new Image();
       img.onload = () => {
         const c = document.createElement("canvas"), s = img.width > 720 ? 720 / img.width : 1;
-        const dn = fotoDonus.get(file) || 0, W = img.width * s, H = img.height * s, odd = dn % 180 !== 0;
-        c.width = odd ? H : W; c.height = odd ? W : H;
-        const cx = c.getContext("2d"); cx.translate(c.width / 2, c.height / 2); cx.rotate(dn * Math.PI / 180); cx.drawImage(img, -W / 2, -H / 2, W, H);
+        c.width = img.width * s; c.height = img.height * s;
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
         resolve(c.toDataURL("image/jpeg", 0.6));
       };
       img.onerror = () => reject(new Error("Fotoğraf okunamadı."));
@@ -2338,11 +2328,11 @@ async function gemini(parts, { json = false, sistem = "" } = {}) {
   if (!t) throw new Error("Boş yanıt geldi");
   return json ? JSON.parse(t.replace(/^```json|```$/g, "").trim()) : t;
 }
-const aiStil = document.createElement("style"); aiStil.textContent = `.ai-btn{position:relative;overflow:hidden;color:#111;font-weight:600;border:1px solid rgba(255,255,255,.9);border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(236,239,244,.72));-webkit-backdrop-filter:blur(16px) saturate(170%);backdrop-filter:blur(16px) saturate(170%);box-shadow:inset 2px 0 3px -1px rgba(0,0,0,.6),inset 0 2px 3px -1px rgba(0,0,0,.35),inset -1px -2px 3px rgba(255,255,255,.95),0 8px 18px rgba(0,0,0,.14),0 1px 2px rgba(0,0,0,.2);text-shadow:none;transition:transform .15s,box-shadow .15s}.ai-btn:active{transform:scale(.96)}.ai-btn:disabled{opacity:.7}[data-theme=dark] .ai-btn{color:#f5f7ff;border-color:rgba(255,255,255,.28);background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08));box-shadow:inset 1px 1px 2px rgba(255,255,255,.4),inset 0 -2px 4px rgba(0,0,0,.45),0 8px 18px rgba(0,0,0,.5)}`; document.head.appendChild(aiStil);
+const aiStil = document.createElement("style"); aiStil.textContent = `:root{--ai-yazi:var(--text-main);--ai-cam-1:color-mix(in srgb,var(--surface) 72%,transparent);--ai-cam-2:color-mix(in srgb,var(--surface-2) 52%,transparent);--ai-golge:rgba(0,0,0,.14)}.ai-btn{position:relative;overflow:hidden;color:var(--ai-yazi);font-weight:700;border:1px solid rgba(255,255,255,.65);border-radius:16px;background:linear-gradient(135deg,var(--ai-cam-1),var(--ai-cam-2));-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),inset 0 -8px 16px rgba(255,255,255,.08),0 8px 22px var(--ai-golge);text-shadow:none;transition:transform .15s,box-shadow .15s}.ai-btn::before{content:"";position:absolute;inset:0 0 50% 0;background:linear-gradient(rgba(255,255,255,.38),rgba(255,255,255,0));pointer-events:none;border-radius:16px 16px 0 0}.ai-btn:active{transform:scale(.97)}.ai-btn:disabled{opacity:.7}`; document.head.appendChild(aiStil);
 function aiButon(hedef, yer, metin, fn, stil = "") {
   if (!hedef) return null;
   const b = document.createElement("button"); b.type = "button"; b.className = "btn ai-btn"; b.textContent = metin;
-  b.style.cssText = "width:auto;display:inline-block;padding:11px 20px;font-size:.85rem;margin:0 8px 12px 0;" + stil;
+  b.style.cssText = "width:auto;display:inline-block;padding:11px 16px;font-size:.85rem;margin:0 8px 12px 0;" + stil;
   b.addEventListener("click", async () => {
     const eski = b.textContent; b.disabled = true; b.textContent = "✨ Düşünüyor…";
     try { await fn(); } catch (e) { console.error(e); showToast("AI: " + e.message, "error"); }
@@ -2528,7 +2518,7 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
   const k = document.createElement("div"); k.className = "card";
   k.innerHTML = '<div class="card-title">✨ Asistana sor</div><div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Firma kayıtları veya herhangi bir soru sorun</label></div>';
   $("sonuclar").insertAdjacentElement("beforebegin", k);
-  const sorBtn = aiButon(k, "beforeend", "✨ Sor", async () => {
+  aiButon(k, "beforeend", "✨ Sor", async () => {
     const soru = $("aiSoru").value.trim(); if (!soru) throw new Error("Bir soru yazın");
     const sq = metniNormalizeEt(soru);
     const kayitli = /firma|m[uü]steri|kay[iı]t|form|bak[iı]m|ar[iı]za|kurulum|ke[sş]if|kaç|kac|ge[cç]en|bu ay|bu y[iı]l|yakla[sş]an|gecikmi[sş]|[sş]ehir|personel|en son|bizim|biz /i.test(soru.toLocaleLowerCase("tr-TR"))
@@ -2543,7 +2533,6 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
     kutuYaz(cevap, await gemini([{ text: istem }], { sistem: "Sen bir teknik servis firmasının yardımcısısın. Türkçe, kısa ve net cevap ver. Bilmediğin şeyi uydurma." }));
 }, "margin-top:10px;");
   var cevap = aiKutu(k, "beforeend");
-  $("aiSoru").addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); sorBtn.click(); } });
 }
 
 /* Kartvizitten firma kartı */
@@ -2562,50 +2551,6 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
       showToast("Kartvizit okundu, kontrol edip kaydedin", "success");
     } catch (e) { console.error(e); showToast("AI: " + e.message, "error"); }
   });
-}
-
-/* ===== FOTOĞRAF GÖRÜNTÜLEYİCİ: DÖNDÜRME + AI İLE FORM OKUMA ===== */
-{
-  const img = $("modalImage"); let d = 0;
-  const uyg = () => { const odd = d % 180 !== 0, w = img.offsetWidth, h = img.offsetHeight; img.style.transition = "rotate .25s, scale .25s"; img.style.rotate = d ? d + "deg" : ""; img.style.scale = odd && w && h ? Math.min(1, w / h, h / w) : ""; };
-  const sifirla = () => { d = 0; img.style.transition = ""; img.style.rotate = ""; img.style.scale = ""; };
-  $("imgDondur").addEventListener("click", () => { d = (d + 90) % 360; uyg(); });
-  const a = window.resmiAc; window.resmiAc = async function () { sifirla(); return a.apply(this, arguments); };
-  const k = window.modaliKapat; window.modaliKapat = () => { sifirla(); k(); };
-}
-{
-  const panel = document.createElement("div");
-  panel.style.cssText = "display:none;flex-direction:column;align-items:center;gap:8px;margin-top:12px;width:min(560px,100%)";
-  const kutu = document.createElement("div");
-  kutu.style.cssText = "display:none;color:#fff;font-size:.85rem;line-height:1.45;white-space:pre-wrap;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:10px 12px;max-height:22vh;overflow:auto;width:100%";
-  $("downloadLink").insertAdjacentElement("beforebegin", panel);
-  let docId = null;
-  const oku = async () => {
-    const id = docId, src = $("modalImage").src;
-    if (!id || !src.startsWith("data:")) throw new Error("Fotoğraf henüz yüklenmedi");
-    const v = window.formCache?.[id] || (await getDoc(doc(db, "formlar", id))).data() || {};
-    if (v.aciklama && !confirm("Bu formda zaten açıklama var. AI okuması üzerine yazılsın mı?")) return;
-    const t = (await gemini([{ inlineData: { mimeType: src.slice(5, src.indexOf(";")), data: src.split(",")[1] } }, { text: "Bu bir servis iş formu fotoğrafı (el yazısı olabilir, ters/yan çekilmiş olabilir). Formda yazan yapılan işlem, arıza, değişen parça ve notları okuyup 'Açıklama' alanına yazılacak düzgün ve kısa bir Türkçe metin olarak yaz. Okunamayan veya görünmeyen bilgiyi uydurma. Hiç okunabilir açıklama yoksa sadece OKUNAMADI yaz. Sadece metni ver." }], { sistem: aiSis })).trim();
-    kutu.style.display = "block"; kutu.textContent = t;
-    if (/^OKUNAMADI/i.test(t)) { showToast("Formdan açıklama okunamadı", "info"); return; }
-    if (!yoneticiMailleri.includes(aktifKullaniciMail)) { showToast("Okundu, ancak kaydetme yetkiniz yok", "info"); return; }
-    await updateDoc(doc(db, "formlar", id), { aciklama: t });
-    if (window.formCache?.[id]) window.formCache[id].aciklama = t;
-    const kart = $("kart-" + id);
-    if (kart) { let x = kart.querySelector(".aciklama-kutusu"); if (!x) { x = document.createElement("div"); x.className = "aciklama-kutusu"; kart.appendChild(x); } x.textContent = t; }
-    if (window.aramaOnbellek) window.aramaOnbellek.clear();
-    showToast("Açıklama yazıldı ve kaydedildi", "success");
-  };
-  const btn = aiButon(panel, "afterbegin", "✨ Formu oku, açıklamayı yaz", oku, "margin:0;");
-  panel.appendChild(kutu);
-  const ra = window.resmiAc;
-  window.resmiAc = async function (id) {
-    docId = id; kutu.style.display = "none"; kutu.textContent = ""; panel.style.display = "none";
-    await ra.apply(this, arguments);
-    panel.style.display = "flex";
-    const v = window.formCache?.[id];   // sadece açıklaması boş kayıtlar otomatik okunur
-    if (v && !v.aciklama && yoneticiMailleri.includes(aktifKullaniciMail) && navigator.onLine && $("modalImage").src.startsWith("data:")) btn.click();
-  };
 }
 </script>
 </body>
