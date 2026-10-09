@@ -2322,10 +2322,11 @@ async function gemini(parts, { json = false, sistem = "" } = {}) {
   if (!t) throw new Error("Boş yanıt geldi");
   return json ? JSON.parse(t.replace(/^```json|```$/g, "").trim()) : t;
 }
+const aiStil = document.createElement("style"); aiStil.textContent = `.ai-btn{position:relative;overflow:hidden;color:#fff;font-weight:700;border:1px solid rgba(255,255,255,.5);border-radius:16px;background:linear-gradient(135deg,rgba(64,140,255,.82),rgba(88,86,214,.66));-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -8px 16px rgba(255,255,255,.08),0 8px 22px rgba(37,99,235,.35);text-shadow:0 1px 2px rgba(0,30,90,.35);transition:transform .15s,box-shadow .15s}.ai-btn::before{content:"";position:absolute;inset:0 0 50% 0;background:linear-gradient(rgba(255,255,255,.38),rgba(255,255,255,0));pointer-events:none;border-radius:16px 16px 0 0}.ai-btn:active{transform:scale(.97)}.ai-btn:disabled{opacity:.7}`; document.head.appendChild(aiStil);
 function aiButon(hedef, yer, metin, fn, stil = "") {
   if (!hedef) return null;
-  const b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.textContent = metin;
-  b.style.cssText = "background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border:0;box-shadow:0 2px 8px rgba(37,99,235,.35);width:auto;display:inline-block;padding:10px 14px;font-size:.85rem;margin:0 8px 12px 0;" + stil;
+  const b = document.createElement("button"); b.type = "button"; b.className = "btn ai-btn"; b.textContent = metin;
+  b.style.cssText = "width:auto;display:inline-block;padding:11px 16px;font-size:.85rem;margin:0 8px 12px 0;" + stil;
   b.addEventListener("click", async () => {
     const eski = b.textContent; b.disabled = true; b.textContent = "✨ Düşünüyor…";
     try { await fn(); } catch (e) { console.error(e); showToast("AI: " + e.message, "error"); }
@@ -2379,11 +2380,32 @@ aiButon($("fotoPreviewContainer"), "afterend", "✨ Fotoğrafı oku (etiket / ar
 /* 4) Doğal dille arama */
 aiButon($("aramaButonu"), "afterend", "✨ Akıllı ara (cümleyle yaz)", async () => {
   const q = $("aramaKutusu").value.trim(); if (!q) throw new Error("Arama kutusuna bir cümle yazın");
-  const r = await gemini([{ text: `Bugün: ${bugun()}. Aramayı filtrelere çevir. JSON: {"firma":"","sehir":"","islemTipi":"Bakım|Arıza|Kurulum|Keşif|Diğer veya boş","baslangic":"YYYY-MM-DD veya boş","bitis":"YYYY-MM-DD veya boş"}. "Geçen yıl", "son 3 ay" gibi ifadeleri tarihe çevir.\n\nArama: ${q}` }], { json: true });
-  $("aramaKutusu").value = r.firma || r.sehir || "";
-  $("fltBaslangic").value = r.baslangic || ""; $("fltBitis").value = r.bitis || "";
-  const o = [...$("fltIslem").options].find(x => x.value === r.islemTipi); $("fltIslem").value = o ? o.value : "";
-  $("aramaButonu").click();
+  const r = await gemini([{ text: `Bugün: ${bugun()}. Aramayı filtrelere çevir. JSON: {"firma":"","sehir":"","islemTipi":"Bakım|Arıza|Kurulum|Keşif|Diğer veya boş","baslangic":"YYYY-MM-DD veya boş","bitis":"YYYY-MM-DD veya boş","anahtar":["nottta aranacak kelimelerin KÖK hali, ek almamış, örn. kompresör"]}. "Geçen yıl", "son 3 ay" gibi ifadeleri tarihe çevir. Sadece sorulanı doldur, fazlasını ekleme.\n\nArama: ${q}` }], { json: true });
+  const n = x => metniNormalizeEt(x || ""), kel = (r.anahtar || []).map(n).filter(Boolean), snap = await raporVerisi(), out = [];
+  snap.forEach(d => {
+    const v = d.data(), t = (v.tarih || "").slice(0, 10);
+    if (r.firma && !n(v.firmaAdi || v.aramaFirma).includes(n(r.firma))) return;
+    if (r.sehir && n(v.sehir) !== n(r.sehir)) return;
+    if (r.islemTipi && v.islemTipi !== r.islemTipi) return;
+    if (r.baslangic && t < r.baslangic) return; if (r.bitis && t > r.bitis) return;
+    if (kel.length) { const m = n(v.aciklama); if (!kel.some(k => m.includes(k))) return; }
+    out.push(v);
+  });
+  out.sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
+  let kt = $("aiAramaSonuc"); if (!kt) { kt = document.createElement("div"); kt.id = "aiAramaSonuc"; kt.className = "card"; $("sonuclar").insertAdjacentElement("beforebegin", kt); }
+  kt.textContent = "";
+  const bas = document.createElement("div"); bas.style.cssText = "font-size:.85rem;margin-bottom:10px;color:var(--text-muted)";
+  bas.textContent = `✨ ${out.length} kayıt bulundu. Anlaşılan filtre: ` + [r.firma && "firma: " + r.firma, r.sehir && "şehir: " + r.sehir, r.islemTipi, r.baslangic && "başlangıç: " + r.baslangic, r.bitis && "bitiş: " + r.bitis, kel.length && "kelime: " + kel.join(", ")].filter(Boolean).join(" · ");
+  kt.appendChild(bas);
+  out.slice(0, 40).forEach(v => {
+    const s = document.createElement("div"); s.style.cssText = "padding:10px 0;border-top:1px solid var(--border);cursor:pointer";
+    const a = document.createElement("div"); a.style.fontWeight = "700"; a.textContent = `${v.firmaAdi || v.aramaFirma} · ${sehirAdi[n(v.sehir)] || v.sehir || ""} · ${v.islemTipi || ""} · ${(v.tarih || "").slice(0, 10)}`;
+    const b = document.createElement("div"); b.style.cssText = "font-size:.85rem;color:var(--text-muted)"; b.textContent = (v.aciklama || "").slice(0, 140);
+    s.append(a, b); s.addEventListener("click", () => window.firmaKartiAc(v.aramaFirma, v.firmaAdi || v.aramaFirma, sehirAdi[n(v.sehir)] || v.sehir || ""));
+    kt.appendChild(s);
+  });
+  if (out.length > 40) { const m = document.createElement("div"); m.style.cssText = "font-size:.8rem;padding-top:8px;color:var(--text-muted)"; m.textContent = `İlk 40 kayıt gösteriliyor. Daraltmak için aramayı detaylandırın.`; kt.appendChild(m); }
+  kt.scrollIntoView({ behavior: "smooth", block: "start" });
 }, "margin-top:10px;");
 
 /* 5) Firma özeti + müşteri mesajı */
@@ -2412,7 +2434,7 @@ aiButon($("aramaButonu"), "afterend", "✨ Akıllı ara (cümleyle yaz)", async 
     const veri = { toplam: snap.size, sehir: say(v => v.sehir), islem: say(v => v.islemTipi), personel: say(v => v.ekleyen), aylik: say(v => (v.tarih || "").slice(0, 7)) };
     kutu.style.display = "block"; kutu.textContent = await gemini([{ text: `Bugün: ${bugun()}. Bu servis kayıt istatistiklerini yöneticiye 5-6 maddede yorumla: öne çıkanlar, artış/azalış, dikkat edilmesi gerekenler. Sayıları aynen kullan.\n${JSON.stringify(veri)}` }], { sistem: aiSis });
   });
-  aiButon(yenile, "afterend", "🔑 Gemini anahtarını değiştir", () => { localStorage.removeItem("gemini_key"); aiAnahtar(); }, "background:var(--border);color:var(--text-main);box-shadow:none;font-size:.8rem;");
+  aiButon(yenile, "afterend", "🔑 Gemini anahtarını değiştir", () => { localStorage.removeItem("gemini_key"); aiAnahtar(); }, "background:var(--border);color:var(--text-main);border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;text-shadow:none;font-size:.8rem;");
 }
 
 /* ===== AI EK ÖZELLİKLER ===== */
@@ -2494,8 +2516,8 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
     const soru = $("aiSoru").value.trim(); if (!soru) throw new Error("Bir soru yazın");
     const snap = await raporVerisi(), L = []; snap.forEach(d => L.push(d.data()));
     L.sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
-    const veri = L.slice(0, 400).map(v => [(v.tarih || "").slice(0, 10), v.firmaAdi || v.aramaFirma, v.sehir, v.islemTipi, (v.aciklama || "").slice(0, 160), v.sonrakiBakim ? "sonraki:" + v.sonrakiBakim.slice(0, 10) : ""].join(" | ")).join("\n");
-    kutuYaz(cevap, await gemini([{ text: `Bugün: ${bugun()}. Aşağıdaki servis kayıtlarına (en yeni 400 kayıt, ${L.length} kayıttan) dayanarak soruyu cevapla. Veride olmayanı söyleme, bulunamazsa bunu belirt.\n\nSoru: ${soru}\n\nKayıtlar (tarih | firma | şehir | işlem | not | sonraki bakım):\n${veri}` }], { sistem: aiSis }));
+    const veri = L.slice(0, 1500).map(v => [(v.tarih || "").slice(0, 10), v.firmaAdi || v.aramaFirma, v.sehir, v.islemTipi, (v.aciklama || "").slice(0, 300), v.sonrakiBakim ? "sonraki:" + v.sonrakiBakim.slice(0, 10) : ""].join(" | ")).join("\n");
+    kutuYaz(cevap, await gemini([{ text: `Bugün: ${bugun()}. Aşağıdaki servis kayıtlarına (en yeni 1500 kayıt, ${L.length} kayıttan) dayanarak soruyu cevapla. Veride olmayanı söyleme, bulunamazsa bunu belirt.\n\nSoru: ${soru}\n\nKayıtlar (tarih | firma | şehir | işlem | not | sonraki bakım):\n${veri}` }], { sistem: aiSis }));
   }, "margin-top:10px;");
   var cevap = aiKutu(k, "beforeend");
 }
