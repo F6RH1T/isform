@@ -1,6 +1,6 @@
 /* ENORPA İş Formları - service worker
    Uygulama kabuğunu önbelleğe alır; Firestore, Auth ve Gemini istekleri her zaman doğrudan ağa gider. */
-const SURUM = "enorpa-v2";
+const SURUM = "enorpa-v3";
 const TEMEL = ["./", "manifest.webmanifest","logo-enorpa.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "logo.png"];
 const STATIK = /(^|\.)gstatic\.com$|^fonts\.googleapis\.com$|^cdnjs\.cloudflare\.com$|^cdn\.jsdelivr\.net$/;
 
