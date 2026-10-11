@@ -1,3 +1,4 @@
+import { ikon } from "../../lib/ikon.js";
 import { deleteField, doc, getDoc, updateDoc } from "firebase/firestore";
 import { $ } from "../../lib/dom.js";
 import { aiButon, aiKutu, bugun, olay } from "./ui.js";
@@ -74,7 +75,7 @@ async function aiResim(f) {
 /* Asistan (Ara sekmesi): kayıtlarda arar, sayar, özetler, taslak yazar, uygulamayı anlatır */
 {
   const k = document.createElement("div"); k.className = "card"; k.id = "asistanKart";
-  k.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div class="card-title" style="margin:0">✨ Asistan</div><button type="button" id="asTemizle" class="btn-firma" style="margin:0;display:none">Sohbeti temizle</button></div>'
+  k.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div class="card-title as-baslik" style="margin:0">'+ikon("spark",22)+' Asistan</div><button type="button" id="asTemizle" class="btn-firma" style="margin:0;display:none">Sohbeti temizle</button></div>'
     + '<div id="asSohbet" style="display:none;max-height:420px;overflow:auto;flex-direction:column;gap:8px;margin-bottom:10px"></div>'
     + '<div id="asOneri" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>'
     + '<div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Sorun veya ne bulmak istediğinizi yazın</label></div>';
@@ -82,7 +83,7 @@ async function aiResim(f) {
   const sohbetEl = $("asSohbet"), asGecmis = [], nrm = x => metniNormalizeEt(x || "");
 
   const asYaz = (el, m) => {
-    el.textContent = "";
+    el.classList.remove("yaziyor"); el.textContent = "";
     String(m).replace(/^\s*[*-] /gm, "• ").split(/\*\*(.+?)\*\*/g).forEach((p, i) => {
       if (i % 2) { const b = document.createElement("b"); b.textContent = p; el.appendChild(b); } else el.appendChild(document.createTextNode(p));
     });
@@ -216,7 +217,7 @@ async function aiResim(f) {
 
   async function sor(soru, firmaZorla, planOnceki) {
     asBalon("k", firmaZorla ? `${soru}  →  ${firmaZorla}` : soru);
-    const bal = asBalon("a", "✨ Düşünüyor…");
+    const bal = asBalon("a", ""); bal.classList.add("yaziyor"); bal.innerHTML = '<span class="nokta"></span><span class="nokta"></span><span class="nokta"></span>';
     try {
       let p = planOnceki;
       if (!p) {

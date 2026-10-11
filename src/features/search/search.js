@@ -1,3 +1,5 @@
+import { ikon } from "../../lib/ikon.js";
+import { bashar, tipSinif } from "../../lib/tip.js";
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { $ } from "../../lib/dom.js";
 import { sessizAra } from "./sessiz-ara.js";
@@ -131,19 +133,20 @@ function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, 
     <button class="btn-icon btn-sil" onclick="formSil('${docId}',${fotoParam})" title="Sil" aria-label="Sil">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>`;
   const aciklamaHTML = aciklama ? `<div class="aciklama-kutusu">${htmlGuvenli(aciklama)}</div>` : "";
-  const konumHTML = konum && konum.lat && konum.lng ? `<a href="https://maps.google.com/?q=${konum.lat},${konum.lng}" target="_blank" rel="noopener" class="badge-konum" onclick="event.stopPropagation()">📍 Haritada gör</a>` : "";
+  const konumHTML = konum && konum.lat && konum.lng ? `<a href="https://maps.google.com/?q=${konum.lat},${konum.lng}" target="_blank" rel="noopener" class="badge-konum" onclick="event.stopPropagation()">${ikon("pin", 13)} Haritada gör</a>` : "";
   return `
-    <div class="liste-karti" id="kart-${docId}">
+    <div class="liste-karti tip-${tipSinif(islem)}" id="kart-${docId}">
       <div class="karti-ust">
+        <span class="kart-avatar" aria-hidden="true">${bashar(firma)}</span>
         <div class="liste-karti-bilgi" onclick="resmiAc('${docId}',${fotoParam})">
           <h4>${htmlGuvenli(firma.toLocaleUpperCase("tr-TR"))} · ${htmlGuvenli(sehir.toLocaleUpperCase("tr-TR"))}</h4>
           <div class="detay-satiri">
             <span class="badge" style="background:var(--primary);color:#fff;">#${htmlGuvenli(codeDisplay)}</span>
-            <span class="badge">🛠 ${htmlGuvenli(islem)}</span>
-            <span class="badge">👤 ${htmlGuvenli(ekleyen)}</span>
+            <span class="badge badge-tip">${ikon("wrench", 13)} ${htmlGuvenli(islem)}</span>
+            <span class="badge">${ikon("user", 13)} ${htmlGuvenli(ekleyen)}</span>
             ${konumHTML}
           </div>
-          <p>🕒 ${htmlGuvenli(tarih)}</p>
+          <p class="kart-tarih">${ikon("clock", 13)} ${htmlGuvenli(tarih)}</p>
         </div>
         <div class="liste-karti-butonlar">
           <button class="btn-icon btn-gor" onclick="resmiAc('${docId}',${fotoParam})" title="Fotoğrafı gör" aria-label="Fotoğrafı gör">
@@ -262,7 +265,7 @@ $("aramaButonu").addEventListener("click", async () => {
       return `
       <div class="firma-grup">
         <div class="firma-baslik" onclick="this.parentElement.classList.toggle('acik')">
-          <span class="fb-sol"><span class="fb-ad">🏢 ${htmlGuvenli(grup.firmaAd)}</span>${grup.firmaKodu ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}<span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${grup.formlar.length}</span></span>
+          <span class="fb-sol"><span class="fb-av" aria-hidden="true">${bashar(grup.firmaAd)}</span><span class="fb-ad">${htmlGuvenli(grup.firmaAd)}</span>${grup.firmaKodu ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}<span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${grup.formlar.length}</span></span>
           <button type="button" class="btn-firma" onclick="event.stopPropagation();firmaKartiAc('${jsGuvenliMetin(grup.formlar[0].v.aramaFirma || metniNormalizeEt(grup.firmaAd))}','${jsGuvenliMetin(grup.firmaAd)}','${jsGuvenliMetin(grup.formlar[0].v.sehir || "")}')">ℹ Firma kartı</button>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>

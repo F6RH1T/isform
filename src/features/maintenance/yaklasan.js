@@ -16,12 +16,13 @@ function yaklasanBaslat() {
   const alt = new Date(); alt.setDate(alt.getDate() - 30);
   bakimDinleyici = onSnapshot(query(collection(db, "formlar"), where("sonrakiBakim", ">=", alt.toISOString()), orderBy("sonrakiBakim"), limit(15)), snap => {
     const kutu = $("yaklasanKart");
-    if (snap.empty) { kutu.style.display = "none"; return; }
+    if (snap.empty) { kutu.style.display = "none"; window.dispatchEvent(new CustomEvent("bakimOzet", { detail: { gec: 0, hafta: 0, toplam: 0 } })); return; }
     window.bakimVeri = {}; let gec = 0, hafta = 0, h2 = "";
     snap.forEach(d => {
       const v = d.data(); window.bakimVeri[d.id] = v; const f = gunFarki(v.sonrakiBakim); if (f < 0) gec++; else if (f <= 7) hafta++;
       h2 += `<div class="bakim-satir" data-ben="${(v.sorumlu || "") === (state.aktifKullaniciMail || "").toLowerCase() ? 1 : 0}" onclick="yaklasanAc('${jsGuvenliMetin(v.firmaAdi || "")}')"><span><b>${htmlGuvenli((v.firmaAdi || "").toLocaleUpperCase("tr-TR"))}</b> · ${htmlGuvenli(v.sehir || "")}<br><small style="color:var(--text-muted)">${htmlGuvenli(v.islemTipi || "")} · #${htmlGuvenli(v.formKodu || "")}${v.bakimAralik ? " · 🔁" + v.bakimAralik + " ay" : ""}</small></span><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${bakimRozeti(v.sonrakiBakim)}<button type="button" class="btn-firma" title="Bakım yapıldı" onclick="event.stopPropagation();bakimYapildi('${d.id}')">✔ Yapıldı</button><button type="button" class="btn-firma" title="Takvime ekle" onclick="event.stopPropagation();bakimIcs('${d.id}')">📅</button></span></div>`;
     });
+    window.dispatchEvent(new CustomEvent("bakimOzet", { detail: { gec, hafta, toplam: snap.size } }));
     if (gec && !window.gecUyarildi) { window.gecUyarildi = true; showToast("⚠ " + gec + " gecikmiş bakım var", "error"); }
     let h = '<div class="card-title" style="font-size:1.1rem;margin-bottom:8px">📅 Yaklaşan bakımlar</div>' +
       `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span class="bakim-rozet gec">⚠ ${gec} gecikmiş</span><span class="bakim-rozet yakin">🔧 ${hafta} bu hafta</span><span class="bakim-rozet">${snap.size} toplam</span><button type="button" class="btn-firma" style="margin:0" onclick="gunRotasi()">🧭 Günün rotası</button></div>` + h2;

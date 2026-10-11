@@ -8,7 +8,7 @@ import { logYaz } from "../../core/session.js";
 window.eskiKayitlariOptimizeEt = async function () {
   if (!confirm("Arama altyapısı ve Form Kodları güncelleniyor. Onaylıyor musunuz?")) return;
   const btn = $("btnOptimize");
-  btn.disabled = true; btn.innerText = "⏳…";
+  btn.disabled = true; btn.innerText = "Optimize ediliyor…";
   try {
     const snap = await getDocs(collection(db, "formlar"));
     const firmalar = {};
@@ -56,5 +56,5 @@ window.eskiKayitlariOptimizeEt = async function () {
     showToast(`${n} kayıt optimize edildi ve kodlandı!`, "success"); logYaz("Toplu optimize çalıştırıldı", "", `${n} kayıt`);
     btn.style.display = "none";
   } catch (e) { showToast("Hata: " + e.message, "error"); }
-  finally { btn.disabled = false; btn.innerText = "⚡ Op."; }
+  finally { btn.disabled = false; btn.innerText = "Eski kayıtları optimize et"; }
 };

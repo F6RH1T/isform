@@ -1,3 +1,4 @@
+import { raporGrafikCiz } from "./rapor-grafik.js";
 import { state } from "../../core/state.js";
 import { $ } from "../../lib/dom.js";
 import { ilPaneliniCiz, raporHaritasiniCiz, secilenIl } from "./harita.js";
@@ -40,6 +41,7 @@ $("btnRaporOlustur").addEventListener("click", async () => {
     $("dashboardAlani").style.display = "block";
     btn.style.display = "none";
     raporHaritasiniCiz();
+    raporGrafikCiz(state.tumFormlarGlobal);
     if (secilenIl) ilPaneliniCiz();
     showToast("Rapor oluşturuldu!", "success");
   } catch (err) { showToast("Hata: " + err.message, "error"); btn.disabled = false; btn.innerText = "Tekrar dene"; }
