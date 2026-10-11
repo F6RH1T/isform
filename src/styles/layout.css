@@ -15,12 +15,13 @@
 
 /* Üst bar */
 #mainApp{display:none;padding-bottom:110px}
-header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
+header{gap:8px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
   padding:calc(12px + env(safe-area-inset-top,0px)) 18px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border)}
-.header-brand{display:flex;align-items:center;gap:12px}
-.header-brand img{height:36px;object-fit:contain}
+.header-brand{display:flex;align-items:center;gap:12px;min-width:0;flex:0 1 auto}
+.header-brand img{height:36px;max-width:100%;object-fit:contain;flex-shrink:1;min-width:0}
 .header-title{font-weight:700;font-size:1rem;letter-spacing:-.02em;border-left:1.5px solid var(--border);padding-left:12px}
-.header-actions{display:flex;align-items:center;gap:8px}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.header-actions>*{flex-shrink:0;white-space:nowrap}
 .theme-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;transition:.2s}
 .theme-btn:hover{color:var(--primary);border-color:var(--primary)}
 .logout-btn{background:var(--surface);border:1px solid var(--border);color:var(--danger);font-weight:600;font-size:.82rem;cursor:pointer;height:38px;padding:0 14px;border-radius:999px;transition:.2s}
@@ -35,3 +36,20 @@ header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:b
 /* Kart & başlık */
 .card{background:var(--surface);padding:24px 20px;border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:20px}
 .card-title{font-size:1.35rem;font-weight:800;letter-spacing:-.03em;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+/* Dar telefon ekranları: üst bar taşmasın */
+@media(max-width:480px){
+  header{padding-left:12px;padding-right:12px}
+  .header-title{display:none}
+  .header-brand img{height:30px;max-width:130px}
+  .theme-btn{width:36px;height:36px}
+  .logout-btn,.optimize-btn{height:36px;padding:0 10px;font-size:.78rem}
+}
+
+/* Arama filtreleri: taşmayan 2 sütunlu ızgara */
+.filtre-satiri{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:4px 0 14px}
+.flt-alan{min-width:0;font-size:.75rem;font-weight:700;color:var(--text-muted)}
+.flt-tam{grid-column:1/-1}
+.flt-alan input,.flt-alan select{display:block;width:100%;min-width:0;max-width:100%;margin-top:4px;padding:10px;min-height:44px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main);font-size:.95rem;-webkit-appearance:none;appearance:none}
+.flt-alan select{background-image:linear-gradient(45deg,transparent 50%,var(--text-muted) 50%),linear-gradient(135deg,var(--text-muted) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+.flt-alan input[type=date]::-webkit-date-and-time-value{text-align:left;min-width:0}
