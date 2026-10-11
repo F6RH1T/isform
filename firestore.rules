@@ -50,6 +50,13 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Personel listesi (iş formundaki isim seçenekleri): okuma tüm aktif roller, ekleme düzenleyen+, düzenleme/silme yönetici.
+    match /personel/{id} {
+      allow read: if okuyan();
+      allow create: if duzenleyen();
+      allow update, delete: if yonetici();
+    }
+
     // Eski tarayıcı-anahtarı modu için. AI proxy'ye geçtikten sonra bu belge silinip kural `if false` yapılmalıdır.
     match /ayarlar/gemini {
       allow read: if aktif();
