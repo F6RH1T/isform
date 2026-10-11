@@ -1,0 +1,22 @@
+/* Firma kartı */
+.fk-card{position:relative;width:100%;max-width:520px;max-height:92vh;overflow:auto;background:var(--surface);border-radius:24px;box-shadow:0 30px 70px -20px rgba(0,0,0,.55);animation:fkGiris .25s ease}
+@keyframes fkGiris{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.fk-ust{position:relative;padding:30px 24px 52px;text-align:center;color:#fff;background:linear-gradient(135deg,var(--primary),color-mix(in srgb,var(--primary) 55%,#000))}
+.fk-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.2);color:#fff;font-size:1.1rem;cursor:pointer}
+.fk-avatar{width:68px;height:68px;margin:0 auto 12px;border-radius:50%;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;letter-spacing:.5px}
+.fk-ust h3{font-size:1.25rem;font-weight:800;line-height:1.25;word-break:break-word}
+.fk-sehir{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.2);font-size:.8rem;font-weight:600}
+.fk-ist{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:-32px 18px 0;position:relative}
+.fk-ist div{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
+.fk-ist b{display:block;font-size:1rem;font-weight:800}
+.fk-ist small{font-size:.68rem;color:var(--text-muted);font-weight:600}
+.fk-hizli{display:flex;justify-content:center;gap:14px;padding:18px 18px 4px}
+.fk-hizli a{flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:16px;text-decoration:none;font-size:.76rem;font-weight:700;color:var(--text-main);background:var(--surface-2);border:1px solid var(--border);transition:.2s}
+.fk-hizli a span{font-size:1.4rem;line-height:1}
+.fk-hizli a:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+.fk-hizli a.pasif{opacity:.4;pointer-events:none}
+.fk-form{padding:14px 18px 6px}
+.fk-form .form-floating{margin-bottom:12px}
+.fk-alt{display:flex;gap:10px;padding:8px 18px 20px}
+@media(max-width:420px){.fk-ust{padding:26px 16px 48px}.fk-hizli{gap:8px}}
+.bana-modu .bakim-satir:not([data-ben="1"]){display:none}

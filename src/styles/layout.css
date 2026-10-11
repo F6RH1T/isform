@@ -1,0 +1,37 @@
+/* Giriş */
+#loginScreen{position:fixed;inset:0;background:
+  radial-gradient(900px 500px at 85% -10%,var(--primary-soft),transparent 60%),var(--bg);
+  display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.login-card{background:var(--surface);padding:40px 28px 28px;border-radius:var(--r-lg);box-shadow:var(--shadow);border:1px solid var(--border);width:100%;max-width:400px;text-align:center}
+.login-logo{width:100%;max-width:190px;margin-bottom:18px}
+.login-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.login-subtitle{font-size:.9rem;color:var(--text-muted);margin-bottom:26px}
+.login-card input{width:100%;padding:15px 16px;margin-bottom:12px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-main);border-radius:var(--r-md);font-size:1rem;outline:none;transition:.2s}
+.login-card input:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-soft);background:var(--surface)}
+
+/* Sifre Sifirlama Modali */
+#resetPasswordModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2000; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(5px); }
+.reset-card { background:var(--surface); padding:30px; border-radius:var(--r-lg); width:100%; max-width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
+
+/* Üst bar */
+#mainApp{display:none;padding-bottom:110px}
+header{background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
+  padding:calc(12px + env(safe-area-inset-top,0px)) 18px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border)}
+.header-brand{display:flex;align-items:center;gap:12px}
+.header-brand img{height:36px;object-fit:contain}
+.header-title{font-weight:700;font-size:1rem;letter-spacing:-.02em;border-left:1.5px solid var(--border);padding-left:12px}
+.header-actions{display:flex;align-items:center;gap:8px}
+.theme-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;transition:.2s}
+.theme-btn:hover{color:var(--primary);border-color:var(--primary)}
+.logout-btn{background:var(--surface);border:1px solid var(--border);color:var(--danger);font-weight:600;font-size:.82rem;cursor:pointer;height:38px;padding:0 14px;border-radius:999px;transition:.2s}
+.logout-btn:hover{background:var(--danger);border-color:var(--danger);color:#fff}
+.optimize-btn{display:none;background:var(--primary-soft);border:none;color:var(--primary);font-weight:700;font-size:.82rem;cursor:pointer;height:38px;padding:0 14px;border-radius:999px}
+
+.container{max-width:560px;margin:22px auto;padding:0 16px}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Kart & başlık */
+.card{background:var(--surface);padding:24px 20px;border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{font-size:1.35rem;font-weight:800;letter-spacing:-.03em;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:10px}

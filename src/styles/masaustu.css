@@ -1,0 +1,49 @@
+/* ===== MASAÜSTÜ ===== */
+@media (min-width:1024px){
+  #mainApp{padding-bottom:120px}
+  /* Bildirimler masaüstünde üstte görünür */
+  #toast-container{bottom:auto;top:calc(20px + env(safe-area-inset-top,0px));width:auto;max-width:calc(100% - 48px)}
+  .toast{animation:slideDownTop .3s ease forwards,fadeOutTop .3s ease 2.7s forwards}
+  @keyframes slideDownTop{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+  @keyframes fadeOutTop{to{opacity:0;transform:translateY(-16px)}}
+  header{padding:calc(14px + env(safe-area-inset-top,0px)) 40px 14px}
+  .header-brand img{height:46px}
+  .header-title{font-size:1.15rem}
+  .theme-btn,.logout-btn,.optimize-btn{height:42px}
+  .theme-btn{width:42px}
+
+  /* Alt menü masaüstünde de altta, ortada */
+  .bottom-nav{max-width:480px;padding:5px;z-index:101}
+  .nav-item{flex-direction:row;gap:8px;font-size:.9rem;padding:12px 0}
+  .nav-item:not(.active):hover{background:var(--primary-soft);color:var(--primary)}
+
+  .container{max-width:1180px;margin:34px auto;padding:0 32px}
+  .card{padding:36px 40px}
+  .card-title{font-size:1.65rem;margin-bottom:28px}
+  .login-card{max-width:460px;padding:52px 40px 36px}
+  .edit-card{max-width:580px;padding:36px 32px}
+
+  /* Yeni kayıt formu 2 sütun */
+  #isFormu{display:grid;grid-template-columns:1fr 1fr;column-gap:20px}
+  #isFormu > .form-floating:has(textarea),#isFormu > .file-upload,#isFormu > button{grid-column:1/-1}
+
+  /* Arama / akış sonuçları alt alta (tek sütun) */
+
+  /* Rapor */
+  .stat-grid{grid-template-columns:repeat(4,1fr);gap:18px}
+  .stat-box{padding:24px 20px}
+  .stat-box h3{font-size:2.2rem}
+  .harita-baslik{font-size:1.25rem}
+  .harita-filtre{font-size:.92rem;padding:10px 16px}
+  #raporHaritaKutu{overflow:visible}
+  #raporHaritaKutu svg{min-width:0;max-height:620px}
+  .hrt-il:hover{fill-opacity:1!important;stroke:var(--text-main);stroke-width:1.4}
+  #raporIlPaneli{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;align-items:start}
+  #raporIlPaneli .sonuc-bilgisi,#raporIlPaneli .empty-state{grid-column:1/-1}
+  .rapor-listesi{max-height:340px}
+}
+
+@media (min-width:1024px) and (hover:hover){
+  .liste-karti{transition:transform .2s,box-shadow .2s}
+  .liste-karti:hover{transform:translateY(-2px)}
+}

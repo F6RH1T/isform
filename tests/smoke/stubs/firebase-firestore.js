@@ -1,0 +1,24 @@
+const snap = (docs = []) => ({ docs, size: docs.length, empty: !docs.length, forEach: f => docs.forEach(f), docChanges: () => [], metadata: { fromCache: false } });
+const mkDoc = (id, data) => ({ id, exists: () => true, data: () => data, ref: { id } });
+export const getFirestore = () => ({ __db: true });
+export const initializeFirestore = () => ({ __db: true });
+export const persistentLocalCache = () => ({});
+export const persistentMultipleTabManager = () => ({});
+export const collection = (db, ...p) => ({ __col: p.join("/") });
+export const doc = (db, ...p) => ({ __doc: p.join("/"), id: p[p.length - 1] });
+export const query = (...a) => ({ __q: a });
+export const where = (...a) => ({ __w: a });
+export const orderBy = (...a) => ({ __o: a });
+export const limit = n => ({ __l: n });
+export const addDoc = async () => ({ id: "new1" });
+export const setDoc = async () => {};
+export const updateDoc = async () => {};
+export const deleteDoc = async () => {};
+export const deleteField = () => ({ __del: true });
+export const getDocs = async () => snap([]);
+export const getDoc = async d => {
+  const p = d && d.__doc || "";
+  if (p.startsWith("kullanicilar/")) return mkDoc(d.id, { rol: "yonetici", aktif: true });
+  return { id: d && d.id, exists: () => false, data: () => undefined };
+};
+export const onSnapshot = (q, a, b) => { const cb = typeof a === "function" ? a : b; setTimeout(() => cb && cb(snap([])), 0); return () => {}; };

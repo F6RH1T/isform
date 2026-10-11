@@ -1,0 +1,22 @@
+/* ===== İş formu oluştur ===== */
+.secim-grid{display:grid;gap:14px}
+.secim-btn{display:flex;align-items:center;gap:14px;width:100%;padding:22px 18px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-main);border-radius:var(--r-md);font-size:1.05rem;font-weight:700;cursor:pointer;text-align:left;transition:.2s}
+.secim-btn:hover{border-color:var(--primary);background:var(--primary-soft)}
+.secim-btn small{display:block;font-weight:500;color:var(--text-muted);font-size:.8rem;margin-top:3px}
+.secim-btn .ik{font-size:1.8rem}
+.geri-btn{background:none;border:none;color:var(--primary);font-weight:700;cursor:pointer;font-size:.9rem}
+.chip-satir{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.alt-baslik{font-size:.85rem;font-weight:700;color:var(--text-muted);margin:6px 0 10px}
+.chip-cb input{display:none}
+.chip-cb span{display:inline-block;padding:8px 14px;border:1.5px solid var(--border);border-radius:999px;font-weight:600;font-size:.85rem;cursor:pointer;background:var(--surface-2)}
+.chip-cb input:checked+span{background:var(--primary);color:#fff;border-color:var(--primary)}
+.form-floating input[type="time"] ~ label{top:11px;font-size:.72rem;color:var(--primary);font-weight:700}
+.form-floating input[type="time"]{min-height:58px}
+@media(min-width:1024px){.grid2{display:grid;grid-template-columns:1fr 1fr;column-gap:20px}.grid2 .tam{grid-column:1/-1}}
+.form-floating input[type="date"] ~ label{top:11px;font-size:.72rem;color:var(--primary);font-weight:700}
+.form-floating input[type="date"]{min-height:58px}
+.bakim-satir{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:.9rem}
+.bakim-satir:last-child{border-bottom:none}
+.bakim-rozet{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px;color:#fff;white-space:nowrap;background:var(--primary)}
+.bakim-rozet.gec{background:var(--danger)}.bakim-rozet.yakin{background:#d97706}
+.btn-firma{border:1px solid var(--border);background:var(--surface-2);color:var(--text-main);border-radius:999px;font-size:.72rem;font-weight:700;padding:3px 10px;cursor:pointer;margin-left:6px}
