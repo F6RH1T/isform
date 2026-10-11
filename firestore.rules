@@ -1,0 +1,63 @@
+rules_version = '2';
+
+/* ENORPA — Firestore güvenlik kuralları (TASLAK: yayınlamadan önce Emülatörde deneyin, bkz. README).
+   Roller: kullanicilar/{e-posta} belgesindeki  rol = yonetici | duzenleyen | goruntuleyen  ve  aktif = true.
+   Uygulamadaki davranışla eşleşir: kayıt ekleme → düzenleyen+, kayıt düzenleme/silme → yönetici, okuma → tüm aktif roller. */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function mail()    { return request.auth.token.email.lower(); }
+    function ben()     { return get(/databases/$(database)/documents/kullanicilar/$(mail())).data; }
+    function kayitli() { return request.auth != null && request.auth.token.email != null
+                          && exists(/databases/$(database)/documents/kullanicilar/$(mail())); }
+    function aktif()   { return kayitli() && ben().aktif == true; }
+    function yonetici()   { return aktif() && ben().rol == 'yonetici'; }
+    function duzenleyen() { return aktif() && ben().rol in ['yonetici', 'duzenleyen']; }
+    function okuyan()     { return aktif() && ben().rol in ['yonetici', 'duzenleyen', 'goruntuleyen']; }
+
+    // Kullanıcı listesi: herkes yalnızca kendi kaydını (rolünü öğrenmek için) okur; liste ve yazma yalnızca yönetici.
+    match /kullanicilar/{kullaniciMail} {
+      allow get: if request.auth != null && request.auth.token.email != null && mail() == kullaniciMail || yonetici();
+      allow list, create, update, delete: if yonetici();
+    }
+
+    match /formlar/{id} {
+      allow read: if okuyan();
+      allow create: if duzenleyen();
+      // düzenleyen yalnızca bakım hatırlatmasını kapatabilir (yeni kayıt akışı); diğer her değişiklik yönetici işi
+      allow update: if yonetici()
+        || (duzenleyen() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sonrakiBakim']));
+      allow delete: if yonetici();
+    }
+
+    match /formFotograflari/{id} {
+      allow read: if okuyan();
+      allow create: if duzenleyen();
+      allow update: if false;
+      allow delete: if yonetici();
+    }
+
+    match /firmalar/{id} {
+      allow read: if okuyan();
+      allow create, update: if duzenleyen();
+      allow delete: if yonetici();
+    }
+
+    // İşlem geçmişi: herkes kendi adına ekleyebilir, yalnızca yönetici okur, kimse değiştiremez/silemez.
+    match /islemGecmisi/{id} {
+      allow create: if aktif() && request.resource.data.kim == mail();
+      allow read: if yonetici();
+      allow update, delete: if false;
+    }
+
+    // Eski tarayıcı-anahtarı modu için. AI proxy'ye geçtikten sonra bu belge silinip kural `if false` yapılmalıdır.
+    match /ayarlar/gemini {
+      allow read: if aktif();
+      allow write: if yonetici();
+    }
+
+    match /{diger=**} {
+      allow read, write: if false;
+    }
+  }
+}

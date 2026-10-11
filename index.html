@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>ENORPA İş Formları</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <meta name="theme-color" content="#f26522">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ENORPA">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="./src/styles/index.css">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <img src="logo-enorpa.png" alt="ENORPA Logo" class="login-logo" onerror="this.style.display='none'">
+    <h2 class="login-title">İş Formları</h2>
+    <p class="login-subtitle">Devam etmek için giriş yapın</p>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="E-posta adresi" required autocomplete="email">
+      <input type="password" id="loginPassword" placeholder="Şifre" required autocomplete="current-password">
+      <button type="submit" id="loginBtn" class="btn btn-primary">Giriş yap</button>
+      <a href="#" id="forgotPasswordLink" style="display:block; margin-top:15px; color:var(--primary); font-size:0.85rem; text-decoration:none; font-weight:600;">Şifremi Unuttum</a>
+    </form>
+    <p id="loginError" style="color:var(--danger);font-size:.85rem;margin-top:15px;display:none">Giriş başarısız. E-posta ve şifreyi kontrol edin.</p>
+  </div>
+</div>
+
+<div id="resetPasswordModal">
+    <div class="reset-card">
+        <h3 style="margin-bottom:10px;text-align:center;font-weight:800; color:var(--text-main);">Şifre Sıfırlama</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); text-align:center; margin-bottom:20px;">Hesabınıza ait e-posta adresini girin, size şifre sıfırlama bağlantısı gönderelim.</p>
+        <div class="form-floating">
+            <input type="email" id="resetEmail" placeholder=" " required autocomplete="off">
+            <label for="resetEmail">E-posta Adresi</label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+            <button id="btnResetCancel" class="btn" style="background:var(--border);color:var(--text-main)">İptal</button>
+            <button id="btnResetSend" class="btn btn-primary">Gönder</button>
+        </div>
+    </div>
+</div>
+
+<div id="mainApp">
+  <header>
+    <div class="header-brand">
+      <img src="logo-enorpa.png" alt="ENORPA Logo" onerror="this.style.display='none'">
+      <div class="header-title">İş Formları</div>
+    </div>
+    <div class="header-actions">
+      <button class="theme-btn" id="btnTheme" title="Karanlık mod" aria-label="Karanlık mod">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="optimize-btn" id="btnYukle" style="display:none" title="Uygulamayı ana ekrana yükle">📲</button>
+      <button class="optimize-btn" id="btnOptimize" onclick="eskiKayitlariOptimizeEt()" title="Eski kayıtları yeni hızlı sisteme taşır">⚡ Op.</button>
+      <button class="optimize-btn" id="btnKullanicilar" style="display:none" onclick="kullaniciPaneliAc()" title="Kullanıcılar ve yetkiler">👥</button>
+      <button class="logout-btn" id="logoutBtn">Çıkış</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="tab-ekle" class="tab-content active">
+      <div id="bekleyenBar" class="bakim-rozet yakin" style="display:none;margin-bottom:12px;padding:8px 14px"></div>
+      <div id="yaklasanKart" class="card" style="display:none;margin-bottom:16px"></div>
+
+      <div id="ekleSecim" class="card">
+        <div class="card-title">Yeni kayıt</div>
+        <div class="secim-grid">
+          <button type="button" class="secim-btn" onclick="ekleModu('tara')"><span class="ik">📷</span><span>İş formu tara<small>Hazır formun fotoğrafını çek / yükle</small></span></button>
+          <button type="button" class="secim-btn" onclick="ekleModu('olustur')"><span class="ik">📝</span><span>İş formu oluştur<small>Bilgileri gir, doldurulmuş PDF üretilsin</small></span></button>
+        </div>
+      </div>
+
+      <!-- 1) TARA: mevcut form -->
+      <div id="kartTara" class="card" style="display:none">
+        <div class="card-title">Form tara <button type="button" class="geri-btn" onclick="ekleModu(null)">← Geri</button></div>
+        <form id="isFormu">
+          <div class="form-floating">
+            <input type="text" id="firmaAdi" placeholder=" " required autocomplete="off">
+            <label for="firmaAdi">Firma adı</label>
+          </div>
+          <div class="form-floating select-wrapper">
+            <select id="sehir" required><option value="" disabled selected></option><option value="belirsiz">Belirsiz</option></select>
+            <label for="sehir">Şehir</label>
+          </div>
+          <div class="form-floating select-wrapper">
+            <select id="islemTipi" required>
+              <option value="" disabled selected></option>
+              <option value="Bakım">Bakım</option><option value="Arıza">Arıza</option><option value="Kurulum">Kurulum</option><option value="Keşif">Keşif</option><option value="Diğer">Diğer</option>
+            </select>
+            <label for="islemTipi">İşlem tipi</label>
+          </div>
+          <div class="form-floating">
+            <input type="date" id="formTarihi" placeholder=" " required>
+            <label for="formTarihi">Form tarihi</label>
+          </div>
+          <div class="form-floating">
+            <input type="date" id="bakimTarihi" placeholder=" ">
+            <label for="bakimTarihi">Bir sonraki bakım (isteğe bağlı)</label>
+          </div>
+          <label style="display:block;margin-bottom:14px;font-size:.75rem;font-weight:700;color:var(--text-muted)">🔁 Bakım tekrarı<select id="bakimAralik" style="width:100%;margin-top:4px;padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"><option value="">Tekrarlama yok</option><option value="1">Her ay</option><option value="3">3 ayda bir</option><option value="6">6 ayda bir</option><option value="12">Yılda bir</option></select></label>
+          <div class="form-floating">
+            <textarea id="aciklamaNotu" placeholder=" "></textarea>
+            <label for="aciklamaNotu">Açıklama / not</label>
+            <button type="button" id="btnMic" class="mic-btn" title="Sesle yaz" aria-label="Sesle yaz">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+          </div>
+          <div class="file-upload">
+            <label for="fotoGirdisi" class="file-upload-label" id="fotoLabel">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Fotoğraf seç veya çek</span>
+            </label>
+            <input type="file" id="fotoGirdisi" accept="image/*,.heic,.heif" capture="environment" multiple required>
+            <div id="fotoPreviewContainer" class="preview-container"></div>
+          </div>
+          <button type="submit" id="ekleButonu" class="btn btn-primary">Konumla kaydet</button>
+        </form>
+      </div>
+
+      <!-- 2) OLUŞTUR -->
+      <div id="kartOlustur" class="card" style="display:none">
+        <div class="card-title">İş formu oluştur <button type="button" class="geri-btn" onclick="ekleModu(null)">← Geri</button></div>
+        <form id="olusturFormu">
+          <div class="grid2" id="ofUst"></div>
+          <div class="alt-baslik">Kazan bilgileri</div>
+          <div class="chip-satir" id="ofCihaz"></div>
+          <div class="grid2" id="ofCihazAlan"></div>
+          <div class="alt-baslik">Servis bilgileri</div>
+          <div class="chip-satir" id="ofServis"></div>
+          <div class="grid2" id="ofServisAlan"></div>
+          <div class="form-floating">
+            <textarea id="ofAciklama" placeholder=" " style="min-height:160px"></textarea>
+            <label for="ofAciklama">Yapılan işlemler / açıklama</label>
+          </div>
+          <div class="alt-baslik">Personeller</div>
+          <div class="grid2" id="ofPersonel"></div>
+          <div class="grid2" id="ofImza"></div>
+          <button type="submit" id="ofKaydet" class="btn btn-primary">PDF oluştur ve kaydet</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-ara" class="tab-content">
+      <div class="card">
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            Form ara
+            <div class="siralama-butonlari">
+                <button type="button" id="btnSiraYeni" class="btn-siralama active" title="Yeniden Eskiye">⬇️ Yeni</button>
+                <button type="button" id="btnSiraEski" class="btn-siralama" title="Eskiden Yeniye">⬆️ Eski</button>
+            </div>
+        </div>
+        <div class="form-floating autocomplete" style="position:relative">
+          <input type="text" id="aramaKutusu" placeholder=" " autocomplete="off">
+          <label for="aramaKutusu">Ürün kodu, firma, şehir veya e-posta</label>
+        </div>
+        <div id="filtreSatiri" style="display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 14px">
+          <label style="flex:1;min-width:140px;font-size:.75rem;font-weight:700;color:var(--text-muted)">Başlangıç
+            <input type="date" id="fltBaslangic" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"></label>
+          <label style="flex:1;min-width:140px;font-size:.75rem;font-weight:700;color:var(--text-muted)">Bitiş
+            <input type="date" id="fltBitis" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"></label>
+          <label style="flex:1;min-width:160px;font-size:.75rem;font-weight:700;color:var(--text-muted)">İşlem tipi
+            <select id="fltIslem" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"><option value="">Tümü</option></select></label>
+        </div>
+        <button type="button" id="aramaButonu" class="btn btn-primary">Ara</button>
+      </div>
+      <div id="sonuclar"></div>
+    </div>
+
+    <div id="tab-akis" class="tab-content">
+      <div class="card-title" style="padding:0 4px">Son eklenenler</div>
+      <div id="canliAkanlar"></div>
+    </div>
+
+    <div id="tab-rapor" class="tab-content">
+      <div class="card">
+        <div class="card-title">Raporlar</div>
+        <button id="btnRaporOlustur" class="btn btn-primary">Verileri analiz et</button>
+        <div id="dashboardAlani" style="display:none">
+          <div class="stat-grid">
+            <div class="stat-box"><h3 id="statToplam">0</h3><p>Toplam kayıt</p></div>
+            <div class="stat-box"><h3 id="statSehir">-</h3><p>En çok gidilen şehir</p></div>
+            <div class="stat-box"><h3 id="statIl">0 / 81</h3><p>Gidilen il</p></div>
+            <div class="stat-box"><h3 id="statFirma">0</h3><p>Firma sayısı</p></div>
+          </div>
+          <div class="harita-blok">
+            <div class="harita-ust">
+              <span class="harita-baslik">Türkiye haritası</span>
+              <select id="haritaFiltre" class="harita-filtre" aria-label="İşlem tipine göre filtrele">
+                <option value="">Tüm işlemler</option><option value="Bakım">Bakım</option><option value="Arıza">Arıza</option><option value="Kurulum">Kurulum</option><option value="Keşif">Keşif</option><option value="Diğer">Diğer</option>
+              </select>
+            </div>
+            <div id="haritaOzet" class="sonuc-bilgisi"></div>
+            <div id="raporHaritaKutu"></div>
+            <div class="harita-lejant">
+              <span><i style="background:var(--primary)"></i>İş formu olan il</span>
+              <span><i style="background:var(--border)"></i>Kayıt yok</span>
+              <span>Koyu turuncu = daha çok form</span>
+            </div>
+            <p class="harita-not">Bir ile dokunun, o ilin firmaları ve formları aşağıda açılsın. Telefonda haritayı yakınlaştırdıkça tüm il adları görünür.</p>
+            <div id="raporIlPaneli"></div>
+            <details class="gidilmeyen"><summary id="gidilmeyenBaslik"></summary><div id="gidilmeyenListe" class="chip-liste"></div></details>
+          </div>
+          <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:6px">Şehir dağılımı</p>
+          <div class="rapor-listesi" id="listeSehir"></div>
+          <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:6px">İşlem dağılımı</p>
+          <div class="rapor-listesi" id="listeIslem"></div>
+          <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:6px">Personel dağılımı</p>
+          <div class="rapor-listesi" id="listePersonel"></div>
+          <button id="btnRaporYenile" class="btn" style="background:var(--border);color:var(--text-main);margin-bottom:10px">↻ Raporu yenile</button>
+          <button id="btnYedek" class="btn" style="background:var(--border);color:var(--text-main);margin-bottom:10px">💾 Tam yedek (JSON, yönetici)</button>
+          <button id="btnExcelIndir" class="btn btn-success">Excel (CSV) indir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="imageModal">
+    <span class="modal-close" onclick="modaliKapat()">&times;</span>
+    <p id="modalLoading" style="color:#fff;font-weight:700">Fotoğraf yükleniyor…</p>
+    <div class="img-zoom-kutu" id="imgZoomKutu">
+      <button type="button" class="zoom-btn" data-izoom="+" aria-label="Yakınlaştır">+</button>
+      <button type="button" class="zoom-btn" data-izoom="-" aria-label="Uzaklaştır">−</button>
+      <button type="button" class="zoom-btn" data-izoom="0" aria-label="Yakınlaştırmayı sıfırla" title="Yakınlaştırmayı sıfırla" style="font-size:.8rem">1×</button>
+      <button type="button" class="zoom-btn" id="imgDondur" aria-label="Döndür" title="Döndür" style="font-size:1.3rem">↻</button>
+    </div>
+    <div id="zoomSahne"><img id="modalImage" src="" alt="Form fotoğrafı" draggable="false"></div>
+    <p class="img-zoom-ipucu" id="imgZoomIpucu">İki parmakla yakınlaştır · çift dokun · sürükle</p>
+    <a id="downloadLink" href="" download="ENORPA_Is_Formu.jpg" style="display:none">Fotoğrafı indir</a>
+  </div>
+
+  <div id="firmaModal">
+    <div class="fk-card">
+      <div class="fk-ust">
+        <button type="button" class="fk-x" id="fkX" aria-label="Kapat">✕</button>
+        <div class="fk-avatar" id="fkAvatar">F</div>
+        <h3 id="fkBaslik">Firma kartı</h3>
+        <span class="fk-sehir" id="fkSehir"></span>
+        <span id="fkAlt" style="display:none"></span>
+      </div>
+      <div class="fk-ist">
+        <div><b id="fkIstForm">0</b><small>Form</small></div>
+        <div><b id="fkIstSon">—</b><small>Son işlem</small></div>
+        <div><b id="fkIstBakim">—</b><small>Sonraki bakım</small></div>
+      </div>
+      <div class="fk-hizli">
+        <a id="fkAra" href="#"><span>📞</span>Ara</a>
+        <a id="fkWa" href="#" target="_blank" rel="noopener"><span>💬</span>WhatsApp</a>
+        <a id="fkHarita" href="#" target="_blank" rel="noopener"><span>🗺</span>Harita</a>
+      </div>
+      <div class="fk-form">
+        <div class="form-floating"><input type="text" id="fkYetkili" placeholder=" " autocomplete="off"><label for="fkYetkili">👤 Yetkili kişi</label></div>
+        <div class="form-floating"><input type="text" id="fkEtiket" placeholder=" " autocomplete="off"><label for="fkEtiket">🏷 Etiketler (virgülle: VIP, Sözleşmeli)</label></div>
+        <div class="form-floating"><input type="tel" id="fkTelefon" placeholder=" " autocomplete="off"><label for="fkTelefon">📞 Telefon</label></div>
+        <div class="form-floating"><textarea id="fkAdres" placeholder=" "></textarea><label for="fkAdres">📍 Adres</label></div>
+        <div class="form-floating"><textarea id="fkNot" placeholder=" "></textarea><label for="fkNot">📝 Notlar</label></div>
+      </div>
+      <div id="fkZaman" style="padding:0 18px 6px"></div>
+      <div class="fk-alt">
+        <button id="fkIptal" class="btn" style="background:var(--border);color:var(--text-main)">Kapat</button>
+        <button id="fkKaydet" class="btn btn-primary">💾 Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModal">
+    <div class="edit-card">
+      <h3 style="margin-bottom:20px;text-align:center;font-weight:800">Kaydı düzenle</h3>
+      <div class="form-floating"><input type="text" id="editFirmaAdi" placeholder=" " required autocomplete="off"><label for="editFirmaAdi">Firma adı</label></div>
+      <div class="form-floating select-wrapper"><select id="editSehir" required><option value="" disabled selected></option><option value="belirsiz">Belirsiz</option></select><label for="editSehir">Şehir</label></div>
+      <div class="form-floating select-wrapper">
+        <select id="editIslemTipi" required><option value="" disabled selected></option><option value="Bakım">Bakım</option><option value="Arıza">Arıza</option><option value="Kurulum">Kurulum</option><option value="Keşif">Keşif</option><option value="Diğer">Diğer</option></select>
+        <label for="editIslemTipi">İşlem tipi</label>
+      </div>
+      <div class="form-floating">
+        <input type="date" id="editTarih" placeholder=" " required>
+        <label for="editTarih">Form tarihi</label>
+      </div>
+      <div class="form-floating"><input type="date" id="editBakim" placeholder=" "><label for="editBakim">Bir sonraki bakım</label></div>
+      <label style="display:block;margin-bottom:14px;font-size:.75rem;font-weight:700;color:var(--text-muted)">🔁 Bakım tekrarı<select id="editAralik" style="width:100%;margin-top:4px;padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"><option value="">Tekrarlama yok</option><option value="1">Her ay</option><option value="3">3 ayda bir</option><option value="6">6 ayda bir</option><option value="12">Yılda bir</option></select></label>
+      <div class="form-floating"><textarea id="editAciklama" placeholder=" "></textarea><label for="editAciklama">Açıklama</label></div>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button id="btnEditCancel" class="btn" style="background:var(--border);color:var(--text-main)">İptal</button>
+        <button id="btnEditSave" class="btn btn-primary">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="sekmeyiDegistir('ekle', this)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Yeni</span></div>
+    <div class="nav-item" onclick="sekmeyiDegistir('ara', this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Ara</span></div>
+    <div class="nav-item" onclick="sekmeyiDegistir('akis', this)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Akış</span></div>
+    <div class="nav-item" onclick="sekmeyiDegistir('rapor', this)"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Rapor</span></div>
+  </nav>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
