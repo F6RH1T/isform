@@ -2,7 +2,7 @@
 button.btn.ai-btn{
   --h:205; --sat:55%;
   position:relative;isolation:isolate;
-  color:hsl(var(--h) 40% 28%);font-weight:700;letter-spacing:-.01em;text-shadow:0 1px 0 rgba(255,255,255,.95);
+  color:#e2570f;font-weight:700;letter-spacing:-.01em;text-shadow:0 1px 0 rgba(255,255,255,.95);
   border:0;border-radius:999px;
   --ai-bg:
     radial-gradient(60% 70% at 50% 100%,hsla(var(--h) 100% 78%/.45),transparent 70%),
@@ -48,10 +48,10 @@ button.btn.ai-btn[style*="background:var(--border)"]::before,button.btn.ai-btn[s
 
 /* koyu tema: aynı cam, koyu zeminde ışıldayan hali */
 [data-theme=dark] button.btn.ai-btn{
-  color:#e8f6ff;text-shadow:0 0 8px rgba(125,235,255,.45);
+  color:#ff8a3d;text-shadow:0 1px 2px rgba(0,25,60,.8);
   --ai-bg:
-    radial-gradient(60% 70% at 50% 100%,hsla(var(--h) 100% 60%/.40),transparent 70%),
-    linear-gradient(180deg,rgba(150,190,230,.28) 0%,rgba(80,120,170,.10) 40%,rgba(20,50,90,.40) 100%);
+    radial-gradient(60% 70% at 50% 100%,hsla(var(--h) 100% 62%/.55),transparent 70%),
+    linear-gradient(180deg,rgba(120,185,240,.38) 0%,rgba(60,120,190,.22) 40%,rgba(20,60,120,.50) 100%);
   --ai-sh:
     inset 0 0 0 1px rgba(255,255,255,.25),
     inset 0 3px 6px rgba(255,255,255,.30),
