@@ -160,13 +160,13 @@
           <input type="text" id="aramaKutusu" placeholder=" " autocomplete="off">
           <label for="aramaKutusu">Ürün kodu, firma, şehir veya e-posta</label>
         </div>
-        <div id="filtreSatiri" style="display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 14px">
-          <label style="flex:1;min-width:140px;font-size:.75rem;font-weight:700;color:var(--text-muted)">Başlangıç
-            <input type="date" id="fltBaslangic" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"></label>
-          <label style="flex:1;min-width:140px;font-size:.75rem;font-weight:700;color:var(--text-muted)">Bitiş
-            <input type="date" id="fltBitis" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"></label>
-          <label style="flex:1;min-width:160px;font-size:.75rem;font-weight:700;color:var(--text-muted)">İşlem tipi
-            <select id="fltIslem" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text-main)"><option value="">Tümü</option></select></label>
+        <div id="filtreSatiri" class="filtre-satiri">
+          <label class="flt-alan">Başlangıç
+            <input type="date" id="fltBaslangic"></label>
+          <label class="flt-alan">Bitiş
+            <input type="date" id="fltBitis"></label>
+          <label class="flt-alan flt-tam">İşlem tipi
+            <select id="fltIslem"><option value="">Tümü</option></select></label>
         </div>
         <button type="button" id="aramaButonu" class="btn btn-primary">Ara</button>
       </div>
