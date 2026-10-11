@@ -64,6 +64,7 @@
         <div class="ust-menu" id="ustMenu" hidden>
           <button class="optimize-btn mi" id="btnYukle" style="display:none" title="Uygulamayı ana ekrana yükle">Uygulamayı yükle</button>
           <button class="optimize-btn mi" id="btnOptimize" style="display:none" onclick="eskiKayitlariOptimizeEt()" title="Eski kayıtları yeni hızlı sisteme taşır">Eski kayıtları optimize et</button>
+          <button class="optimize-btn mi" id="btnPersonel" style="display:none" title="Personel listesini yönet">Personel listesi</button>
           <button class="optimize-btn mi" id="btnKullanicilar" style="display:none" onclick="kullaniciPaneliAc()" title="Kullanıcılar ve yetkiler">Kullanıcılar ve yetkiler</button>
           <button class="logout-btn mi" id="logoutBtn">Çıkış yap</button>
         </div>
@@ -76,10 +77,12 @@
       <section id="karsilamaKart" class="karsilama">
         <div class="ks-ust"><div><small id="ksSelam">Merhaba</small><h2 id="ksIsim">ENORPA</h2></div><span class="ks-tarih" id="ksTarih"></span></div>
         <div class="ks-ist">
-          <div><b id="ksGec">–</b><small>gecikmiş bakım</small></div>
+          <div><b id="ksBugun">–</b><small>bugün form</small></div>
           <div><b id="ksHafta">–</b><small>bu hafta</small></div>
-          <div><b id="ksToplam">–</b><small>planlı bakım</small></div>
+          <div><b id="ksAy">–</b><small>bu ay</small></div>
         </div>
+        <div class="ks-son" id="ksSon" style="display:none"></div>
+        <button type="button" class="ks-bakim" id="ksBakim" style="display:none"></button>
         <button type="button" id="ksYeni" class="ks-btn"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Yeni kayıt oluştur</button>
       </section>
       <div id="bekleyenBar" class="bakim-rozet yakin" style="display:none;margin-bottom:12px;padding:8px 14px"></div>

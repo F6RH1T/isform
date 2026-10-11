@@ -24,7 +24,7 @@ button.btn:active,.btn-icon:active,.btn-firma:active,.btn-siralama:active,.nav-i
 .ust-menu .mi::before{content:"";display:inline-block;width:18px;height:18px;margin-right:12px;vertical-align:-4px;background:currentColor;-webkit-mask:var(--ik) center/contain no-repeat;mask:var(--ik) center/contain no-repeat}
 #btnYukle{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 10l5 5 5-5M5 21h14'/%3E%3C/svg%3E")}
 #btnOptimize{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 2L4 14h7l-1 8 9-12h-7z'/%3E%3C/svg%3E")}
-#btnKullanicilar{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8' r='3.5'/%3E%3Cpath d='M2 21a7 7 0 0 1 14 0'/%3E%3Ccircle cx='17' cy='9' r='2.8'/%3E%3Cpath d='M17 14a5.5 5.5 0 0 1 5 5.5'/%3E%3C/svg%3E")}
+#btnKullanicilar,#btnPersonel{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8' r='3.5'/%3E%3Cpath d='M2 21a7 7 0 0 1 14 0'/%3E%3Ccircle cx='17' cy='9' r='2.8'/%3E%3Cpath d='M17 14a5.5 5.5 0 0 1 5 5.5'/%3E%3C/svg%3E")}
 #logoutBtn{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9'/%3E%3C/svg%3E");color:var(--danger)}
 .ust-menu .mi.logout-btn:hover{background:rgba(229,72,77,.12);color:var(--danger)}
 
@@ -38,7 +38,8 @@ button.btn:active,.btn-icon:active,.btn-firma:active,.btn-siralama:active,.nav-i
 .ks-ist div{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:16px;padding:10px 6px;text-align:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .ks-ist b{display:block;font-size:1.45rem;font-weight:800;line-height:1.1}
 .ks-ist small{font-size:.66rem;font-weight:600;opacity:.92}
-.karsilama.ks-uyari .ks-ist div:first-child{background:rgba(255,255,255,.94);color:#c0262b;border-color:transparent}
+.ks-son{font-size:.78rem;font-weight:600;margin:-4px 2px 14px;opacity:.95;line-height:1.4}
+.ks-bakim{width:100%;margin:-2px 0 12px;padding:9px 12px;border:0;border-radius:12px;background:rgba(255,255,255,.94);color:#c0262b;font-size:.8rem;font-weight:800;cursor:pointer}
 .ks-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:0;border-radius:var(--r-md);background:#fff;color:var(--primary-hover);font-weight:800;font-size:.95rem;cursor:pointer;box-shadow:0 8px 18px -8px rgba(0,0,0,.35)}
 .ks-btn:active{transform:scale(.97)}
 
@@ -110,3 +111,10 @@ button.btn:active,.btn-icon:active,.btn-firma:active,.btn-siralama:active,.nav-i
 /* Boş sonuç çizimi */
 .empty-state img{display:none}
 .empty-state::before{content:"";display:block;width:96px;height:96px;margin:0 auto 12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96' fill='none'%3E%3Cpath d='M14 38a12 12 0 0 1 12-12h14l8 8h22a12 12 0 0 1 12 12v28a12 12 0 0 1-12 12H26a12 12 0 0 1-12-12z' fill='%23f26522' fill-opacity='.12' stroke='%23f26522' stroke-width='3' stroke-linejoin='round'/%3E%3Ccircle cx='54' cy='56' r='9' stroke='%23f26522' stroke-width='3'/%3E%3Cpath d='M61 63l8 8' stroke='%23f26522' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* Personel seçimi / yönetim penceresi */
+.personel-modal{position:fixed;inset:0;background:rgba(10,9,8,.72);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.pm-liste{max-height:48vh;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface-2);padding:2px 12px}
+.pm-satir{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-size:.9rem;font-weight:600}
+.pm-satir:last-child{border-bottom:0}
+.pm-satir>span:last-child{display:flex;gap:6px;flex-shrink:0}
