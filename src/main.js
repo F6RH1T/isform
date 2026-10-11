@@ -33,6 +33,7 @@ import "./features/forms/duzenle-sil.js";
 import "./app/sekmeler.js";
 import "./features/forms/yeni-kayit.js";
 import "./features/search/search.js";
+import "./features/forms/aciklama-kisalt.js";
 import "./features/maintenance/yaklasan.js";
 import "./features/admin/yedek.js";
 import "./core/idle-logout.js";
