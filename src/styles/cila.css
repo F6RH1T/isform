@@ -154,3 +154,13 @@ button.btn.btn-ikincil:hover{border-color:var(--primary);color:var(--primary)}
   .kart-baslik h4{font-size:1.02rem}
   .bs-sag{flex-direction:row;align-items:center}
 }
+
+/* --- Form tara: "Fotoğraf çek" ve "Galeriden seç" yan yana --- */
+.foto-secim{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.foto-secim .file-upload-label{padding:20px 12px}
+.foto-secim.active .file-upload-label{border-color:var(--primary);color:var(--primary)}
+.foto-onizleme{position:relative;display:inline-block;width:64px;height:64px}
+.foto-onizleme .foto-dondur,.foto-onizleme .foto-kaldir{position:absolute;top:-6px;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.94);color:#111;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:2;padding:0}
+.foto-onizleme .foto-dondur{left:-6px}
+.foto-onizleme .foto-kaldir{right:-6px;font-size:18px}
+.preview-container:has(.foto-onizleme){gap:14px;padding:6px 0 0 6px}

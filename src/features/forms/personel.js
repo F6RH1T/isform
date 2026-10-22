@@ -64,7 +64,6 @@ function ismiSor(baslik, baslangic = "") {
     m.querySelector("#pmTamam").onclick = () => bitir(inp.value.trim() || null);
     m.querySelector("#pmVazgec").onclick = () => bitir(null);
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); bitir(inp.value.trim() || null); } else if (e.key === "Escape") bitir(null); });
-    m.addEventListener("click", e => { if (e.target === m) bitir(null); });
   });
 }
 
@@ -162,7 +161,6 @@ function yonetimAc() {
   });
   const kapat = () => m.remove();
   m.querySelector("#pmKapat").onclick = kapat;
-  m.addEventListener("click", e => { if (e.target === m) kapat(); });
   ciz();
 }
 $("btnPersonel").addEventListener("click", yonetimAc);

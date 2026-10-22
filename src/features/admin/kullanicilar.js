@@ -31,7 +31,6 @@ function kullaniciModalHazirla() {
     </div>
   </div>`;
   document.body.appendChild(m);
-  m.addEventListener("click", e => { if (e.target === m) m.style.display = "none"; });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && m.style.display === "flex") m.style.display = "none"; });
   $("kmKapat").addEventListener("click", () => m.style.display = "none");
   const sekme = g => {

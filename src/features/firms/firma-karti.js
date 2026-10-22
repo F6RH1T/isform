@@ -41,13 +41,12 @@ window.firmaKartiAc = async function (aramaFirma, firmaAdi, sehir) {
 
 ["fkTelefon", "fkAdres"].forEach(i => $(i).addEventListener("input", fkLinkler));
 
+/* Pencere yalnızca X, İptal veya Esc ile kapanır; dışına dokununca kapanmaz (yazılanlar kaybolmasın). */
 const fkKapat = () => { $("firmaModal").style.display = "none"; };
 
 $("fkIptal").addEventListener("click", fkKapat);
 
 $("fkX").addEventListener("click", fkKapat);
-
-$("firmaModal").addEventListener("click", e => { if (e.target === $("firmaModal")) fkKapat(); });
 
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("firmaModal").style.display === "flex") fkKapat(); });
 
