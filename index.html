@@ -12,10 +12,26 @@
     <meta name="apple-mobile-web-app-title" content="ENORPA">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- iPhone açılış ekranları (ana ekrana eklenmiş uygulama açılırken; public/splash) -->
+    <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/acilis-1320x2868.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/acilis-1206x2622.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/acilis-1290x2796.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/acilis-1179x2556.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/acilis-1284x2778.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/acilis-1170x2532.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/acilis-1125x2436.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/acilis-1242x2688.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/acilis-828x1792.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/acilis-750x1334.png">
+    <!-- Tema, sayfa çizilmeden ayarlanır: koyu tema kullananlarda açılışta beyaz parlama olmaz (ui/theme.js ile aynı kural) -->
+    <script>try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
     <link rel="stylesheet" href="./src/styles/index.css">
 </head>
 <body>
 <div id="toast-container" role="status" aria-live="polite"></div>
+
+<!-- Açılış: oturum denetlenirken giriş ekranı bir an görünmesin (core/auth.js kaldırır) -->
+<div id="acilisEkrani" aria-hidden="true"><img src="logo-enorpa.png" alt="" onerror="this.style.display='none'"><span class="ae-cubuk"><i></i></span></div>
 
 <div id="loginScreen">
   <div class="login-card">
@@ -281,7 +297,8 @@
         <a id="fkWa" href="#" target="_blank" rel="noopener"><span class="fk-ik"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.1A8.4 8.4 0 1 1 21 11.5z"/></svg></span>WhatsApp</a>
         <a id="fkHarita" href="#" target="_blank" rel="noopener"><span class="fk-ik"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg></span>Harita</a>
       </div>
-      <div class="fk-form">
+      <div class="fk-okuma" id="fkOkuma"></div>
+      <div class="fk-form" id="fkForm">
         <div class="form-floating"><input type="text" id="fkYetkili" placeholder=" " autocomplete="off"><label for="fkYetkili">Yetkili kişi</label></div>
         <div class="form-floating"><input type="text" id="fkEtiket" placeholder=" " autocomplete="off"><label for="fkEtiket">Etiketler (virgülle: VIP, Sözleşmeli)</label></div>
         <div class="form-floating"><input type="tel" id="fkTelefon" placeholder=" " autocomplete="off"><label for="fkTelefon">Telefon</label></div>
@@ -291,6 +308,7 @@
       <div id="fkZaman" style="padding:0 18px 6px"></div>
       <div class="fk-alt">
         <button id="fkIptal" class="btn btn-ikincil">Kapat</button>
+        <button id="fkDuzenle" class="btn btn-primary">Düzenle</button>
         <button id="fkKaydet" class="btn btn-primary">Kaydet</button>
       </div>
     </div>

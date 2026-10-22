@@ -5,6 +5,7 @@ import { db } from "../../firebase/init.js";
 import { logYaz, yoneticiMi } from "../../core/session.js";
 import { htmlGuvenli } from "../../lib/text.js";
 import { ikon } from "../../lib/ikon.js";
+import { disaridanKapat, temizSay } from "../../ui/modal.js";
 
 /* ===== YÖNETİM: KULLANICILAR + İŞLEM GEÇMİŞİ (yalnızca yönetici) ===== */
 const ROL_ADI = { yonetici: "Yönetici", duzenleyen: "Düzenleyen", goruntuleyen: "Görüntüleyen" };
@@ -40,6 +41,7 @@ function kullaniciModalHazirla() {
   };
   $("kmSekK").addEventListener("click", () => sekme(false)); $("kmSekG").addEventListener("click", () => sekme(true));
   m._sekme = sekme;
+  disaridanKapat(m, () => { m.style.display = "none"; });
   $("kmGFiltre").addEventListener("input", gecmisCiz);
   $("kmGDaha").addEventListener("click", () => gecmisYukle(false));
   $("kmEkle").addEventListener("click", async () => {
@@ -125,5 +127,5 @@ function gecmisCiz() {
 
 window.kullaniciPaneliAc = function () {
   if (!yoneticiMi()) { showToast("Yetkiniz yok!", "error"); return; }
-  const m = kullaniciModalHazirla(); m.style.display = "flex"; m._sekme(false);
+  const m = kullaniciModalHazirla(); temizSay(m); m.style.display = "flex"; m._sekme(false);
 };

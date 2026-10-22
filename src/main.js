@@ -17,6 +17,7 @@ import "./features/ai/prompts.js";
 import "./features/ai/embeddings.js";
 import "./features/reports/rapor-veri.js";
 import "./features/forms/form-ui.js";
+import "./ui/tarih-cipleri.js";
 import "./features/forms/imza.js";
 import "./features/forms/ekle-modu.js";
 import "./features/forms/olustur.js";

@@ -68,6 +68,10 @@ $("ksBakim").addEventListener("click", () => { const k = $("yaklasanKart"); if (
 $("ksYeni").addEventListener("click", () => {
   const n = document.querySelectorAll(".nav-item")[0];
   if (n && !$("tab-ekle").classList.contains("active")) window.sekmeyiDegistir("ekle", n);
-  $("isFormu").scrollIntoView({ behavior: "smooth", block: "start" });
-  setTimeout(() => $("firmaAdi").focus({ preventScroll: true }), 350);
+  /* Açık bir form varsa ona, yoksa "Yeni kayıt" seçimine git (eskiden gizli forma kaydırdığı için hiçbir şey olmuyordu) */
+  const acik = ["kartTara", "kartOlustur"].map($).find(k => k && k.style.display !== "none");
+  const hedef = acik || $("ekleSecim");
+  hedef.scrollIntoView({ behavior: "smooth", block: "start" });
+  hedef.classList.remove("vurgula"); void hedef.offsetWidth; hedef.classList.add("vurgula");
+  if (acik === $("kartTara")) setTimeout(() => $("firmaAdi").focus({ preventScroll: true }), 350);
 });

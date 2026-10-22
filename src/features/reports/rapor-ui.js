@@ -35,7 +35,8 @@ $("btnRaporOlustur").addEventListener("click", async () => {
     });
     $("statToplam").innerText = state.tumFormlarGlobal.length;
     const enCok = Object.entries(sehirler).sort((a, b) => b[1] - a[1])[0];
-    $("statSehir").innerText = enCok ? `${enCok[0]} (${enCok[1]})` : "-";
+    /* Diğer kutularla aynı düzen: büyük sayı, altında şehir adı */
+    $("statSehir").innerHTML = enCok ? `${enCok[1]}<small class="stat-il">${htmlGuvenli(sehirGoster(enCok[0]))}</small>` : "-";
     const liste = (o, ikon) => Object.entries(o).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<div class="rapor-item"><span>${ikon}${htmlGuvenli(k)}</span><strong>${n} kayıt</strong></div>`).join("");
     $("listeIslem").innerHTML = liste(islemler, "");
     $("listePersonel").innerHTML = liste(kisiler, "👤 ");

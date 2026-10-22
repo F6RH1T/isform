@@ -1,6 +1,7 @@
 import { doc, getDoc } from "firebase/firestore";
 import { $ } from "../../lib/dom.js";
 import { db } from "../../firebase/init.js";
+import { disaridanKapat, temizSay } from "../../ui/modal.js";
 
 window.resmiAc = async function (docId, fotoId) {
   $("modalLoading").style.display = "block";
@@ -10,7 +11,7 @@ window.resmiAc = async function (docId, fotoId) {
   $("imgZoomIpucu").style.display = "none";
   if (window.imgZoomSifirla) window.imgZoomSifirla();
   $("downloadLink").style.display = "none";
-  $("imageModal").style.display = "flex";
+  temizSay($("imageModal")); $("imageModal").style.display = "flex";
   try {
     const fDoc = fotoId ? await getDoc(doc(db, "formFotograflari", fotoId)) : await getDoc(doc(db, "formlar", docId));
     const src = fDoc.exists() ? (fotoId ? fDoc.data().base64 : fDoc.data().fotograf) : null;
@@ -25,3 +26,4 @@ window.resmiAc = async function (docId, fotoId) {
 };
 
 window.modaliKapat = () => { $("imageModal").style.display = "none"; $("modalImage").src = ""; if (window.imgZoomSifirla) window.imgZoomSifirla(); };
+disaridanKapat($("imageModal"), () => window.modaliKapat(), "AI ile okunan açıklama kaydedilmedi. Kapatılsın mı?");

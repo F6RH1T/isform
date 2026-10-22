@@ -3,12 +3,13 @@ import { state } from "../../core/state.js";
 import { $ } from "../../lib/dom.js";
 import { auth, db } from "../../firebase/init.js";
 import { onAuthStateChanged } from "firebase/auth";
-import { logYaz, yoneticiMi } from "../../core/session.js";
+import { duzenleyebilirMi, logYaz, yoneticiMi } from "../../core/session.js";
 import { SIRA_YONU, kartDokumuHTML } from "../search/search.js";
 import { tarihKarsilastir } from "../../lib/dates.js";
 import { sehirGoster } from "../../lib/sehirler.js";
 import { ikon } from "../../lib/ikon.js";
 import { htmlGuvenli } from "../../lib/text.js";
+import { disaridanKapat, temizSay } from "../../ui/modal.js";
 
 /* ===== FİRMA KARTI ===== */
 let fkId = "";
@@ -28,11 +29,14 @@ window.firmaKartiAc = async function (aramaFirma, firmaAdi, sehir) {
   $("fkAvatar").textContent = firmaAdi.split(/\s+/).filter(Boolean).slice(0, 2).map(k => k[0]).join("").toLocaleUpperCase("tr-TR") || "F";
   fkIstGuncelle(Object.values(window.formCache || {}).filter(v => v.aramaFirma === aramaFirma)); $("fkZaman").innerHTML = "";
   ["fkYetkili", "fkEtiket", "fkTelefon", "fkAdres", "fkNot"].forEach(i => $(i).value = "");
-  $("firmaModal").style.display = "flex"; fkLinkler();
+  fkKayitli = {}; fkOkumaCiz(true); fkMod(false);
+  temizSay($("firmaModal")); $("firmaModal").style.display = "flex"; fkLinkler();
   try {
     const s = await getDoc(doc(db, "firmalar", fkId));
-    if (s.exists()) { const v = s.data(); $("fkYetkili").value = v.yetkili || ""; $("fkTelefon").value = v.telefon || ""; $("fkAdres").value = v.adres || ""; $("fkNot").value = v.notlar || ""; $("fkEtiket").value = v.etiketler || ""; fkLinkler(); }
+    if (s.exists()) { const v = s.data(); fkKayitli = { yetkili: v.yetkili || "", telefon: v.telefon || "", adres: v.adres || "", notlar: v.notlar || "", etiketler: v.etiketler || "" }; }
   } catch (e) { console.error(e); showToast("Firma kartı okunamadı: " + e.message, "error"); }
+  fkDoldur(fkKayitli); fkLinkler(); fkOkumaCiz();
+  fkMod(!fkBilgiVar() && duzenleyebilirMi());   // bilgi yoksa doğrudan form açılır
   try {
     const q = await getDocs(query(collection(db, "formlar"), where("aramaFirma", "==", aramaFirma), limit(40)));
     const L = []; q.forEach(d => L.push(d.data())); fkIstGuncelle(L); fkZamanCiz(L); window._fkSon = L;
@@ -41,10 +45,47 @@ window.firmaKartiAc = async function (aramaFirma, firmaAdi, sehir) {
 
 ["fkTelefon", "fkAdres"].forEach(i => $(i).addEventListener("input", fkLinkler));
 
-/* Pencere yalnızca X, İptal veya Esc ile kapanır; dışına dokununca kapanmaz (yazılanlar kaybolmasın). */
-const fkKapat = () => { $("firmaModal").style.display = "none"; };
+/* Okuma görünümü: kayıtlı bilgiler ikon + metin olarak; "Düzenle" ile forma geçilir */
+let fkKayitli = {};
+const FK_ALAN = { yetkili: "fkYetkili", telefon: "fkTelefon", adres: "fkAdres", notlar: "fkNot", etiketler: "fkEtiket" };
+const fkDoldur = v => Object.entries(FK_ALAN).forEach(([k, id]) => { $(id).value = v[k] || ""; });
+const fkBilgiVar = () => Object.values(fkKayitli).some(x => String(x || "").trim());
+function fkOkumaCiz(yukleniyor = false) {
+  const v = fkKayitli, kutu = $("fkOkuma");
+  if (yukleniyor) { kutu.innerHTML = '<div class="skeleton" style="height:120px"></div>'; return; }
+  const tel = String(v.telefon || "").trim(), telHref = tel.replace(/[^\d+]/g, "");
+  const satir = (ik, et, deger) => `<div class="fko-satir"><span class="fko-ik">${ikon(ik, 16)}</span><div class="fko-metin"><small>${et}</small>${deger}</div></div>`;
+  const etiketler = String(v.etiketler || "").split(",").map(x => x.trim()).filter(Boolean);
+  const h = [
+    v.yetkili && satir("user", "Yetkili kişi", `<b>${htmlGuvenli(v.yetkili)}</b>`),
+    tel && satir("phone", "Telefon", `<a href="tel:${htmlGuvenli(telHref)}">${htmlGuvenli(tel)}</a>`),
+    v.adres && satir("pin", "Adres", `<span class="fko-cok">${htmlGuvenli(v.adres)}</span>`),
+    etiketler.length && satir("tag", "Etiketler", `<span class="fko-etiketler">${etiketler.map(x => `<span>${htmlGuvenli(x)}</span>`).join("")}</span>`),
+    v.notlar && satir("note", "Notlar", `<span class="fko-cok">${htmlGuvenli(v.notlar)}</span>`)
+  ].filter(Boolean).join("");
+  kutu.innerHTML = h || `<div class="fko-bos">${ikon("info", 16)} Bu firma için henüz iletişim bilgisi girilmemiş.${duzenleyebilirMi() ? " <b>Düzenle</b> ile ekleyebilirsiniz." : ""}</div>`;
+}
+/* duzenle=true: form + Vazgeç/Kaydet; false: okuma + Kapat/Düzenle */
+function fkMod(duzenle) {
+  $("fkForm").style.display = duzenle ? "" : "none";
+  $("fkOkuma").style.display = duzenle ? "none" : "";
+  $("fkKaydet").style.display = duzenle ? "" : "none";
+  $("fkDuzenle").style.display = !duzenle && duzenleyebilirMi() ? "" : "none";
+  $("fkIptal").textContent = duzenle ? "Vazgeç" : "Kapat";
+  $("firmaModal").dataset.duzenle = duzenle ? "1" : "";
+}
+window.fkDuzenleModu = () => { fkMod(true); };   // kartvizitten doldurma gibi dış akışlar için
+$("fkDuzenle").addEventListener("click", () => { fkMod(true); setTimeout(() => $("fkYetkili").focus(), 50); });
 
-$("fkIptal").addEventListener("click", fkKapat);
+/* Boşluğa dokununca kapanır; kaydedilmemiş değişiklik varsa önce sorar (yazılanlar kaybolmasın). */
+const fkKapat = () => { $("firmaModal").style.display = "none"; };
+disaridanKapat($("firmaModal"), fkKapat);
+
+/* Düzenlerken Vazgeç: kayıtlı bilgi varsa okumaya döner (değişiklikler geri alınır), yoksa kapanır */
+$("fkIptal").addEventListener("click", () => {
+  if ($("firmaModal").dataset.duzenle !== "1" || !fkBilgiVar()) { fkKapat(); return; }
+  fkDoldur(fkKayitli); fkLinkler(); temizSay($("firmaModal")); fkMod(false);
+});
 
 $("fkX").addEventListener("click", fkKapat);
 
@@ -52,8 +93,10 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && $("firmaMo
 
 $("fkKaydet").addEventListener("click", async () => {
   try {
-    await setDoc(doc(db, "firmalar", fkId), { yetkili: $("fkYetkili").value.trim(), telefon: $("fkTelefon").value.trim(), adres: $("fkAdres").value.trim(), notlar: $("fkNot").value.trim(), etiketler: $("fkEtiket").value.trim(), guncelleyen: state.aktifKullaniciMail, guncellemeTarihi: new Date().toISOString() }, { merge: true }); logYaz("Firma kartı güncellendi", fkId, "");
-    showToast("Firma kartı kaydedildi", "success"); $("firmaModal").style.display = "none";
+    const v = Object.fromEntries(Object.entries(FK_ALAN).map(([k, id]) => [k, $(id).value.trim()]));
+    await setDoc(doc(db, "firmalar", fkId), { ...v, guncelleyen: state.aktifKullaniciMail, guncellemeTarihi: new Date().toISOString() }, { merge: true }); logYaz("Firma kartı güncellendi", fkId, "");
+    fkKayitli = v; fkOkumaCiz(); temizSay($("firmaModal")); fkMod(false);
+    showToast("Firma kartı kaydedildi", "success");
   } catch (e) { showToast("Kaydedilemedi: " + e.message, "error"); }
 });
 

@@ -7,6 +7,7 @@ import { $ } from "../../lib/dom.js";
 import { levenshtein } from "../../lib/levenshtein.js";
 import { metniNormalizeEt } from "../../lib/text.js";
 import { VARSAYILAN_PERSONEL } from "../../lib/personel-varsayilan.js";
+import { disaridanKapat } from "../../ui/modal.js";
 
 /* ===== PERSONEL LİSTESİ =====
    İş formundaki 6 personel alanı + servis sorumlusu artık serbest yazı değil, listeden seçmeli.
@@ -61,6 +62,7 @@ function ismiSor(baslik, baslangic = "") {
     document.body.appendChild(m);
     const inp = m.querySelector("#pmAd"); inp.value = baslangic; setTimeout(() => inp.focus(), 50);
     const bitir = d => { m.remove(); res(d); };
+    disaridanKapat(m, () => bitir(null));
     m.querySelector("#pmTamam").onclick = () => bitir(inp.value.trim() || null);
     m.querySelector("#pmVazgec").onclick = () => bitir(null);
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); bitir(inp.value.trim() || null); } else if (e.key === "Escape") bitir(null); });
@@ -160,6 +162,7 @@ function yonetimAc() {
     } catch (err) { console.error(err); showToast("İşlem başarısız: " + err.message, "error"); }
   });
   const kapat = () => m.remove();
+  disaridanKapat(m, kapat);
   m.querySelector("#pmKapat").onclick = kapat;
   ciz();
 }
