@@ -31,9 +31,9 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          # AI istekleri Cloud Function üzerinden gider (anahtar tarayıcıya inmez). Başka bir adres için depo
-          # Variables altına VITE_AI_PROXY_URL ekleyin. Önce "Firebase kurulum" iş akışıyla fonksiyonları yayınlayın.
-          VITE_AI_PROXY_URL: ${{ vars.VITE_AI_PROXY_URL || 'https://europe-west1-isform-b284d.cloudfunctions.net/aiProxy' }}
+          # Varsayılan: boş (AI, eski modda çalışır: anahtar Firestore'dan okunur). Bir AI proxy kurduysanız (Cloud Function
+          # veya Cloudflare Worker) adresini depo Variables altına VITE_AI_PROXY_URL adıyla ekleyin; site onu kullanır.
+          VITE_AI_PROXY_URL: ${{ vars.VITE_AI_PROXY_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

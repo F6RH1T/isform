@@ -39,8 +39,12 @@ tests/         unit (node:test), rules (Firestore emülatörü), smoke (Playwrig
 Kurallar, indeksler, Cloud Functions, gizli anahtarlar ve günlük yedek tek iş akışıyla yayınlanır:
 **Actions → Firebase kurulum → Run workflow**. Bilgisayarınıza bir şey kurmanız gerekmez.
 
+**Ücretsiz (Spark) planda** yalnızca kurallar ve indeksler yayınlanır (iş akışında "kurallar" kutusu); Cloud Functions ve
+Firestore yedek zamanlaması Blaze planı ister. Spark'ta AI eski modda çalışır: Gemini anahtarı Firestore'dan okunur.
+Anahtarı korumak için Google Cloud'da anahtarı site adresine kısıtlayın (HTTP referrer: `https://f6rh1t.github.io/*`).
+
 **Bir kerelik hazırlık**
-1. Firebase projesi **Blaze** (kullandıkça öde) planında olmalı (Cloud Functions için).
+1. (Yalnızca fonksiyonlar için) Firebase projesi **Blaze** (kullandıkça öde) planında olmalı.
 2. Google Cloud Console → IAM → Service Accounts → `isform-b284d` projesinde yeni hizmet hesabı. Rolleri:
    *Firebase Admin*, *Cloud Functions Admin*, *Service Account User*, *Secret Manager Admin*, *Cloud Datastore Owner*,
    *Service Usage Admin*. Hesabın **Keys → Add key → JSON** ile anahtarını indirin.
