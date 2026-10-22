@@ -16,7 +16,8 @@
     "test": "node --test tests/unit/*.test.js",
     "test:smoke": "node tests/smoke/smoke.mjs",
     "check": "npm run lint && npm run test && npm run build",
-    "test:rules": "firebase emulators:exec --only firestore --project enorpa-kural-testi 'node --test tests/rules/*.test.js'"
+    "test:rules": "firebase emulators:exec --only firestore --project enorpa-kural-testi 'node --test tests/rules/*.test.js'",
+    "demo": "vite --config demo/vite.config.js"
   },
   "dependencies": {
     "firebase": "12.14.0",

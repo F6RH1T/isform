@@ -1,6 +1,7 @@
 import { $ } from "../../lib/dom.js";
 import { htmlGuvenli } from "../../lib/text.js";
 import { TIP_RENK, tipSinif } from "../../lib/tip.js";
+import { sehirGoster } from "../../lib/sehirler.js";
 
 /* Rapor görselleri: işlem halka grafiği, aylık çubuk grafik, en çok form olan 5 il, sayaç animasyonu */
 const AYLAR = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
@@ -40,7 +41,7 @@ function aylik(formlar) {
 }
 
 function enCokIl(formlar) {
-  const s = {}; formlar.forEach(v => { const k = (v.sehir || "Belirsiz").toLocaleUpperCase("tr-TR"); s[k] = (s[k] || 0) + 1; });
+  const s = {}; formlar.forEach(v => { const k = sehirGoster(v.sehir || "Belirsiz").toLocaleUpperCase("tr-TR"); s[k] = (s[k] || 0) + 1; });
   const liste = Object.entries(s).sort((a, b) => b[1] - a[1]).slice(0, 5); if (!liste.length) return "";
   const mx = liste[0][1];
   const satir = liste.map(([k, n], i) => `<div class="gr-il"><span class="gr-sira">${i + 1}</span><div class="gr-il-orta"><div class="gr-il-ust"><span>${htmlGuvenli(k)}</span><b>${n}</b></div><div class="gr-iz"><div style="width:${Math.round(n / mx * 100)}%"></div></div></div></div>`).join("");

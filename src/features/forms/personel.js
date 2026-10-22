@@ -57,14 +57,13 @@ function ismiSor(baslik, baslangic = "") {
     m.innerHTML = `<div class="edit-card"><div class="card-title" style="font-size:1.15rem;margin-bottom:14px">${esc(baslik)}</div>
       <div class="form-floating"><input type="text" id="pmAd" placeholder=" " autocomplete="off"><label for="pmAd">Ad Soyad</label></div>
       <div style="display:flex;gap:8px"><button type="button" class="btn btn-primary" id="pmTamam">Kaydet</button>
-      <button type="button" class="btn" id="pmVazgec" style="background:var(--border);color:var(--text-main)">Vazgeç</button></div></div>`;
+      <button type="button" class="btn btn-ikincil" id="pmVazgec">Vazgeç</button></div></div>`;
     document.body.appendChild(m);
     const inp = m.querySelector("#pmAd"); inp.value = baslangic; setTimeout(() => inp.focus(), 50);
     const bitir = d => { m.remove(); res(d); };
     m.querySelector("#pmTamam").onclick = () => bitir(inp.value.trim() || null);
     m.querySelector("#pmVazgec").onclick = () => bitir(null);
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); bitir(inp.value.trim() || null); } else if (e.key === "Escape") bitir(null); });
-    m.addEventListener("click", e => { if (e.target === m) bitir(null); });
   });
 }
 
@@ -129,7 +128,7 @@ function yonetimAc() {
     <div style="display:flex;gap:8px;margin-bottom:12px"><div class="form-floating" style="flex:1;margin:0"><input type="text" id="pmYeni" placeholder=" " autocomplete="off"><label for="pmYeni">Yeni isim</label></div>
     <button type="button" class="btn btn-primary" id="pmEkle" style="width:auto;padding:0 18px">Ekle</button></div>
     <div class="pm-liste" id="pmListe"></div>
-    <button type="button" class="btn" id="pmKapat" style="margin-top:14px;background:var(--border);color:var(--text-main)">Kapat</button></div>`;
+    <button type="button" class="btn btn-ikincil" id="pmKapat" style="margin-top:14px">Kapat</button></div>`;
   document.body.appendChild(m);
   const kutu = m.querySelector("#pmListe");
   const ciz = () => {
@@ -162,7 +161,6 @@ function yonetimAc() {
   });
   const kapat = () => m.remove();
   m.querySelector("#pmKapat").onclick = kapat;
-  m.addEventListener("click", e => { if (e.target === m) kapat(); });
   ciz();
 }
 $("btnPersonel").addEventListener("click", yonetimAc);

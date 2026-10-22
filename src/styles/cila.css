@@ -1,0 +1,166 @@
+/* ===== GÖRSEL CİLA =====
+   Mevcut temayı (turuncu ana renk, Plus Jakarta Sans, yuvarlak kartlar) korur; yalnızca tokens.css değişkenlerini kullanır.
+   Telefon öncelikli: dar ekranda sıkışan kartlar, bakım listesi ve pencereler düzenlendi. */
+
+/* --- Koyu tema: koyu yazılı logo görünür olsun (turuncu ton korunur) --- */
+[data-theme="dark"] .header-brand img{filter:invert(1) hue-rotate(180deg) brightness(1.1)}
+[data-theme="dark"] .login-logo{filter:invert(1) hue-rotate(180deg) brightness(1.1) drop-shadow(0 8px 18px rgba(242,101,34,.25))}
+
+/* --- Ortak küçük butonlar --- */
+.btn-firma{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:.76rem;line-height:1.2;transition:background .2s,border-color .2s,color .2s}
+.btn-firma:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.btn-firma.btn-ik{padding:6px 9px}
+.btn-firma svg{flex:0 0 auto}
+button.btn.btn-ikincil{background:var(--surface-2);color:var(--text-main);border:1.5px solid var(--border);box-shadow:none}
+button.btn.btn-ikincil:hover{border-color:var(--primary);color:var(--primary)}
+#btnRaporYenile,#btnYedek{margin-bottom:10px}
+
+/* --- Kayıt kartı: başlık satırı + tam genişlikte rozet satırı --- */
+.liste-karti{padding:14px 14px 14px 16px;gap:10px}
+.karti-ust{display:flex;align-items:center;gap:12px}
+.kart-avatar{margin-top:0}
+.kart-baslik{flex:1;min-width:0;cursor:pointer}
+.kart-baslik h4{margin:0 0 3px;font-size:.98rem;font-weight:800;letter-spacing:-.015em;line-height:1.25;
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.kart-alt{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;font-size:.76rem;font-weight:600;color:var(--text-muted)}
+.kart-kod{color:var(--primary);font-weight:800;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.kart-alt .kart-tarih{display:inline-flex;align-items:center;gap:4px}
+.liste-karti-butonlar{gap:6px;align-self:flex-start}
+.liste-karti-butonlar .btn-icon{width:34px;height:34px}
+.liste-karti-butonlar .btn-icon svg{width:16px;height:16px}
+.detay-satiri{margin:0;gap:6px;font-size:.75rem}
+.detay-satiri>*{white-space:nowrap;line-height:1.2}
+.detay-satiri .badge,.detay-satiri .badge-konum{padding:4px 10px}
+.detay-satiri .badge-konum{border:1px solid transparent}
+.detay-satiri .bakim-rozet{padding:4px 10px}
+.btn-kopyala{margin:0}
+/* Telefonda Kopyala yalnızca ikon: rozet satırı alt satıra taşmasın (yazı ekran okuyucu için kalır) */
+@media(max-width:600px){
+  .btn-kopyala{padding:6px 9px}
+  .btn-kopyala .bk-yazi{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+}
+.bakim-rozet{display:inline-flex;align-items:center;gap:4px}
+.aciklama-kutusu{border:1px solid var(--border)}
+.firma-icerik .liste-karti .aciklama-kutusu{background:var(--surface)}
+@media(max-width:360px){.kart-avatar{display:none}}
+
+/* --- Firma grubu başlığı --- */
+.fb-sayi{min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--primary);color:#fff;font-size:.75rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.fb-kod{font-size:.7rem}
+.firma-baslik .btn-firma{padding:6px 12px}
+.sonuc-ozet{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;text-align:left}
+
+/* --- Yaklaşan bakımlar --- */
+.bakim-ust{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.card-title.bakim-baslik{font-size:1.1rem;margin:0;justify-content:flex-start;gap:8px}
+.bakim-baslik svg{color:var(--primary)}
+.bakim-ozet{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.bakim-rozet.sade{background:var(--surface-2);color:var(--text-muted);box-shadow:inset 0 0 0 1px var(--border)}
+#yaklasanKart .bakim-satir{display:flex;align-items:center;gap:12px;padding:12px 0}
+.bs-bilgi{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.bs-bilgi b{font-size:.9rem;font-weight:800;line-height:1.25;overflow-wrap:anywhere;transition:color .2s}
+.bs-bilgi small{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;color:var(--text-muted);font-size:.76rem;font-weight:600}
+.bs-bilgi small i{font-style:normal;opacity:.45}
+.bs-bilgi small svg{flex:0 0 auto}
+.bs-sag{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.bs-eylem{display:flex;gap:6px}
+#yaklasanKart .bakim-satir:hover .bs-bilgi b{color:var(--primary)}
+@media(max-width:400px){
+  #yaklasanKart .bakim-satir{flex-wrap:wrap}
+  .bs-sag{flex-direction:row;align-items:center;justify-content:space-between;width:100%}
+}
+
+/* Firma kartı: son işlemler zaman çizelgesi */
+.zaman-satir{--tip:var(--primary);cursor:default;border-left:3px solid var(--tip);padding:10px 0 10px 12px!important;margin-bottom:6px;border-bottom:0!important;background:var(--surface-2);border-radius:0 12px 12px 0}
+.zaman-satir.tip-bakim{--tip:#16a34a}.zaman-satir.tip-ariza{--tip:#e5484d}.zaman-satir.tip-kurulum{--tip:#3b82f6}
+.zaman-satir.tip-kesif{--tip:#d97706}.zaman-satir.tip-diger{--tip:#8b5cf6}.zaman-satir.tip-yok{--tip:#a8a29e}
+.zaman-satir .zs-tarih{color:var(--text-muted);font-weight:600;white-space:nowrap;padding-right:12px;font-size:.75rem}
+.alt-baslik{display:flex;align-items:center;gap:6px}
+.fk-sehir{display:inline-flex;align-items:center;gap:4px}
+
+/* --- Yeni kayıt seçim butonları --- */
+.secim-btn{padding:18px;gap:16px;position:relative}
+.secim-btn .ik{width:52px;height:52px;border-radius:16px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:0;transition:background .2s,color .2s}
+.secim-btn>span:last-child{flex:1}
+.secim-btn::after{content:"";width:9px;height:9px;border-top:2px solid var(--text-muted);border-right:2px solid var(--text-muted);transform:rotate(45deg);margin-right:6px;flex:0 0 auto;transition:transform .2s,border-color .2s}
+.secim-btn:hover .ik{background:var(--primary);color:#fff}
+.secim-btn:hover::after{border-color:var(--primary);transform:translateX(3px) rotate(45deg)}
+
+/* --- Asistan: giriş ve Sor düğmesi yan yana --- */
+.as-giris{display:flex;gap:10px;align-items:center}
+.as-giris .form-floating{flex:1;margin:0;min-width:0}
+.as-giris .ai-btn{flex:0 0 auto}
+
+/* --- Bildirimler: uzun mesajda düzgün kırılsın --- */
+.toast{border-radius:16px;max-width:100%;line-height:1.35;padding:11px 16px}
+.toast-ik{display:inline-flex;flex:0 0 auto}
+
+/* --- PDF paylaş kartı --- */
+.paylas-karti{position:fixed;left:16px;right:16px;margin:0 auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));max-width:420px;z-index:10000;background:var(--surface);color:var(--text-main);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:0 24px 48px -12px rgba(0,0,0,.45);padding:16px;animation:slideDown .3s ease}
+.pk-ust{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.pk-ik{width:42px;height:42px;border-radius:12px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.pk-ust b{display:block;font-size:1rem;font-weight:800}
+.pk-ust small{display:block;font-size:.8rem;color:var(--text-muted);overflow-wrap:anywhere}
+.pk-eylem{display:flex;gap:8px;align-items:center}
+.pk-eylem .btn-primary{flex:1}
+.pk-eylem .btn-ikincil{width:auto;padding:16px 18px}
+.pk-not{flex:1;font-size:.8rem;color:var(--text-muted)}
+
+/* --- Yönetim penceresi (kullanıcılar + işlem geçmişi) --- */
+.yonetim-modal{display:none;position:fixed;inset:0;background:rgba(10,9,8,.72);z-index:2000;justify-content:center;align-items:center;padding:16px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.ym-kart{background:var(--surface);color:var(--text-main);border:1px solid var(--border);border-radius:var(--r-lg);width:100%;max-width:600px;max-height:88vh;overflow:auto;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:fkGiris .25s ease}
+.ym-ust{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ym-ust b{display:flex;align-items:center;gap:8px;font-size:1.15rem;font-weight:800}
+.ym-ust b svg{color:var(--primary)}
+.ym-x{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ym-x:hover{color:var(--primary);border-color:var(--primary)}
+.ym-sekmeler{display:flex;gap:4px;padding:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;margin-bottom:16px}
+.ym-sekmeler button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border:0;border-radius:999px;background:transparent;color:var(--text-muted);font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;transition:background .2s,color .2s}
+.ym-sekmeler button.aktif{background:var(--surface);color:var(--primary);box-shadow:var(--shadow)}
+.ym-ekle{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.ym-girdi{padding:10px 12px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text-main);font:inherit;font-size:.9rem;min-height:44px}
+.ym-girdi:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.ym-ekle input{flex:1 1 200px;min-width:0}
+.ym-ekle .btn{width:auto;padding:10px 18px}
+.ym-tam{width:100%;margin-bottom:10px}
+.ym-liste{display:flex;flex-direction:column;gap:8px}
+.ym-satir{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2)}
+.ym-satir.pasif{opacity:.6}
+.ym-kisi{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 200px}
+.ym-av{width:32px;height:32px;border-radius:50%;background:var(--primary-soft);color:var(--primary);font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.ym-mail{font-size:.86rem;font-weight:600;overflow-wrap:anywhere}
+.ym-mail em{font-style:normal;color:var(--text-muted);font-weight:500}
+.ym-rol{font-size:.76rem;font-weight:700;color:var(--primary);background:var(--primary-soft);padding:4px 10px;border-radius:999px}
+.ym-eylem{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ym-eylem .ym-girdi{min-height:34px;padding:6px 10px;font-size:.82rem}
+.ym-eylem .btn-firma{margin:0}
+.btn-firma.ym-sil{color:var(--danger)}
+.btn-firma.ym-sil:hover{border-color:var(--danger);background:rgba(229,72,77,.1)}
+.ym-not{font-size:.75rem;color:var(--text-muted);margin:14px 0 0;line-height:1.5}
+.ym-gecmis{display:block}
+.ym-g-ust{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ym-g-ust b{font-size:.88rem}
+.ym-g-ust span{font-size:.75rem;color:var(--text-muted)}
+.ym-g-kim{font-size:.82rem;overflow-wrap:anywhere;margin-top:2px}
+.ym-g-detay{font-size:.78rem;color:var(--text-muted);overflow-wrap:anywhere;margin-top:2px}
+
+/* --- Rapor: yazı içeren istatistik kutusu taşmasın --- */
+#statSehir{font-size:1.25rem;line-height:1.2;overflow-wrap:anywhere}
+@media(min-width:1024px){#statSehir{font-size:1.55rem}}
+
+/* --- Masaüstü --- */
+@media(min-width:1024px){
+  .liste-karti{padding:16px 18px 16px 20px}
+  .kart-baslik h4{font-size:1.02rem}
+  .bs-sag{flex-direction:row;align-items:center}
+}
+
+/* --- Form tara: "Fotoğraf çek" ve "Galeriden seç" yan yana --- */
+.foto-secim{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.foto-secim .file-upload-label{padding:20px 12px}
+.foto-secim.active .file-upload-label{border-color:var(--primary);color:var(--primary)}
+.foto-onizleme{position:relative;display:inline-block;width:64px;height:64px}
+.foto-onizleme .foto-dondur,.foto-onizleme .foto-kaldir{position:absolute;top:-6px;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.94);color:#111;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:2;padding:0}
+.foto-onizleme .foto-dondur{left:-6px}
+.foto-onizleme .foto-kaldir{right:-6px;font-size:18px}
+.preview-container:has(.foto-onizleme){gap:14px;padding:6px 0 0 6px}

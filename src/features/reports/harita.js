@@ -5,6 +5,7 @@ import { $ } from "../../lib/dom.js";
 import { yoneticiMi } from "../../core/session.js";
 import { SIRA_YONU, kartDokumuHTML } from "../search/search.js";
 import { tarihKarsilastir } from "../../lib/dates.js";
+import { bashar } from "../../lib/tip.js";
 
 export let secilenIl = null;
 
@@ -149,7 +150,7 @@ export function ilPaneliniCiz() {
     const kod = (formlar.find(x => x.v.firmaKodu) || { v: {} }).v.firmaKodu;
     h += `<div class="firma-grup">
       <div class="firma-baslik" onclick="this.parentElement.classList.toggle('acik')">
-        <span class="fb-sol"><span class="fb-ad">🏢 ${htmlGuvenli(firma)}</span>${kod ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(kod)}</span>` : ""}<span class="badge" style="background:var(--primary);color:#fff;border:none;padding:2px 8px;">${formlar.length}</span></span>
+        <span class="fb-sol"><span class="fb-av" aria-hidden="true">${bashar(firma)}</span><span class="fb-ad">${htmlGuvenli(firma)}</span>${kod ? `<span class="badge fb-kod">${htmlGuvenli(kod)}</span>` : ""}<span class="fb-sayi" title="Form sayısı">${formlar.length}</span></span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </div>
       <div class="firma-icerik">${formlar.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("")}</div></div>`;

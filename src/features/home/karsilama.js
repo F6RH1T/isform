@@ -4,6 +4,7 @@ import { auth, db } from "../../firebase/init.js";
 import { state } from "../../core/state.js";
 import { $ } from "../../lib/dom.js";
 import { htmlGuvenli } from "../../lib/text.js";
+import { sehirGoster } from "../../lib/sehirler.js";
 
 /* Ana ekran karşılama kartı: selam, tarih, bugün/hafta/ay form sayısı, son form, gecikmiş bakım uyarısı, yeni kayıt kısayolu.
    Sayılar Firestore sayım sorgusuyla alınır (belge okumaz, çok ucuzdur). */
@@ -40,7 +41,7 @@ async function sayilariYenile(zorla = false) {
     ]);
     $("ksBugun").textContent = b; $("ksHafta").textContent = h; $("ksAy").textContent = ay;
     const s = son.docs[0] && son.docs[0].data(), kutu = $("ksSon");
-    if (s) { kutu.innerHTML = `Son form: <b>${htmlGuvenli(s.firmaAdi || "")}</b>${s.sehir ? " · " + htmlGuvenli(s.sehir) : ""} · ${goreli(s.eklenmeTarihi)}`; kutu.style.display = "block"; }
+    if (s) { kutu.innerHTML = `Son form: <b>${htmlGuvenli(s.firmaAdi || "")}</b>${s.sehir ? " · " + htmlGuvenli(sehirGoster(s.sehir)) : ""} · ${goreli(s.eklenmeTarihi)}`; kutu.style.display = "block"; }
     else kutu.style.display = "none";
     sonYenileme = Date.now();
   } catch (e) { console.warn("Ana ekran özeti alınamadı:", e.code || e); }

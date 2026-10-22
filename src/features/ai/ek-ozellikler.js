@@ -79,7 +79,7 @@ async function aiResim(f) {
   k.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div class="card-title as-baslik" style="margin:0">'+ikon("spark",22)+' Asistan</div><button type="button" id="asTemizle" class="btn-firma" style="margin:0;display:none">Sohbeti temizle</button></div>'
     + '<div id="asSohbet" style="display:none;max-height:420px;overflow:auto;flex-direction:column;gap:8px;margin-bottom:10px"></div>'
     + '<div id="asOneri" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>'
-    + '<div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off"><label for="aiSoru">Sorun veya ne bulmak istediğinizi yazın</label></div>';
+    + '<div class="as-giris"><div class="form-floating"><input type="text" id="aiSoru" placeholder=" " autocomplete="off" enterkeyhint="send"><label for="aiSoru">Sorun veya ne bulmak istediğinizi yazın</label></div></div>';
   $("sonuclar").insertAdjacentElement("beforebegin", k);
   const sohbetEl = $("asSohbet"), asGecmis = [], nrm = x => metniNormalizeEt(x || "");
 
@@ -263,11 +263,11 @@ async function aiResim(f) {
       sohbetEl.scrollTop = sohbetEl.scrollHeight;
     } catch (e) { bal.remove(); sohbetEl.lastElementChild && sohbetEl.lastElementChild.remove(); throw e; }
   }
-  const gonder = aiButon(k, "beforeend", "✨ Sor", async () => {
+  const gonder = aiButon(k.querySelector(".as-giris"), "beforeend", "✨ Sor", async () => {
     const soru = $("aiSoru").value.trim(); if (!soru) throw new Error("Bir soru yazın");
     $("aiSoru").value = "";
     try { await sor(soru); } catch (e) { $("aiSoru").value = soru; throw e; }
-  }, "margin-top:10px;");
+  }, "margin:0;");
 
   ["Gecikmiş bakımlar hangileri?", "Önümüzdeki 7 gün içinde bakımı gelen firmalar", "Bu ay kaç işlem yapıldı? Tiplerine göre dağılımı ver", "Geçen ay en çok arıza kaydı olan firmalar"].forEach(t => {
     const c = document.createElement("button"); c.type = "button"; c.className = "btn-firma"; c.style.cssText = "margin:0;font-size:.75rem"; c.textContent = t;
@@ -317,7 +317,7 @@ async function aiResim(f) {
   ta.style.cssText = "width:100%;min-height:110px;max-height:30vh;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:.85rem;line-height:1.45;resize:vertical";
   const satir = document.createElement("div"); satir.style.cssText = "display:flex;gap:8px";
   const kaydet = document.createElement("button"); kaydet.type = "button"; kaydet.className = "btn btn-primary"; kaydet.style.cssText = "flex:1;margin:0"; kaydet.textContent = "💾 Kaydet";
-  const vazgec = document.createElement("button"); vazgec.type = "button"; vazgec.className = "btn"; vazgec.style.cssText = "margin:0;background:var(--border);color:var(--text-main)"; vazgec.textContent = "Vazgeç";
+  const vazgec = document.createElement("button"); vazgec.type = "button"; vazgec.className = "btn btn-ikincil"; vazgec.style.cssText = "margin:0"; vazgec.textContent = "Vazgeç";
   satir.append(kaydet, vazgec); onizle.append(not, ta, satir); panel.appendChild(onizle);
   $("downloadLink").insertAdjacentElement("beforebegin", panel);
   let docId = null;

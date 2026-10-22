@@ -27,21 +27,29 @@ if (SR) {
 
 const fotoDonus = new WeakMap();
 
-const fotoGirdisi = $("fotoGirdisi"), fotoPreviewContainer = $("fotoPreviewContainer"), fotoLabel = $("fotoLabel");
+/* Fotoğraflar iki yoldan eklenir: kamerayla çek (tek tek) veya galeriden seç (çoklu). Hepsi aynı listede birikir. */
+let secilenFotolar = [];
+const fotoPreviewContainer = $("fotoPreviewContainer"), fotoLabel = $("fotoLabel");
 
-fotoGirdisi.addEventListener("change", e => {
+function fotolariCiz() {
   fotoPreviewContainer.innerHTML = "";
-  const files = Array.from(e.target.files);
-  fotoLabel.classList.toggle("active", files.length > 0);
-  files.forEach(f => {
-    const w = document.createElement("span"); w.style.cssText = "position:relative;display:inline-block;width:64px;height:64px";
-    const img = document.createElement("img"); img.src = URL.createObjectURL(f);
-    const b = document.createElement("button"); b.type = "button"; b.textContent = "↻"; b.setAttribute("aria-label", "Döndür");
-    b.style.cssText = "position:absolute;right:-6px;top:-6px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.92);color:#111;font-size:16px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:2;padding:0";
+  fotoLabel.classList.toggle("active", secilenFotolar.length > 0);
+  secilenFotolar.forEach((f, i) => {
+    const w = document.createElement("span"); w.className = "foto-onizleme";
+    const img = document.createElement("img"); img.src = URL.createObjectURL(f); img.alt = "";
+    const d0 = fotoDonus.get(f) || 0; if (d0) img.style.transform = `rotate(${d0}deg)`;
+    const b = document.createElement("button"); b.type = "button"; b.className = "foto-dondur"; b.textContent = "↻"; b.setAttribute("aria-label", "Döndür");
     b.addEventListener("click", ev => { ev.preventDefault(); ev.stopPropagation(); const d = ((fotoDonus.get(f) || 0) + 90) % 360; fotoDonus.set(f, d); img.style.transition = "transform .25s"; img.style.transform = `rotate(${d}deg)`; });
-    w.append(img, b); fotoPreviewContainer.appendChild(w);
+    const x = document.createElement("button"); x.type = "button"; x.className = "foto-kaldir"; x.textContent = "×"; x.setAttribute("aria-label", "Fotoğrafı kaldır");
+    x.addEventListener("click", ev => { ev.preventDefault(); ev.stopPropagation(); secilenFotolar.splice(i, 1); fotolariCiz(); });
+    w.append(img, b, x); fotoPreviewContainer.appendChild(w);
   });
-});
+}
+["fotoKamera", "fotoGaleri"].forEach(id => $(id).addEventListener("change", e => {
+  secilenFotolar = secilenFotolar.concat(Array.from(e.target.files || []));
+  e.target.value = "";   // aynı fotoğraf yeniden seçilebilsin
+  fotolariCiz();
+}));
 
 const compressImage = async file => {
   let f = file;
@@ -78,6 +86,7 @@ $("isFormu").addEventListener("submit", async e => {
   e.preventDefault();
   const btn = $("ekleButonu");
   if (window.kayitKilit) return;            // çift tıklama / çift submit koruması
+  if (!secilenFotolar.length) { showToast("Lütfen en az bir fotoğraf ekleyin.", "error"); return; }
   window.kayitKilit = true;
   btn.disabled = true; btn.innerText = "📍 Konum alınıyor…";
 
@@ -86,7 +95,7 @@ $("isFormu").addEventListener("submit", async e => {
   const formTarihi = $("formTarihi").value;
   if (!formTarihi) { showToast("Lütfen form tarihini girin.", "error"); window.kayitKilit = false; btn.disabled = false; btn.innerText = kaydetEtiket; return; }
   const tarihIso = inputtanIsoYap(formTarihi);
-  const dosyalar = fotoGirdisi.files;
+  const dosyalar = secilenFotolar.slice();
 
   try {
     const imza = [aramaFirma, tarihIso, islemTipi, aciklama, dosyalar.length].join("|");
@@ -131,7 +140,7 @@ $("isFormu").addEventListener("submit", async e => {
     showToast(navigator.onLine ? "Başarıyla eklendi! 🎉" : "Çevrimdışı kaydedildi, bağlantı gelince otomatik gönderilecek 📡", navigator.onLine ? "success" : "info");
     $("isFormu").reset();
     $("formTarihi").value = tarihiInputaCevir();
-    fotoPreviewContainer.innerHTML = ""; fotoLabel.classList.remove("active");
+    secilenFotolar = []; fotolariCiz();
   } catch (err) { console.error(err); showToast("Kayıt sırasında hata: " + err.message, "error"); }
   finally { window.kayitKilit = false; btn.disabled = false; btn.innerText = kaydetEtiket; }
 });

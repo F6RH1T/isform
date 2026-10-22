@@ -4,39 +4,38 @@ import { $ } from "../../lib/dom.js";
 import { db } from "../../firebase/init.js";
 import { logYaz, yoneticiMi } from "../../core/session.js";
 import { htmlGuvenli } from "../../lib/text.js";
+import { ikon } from "../../lib/ikon.js";
 
 /* ===== YÖNETİM: KULLANICILAR + İŞLEM GEÇMİŞİ (yalnızca yönetici) ===== */
 const ROL_ADI = { yonetici: "Yönetici", duzenleyen: "Düzenleyen", goruntuleyen: "Görüntüleyen" };
 
 function kullaniciModalHazirla() {
   if ($("kullaniciModal")) return $("kullaniciModal");
-  const m = document.createElement("div"); m.id = "kullaniciModal";
-  m.style.cssText = "display:none;position:fixed;inset:0;background:rgba(10,9,8,.7);z-index:2000;justify-content:center;align-items:center;padding:16px;backdrop-filter:blur(6px)";
-  const girdi = "padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)";
-  m.innerHTML = `<div style="background:var(--surface);color:var(--text-main);border:1px solid var(--border);border-radius:20px;width:100%;max-width:600px;max-height:88vh;overflow:auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.35)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:1.15rem">👥 Yönetim</b><button type="button" id="kmKapat" class="btn-firma" style="margin:0">Kapat</button></div>
-    <div style="display:flex;gap:6px;margin-bottom:14px"><button type="button" id="kmSekK" class="btn-firma" style="margin:0">Kullanıcılar</button><button type="button" id="kmSekG" class="btn-firma" style="margin:0">📜 İşlem geçmişi</button></div>
+  const m = document.createElement("div"); m.id = "kullaniciModal"; m.className = "yonetim-modal";
+  m.innerHTML = `<div class="ym-kart" role="dialog" aria-labelledby="kmBaslik">
+    <div class="ym-ust"><b id="kmBaslik">${ikon("users", 20)} Yönetim</b><button type="button" id="kmKapat" class="ym-x" aria-label="Kapat">${ikon("x", 18)}</button></div>
+    <div class="ym-sekmeler" role="tablist"><button type="button" id="kmSekK" role="tab">${ikon("users", 15)} Kullanıcılar</button><button type="button" id="kmSekG" role="tab">${ikon("history", 15)} İşlem geçmişi</button></div>
     <div id="kmPanelK">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <input id="kmMail" type="email" placeholder="e-posta" style="flex:1 1 200px;${girdi}">
-        <select id="kmRol" style="${girdi}"><option value="goruntuleyen">Görüntüleyen</option><option value="duzenleyen">Düzenleyen</option><option value="yonetici">Yönetici</option></select>
-        <button type="button" id="kmEkle" class="btn-firma" style="margin:0;background:var(--primary);color:#fff;border-color:var(--primary)">Ekle</button>
+      <div class="ym-ekle">
+        <input id="kmMail" type="email" placeholder="yeni.kisi@enorpa.com" aria-label="E-posta" class="ym-girdi">
+        <select id="kmRol" class="ym-girdi" aria-label="Rol"><option value="goruntuleyen">Görüntüleyen</option><option value="duzenleyen">Düzenleyen</option><option value="yonetici">Yönetici</option></select>
+        <button type="button" id="kmEkle" class="btn btn-primary">${ikon("plus", 16)} Ekle</button>
       </div>
-      <div id="kmListe" style="display:flex;flex-direction:column;gap:8px"></div>
-      <p style="font-size:.75rem;opacity:.7;margin:12px 0 0">Not: Yeni kişinin giriş hesabı (e-posta/şifre) Firebase Authentication'dan ayrıca açılmalıdır. Burada sadece uygulamadaki yetkisi belirlenir. Kendi kaydınızı buradan değiştiremezsiniz.</p>
+      <div id="kmListe" class="ym-liste"></div>
+      <p class="ym-not">Yeni kişinin giriş hesabı (e-posta/şifre) Firebase Authentication'dan ayrıca açılmalıdır. Burada yalnızca uygulamadaki yetkisi belirlenir. Kendi kaydınızı buradan değiştiremezsiniz.</p>
     </div>
     <div id="kmPanelG" style="display:none">
-      <input id="kmGFiltre" type="search" placeholder="Süz: kişi, işlem, firma, form kodu…" style="width:100%;box-sizing:border-box;margin-bottom:10px;${girdi}">
-      <div id="kmGListe" style="display:flex;flex-direction:column;gap:8px"></div>
-      <button type="button" id="kmGDaha" class="btn-firma" style="margin:10px 0 0;display:none">Daha eski kayıtlar</button>
+      <input id="kmGFiltre" type="search" placeholder="Süz: kişi, işlem, firma, form kodu…" aria-label="İşlem geçmişini süz" class="ym-girdi ym-tam">
+      <div id="kmGListe" class="ym-liste"></div>
+      <button type="button" id="kmGDaha" class="btn btn-ikincil" style="display:none;margin-top:10px">Daha eski kayıtlar</button>
     </div>
   </div>`;
   document.body.appendChild(m);
-  m.addEventListener("click", e => { if (e.target === m) m.style.display = "none"; });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && m.style.display === "flex") m.style.display = "none"; });
   $("kmKapat").addEventListener("click", () => m.style.display = "none");
   const sekme = g => {
     $("kmPanelK").style.display = g ? "none" : "block"; $("kmPanelG").style.display = g ? "block" : "none";
-    for (const [id, aktif] of [["kmSekK", !g], ["kmSekG", g]]) { const b = $(id); b.style.background = aktif ? "var(--primary)" : ""; b.style.color = aktif ? "#fff" : ""; b.style.borderColor = aktif ? "var(--primary)" : ""; }
+    for (const [id, aktif] of [["kmSekK", !g], ["kmSekG", g]]) { const b = $(id); b.classList.toggle("aktif", aktif); b.setAttribute("aria-selected", String(aktif)); }
     if (g) gecmisYukle(true); else kullaniciListele();
   };
   $("kmSekK").addEventListener("click", () => sekme(false)); $("kmSekG").addEventListener("click", () => sekme(true));
@@ -66,11 +65,13 @@ async function kullaniciListele() {
       const ben = k.id === state.aktifKullaniciMail;
       const sec = Object.entries(ROL_ADI).map(([v, ad]) => `<option value="${v}"${k.rol === v ? " selected" : ""}>${ad}</option>`).join("");
       const id = htmlGuvenli(k.id);
-      return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--border);border-radius:12px;opacity:${k.aktif ? 1 : .55}">
-        <span style="flex:1 1 180px;word-break:break-all;font-size:.85rem">${id}${ben ? " <i>(siz)</i>" : ""}</span>
-        <select data-km-rol="${id}" data-eski="${htmlGuvenli(k.rol || "")}" ${ben ? "disabled" : ""} style="padding:6px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-main)">${sec}</select>
-        <button type="button" data-km-aktif="${id}" data-durum="${k.aktif ? 1 : 0}" class="btn-firma" style="margin:0" ${ben ? "disabled" : ""}>${k.aktif ? "Pasif yap" : "Aktif yap"}</button>
-        <button type="button" data-km-sil="${id}" class="btn-firma" style="margin:0;color:var(--danger)" ${ben ? "disabled" : ""}>Sil</button></div>`;
+      return `<div class="ym-satir${k.aktif ? "" : " pasif"}">
+        <div class="ym-kisi"><span class="ym-av" aria-hidden="true">${htmlGuvenli(k.id.charAt(0).toLocaleUpperCase("tr-TR"))}</span><span class="ym-mail">${id}${ben ? ' <em>(siz)</em>' : ""}${k.aktif ? "" : ' <em>· pasif</em>'}</span></div>
+        ${ben ? `<span class="ym-rol">${ROL_ADI[k.rol] || k.rol || ""}</span>` : `<div class="ym-eylem">
+          <select data-km-rol="${id}" data-eski="${htmlGuvenli(k.rol || "")}" class="ym-girdi" aria-label="Rol">${sec}</select>
+          <button type="button" data-km-aktif="${id}" data-durum="${k.aktif ? 1 : 0}" class="btn-firma">${k.aktif ? "Pasif yap" : "Aktif yap"}</button>
+          <button type="button" data-km-sil="${id}" class="btn-firma ym-sil" aria-label="${id} sil">${ikon("x", 13)} Sil</button></div>`}
+      </div>`;
     }).join("") || "Kayıt yok";
     kutu.querySelectorAll("[data-km-rol]").forEach(el => el.addEventListener("change", async () => {
       try {
@@ -114,10 +115,10 @@ function gecmisCiz() {
   const l = f ? gecmisTum.filter(x => [x.kim, x.islem, x.hedef, x.detay].join(" ").toLocaleLowerCase("tr-TR").includes(f)) : gecmisTum;
   kutu.innerHTML = l.map(x => {
     const t = x.zaman ? new Date(x.zaman).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" }) : "";
-    return `<div style="padding:8px 10px;border:1px solid var(--border);border-radius:12px">
-      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b style="font-size:.88rem">${htmlGuvenli(x.islem || "")}</b><span style="font-size:.75rem;opacity:.7">${htmlGuvenli(t)}</span></div>
-      <div style="font-size:.82rem;word-break:break-word">${htmlGuvenli(x.kim || "")}${x.hedef ? " · " + htmlGuvenli(x.hedef) : ""}</div>
-      ${x.detay ? `<div style="font-size:.78rem;opacity:.75;word-break:break-word">${htmlGuvenli(x.detay)}</div>` : ""}</div>`;
+    return `<div class="ym-satir ym-gecmis">
+      <div class="ym-g-ust"><b>${htmlGuvenli(x.islem || "")}</b><span>${htmlGuvenli(t)}</span></div>
+      <div class="ym-g-kim">${htmlGuvenli(x.kim || "")}${x.hedef ? " · " + htmlGuvenli(x.hedef) : ""}</div>
+      ${x.detay ? `<div class="ym-g-detay">${htmlGuvenli(x.detay)}</div>` : ""}</div>`;
   }).join("") || "Kayıt yok";
   $("kmGDaha").style.display = gecmisBitti ? "none" : "block";
 }

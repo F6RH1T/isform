@@ -1,11 +1,12 @@
 import { htmlGuvenli } from "../lib/text.js";
 import { $ } from "../lib/dom.js";
+import { ikon } from "../lib/ikon.js";
 
 window.showToast = function (msg, type = "info") {
   if (type === "success" && window.aramaOnbellek) window.aramaOnbellek.clear();
   const t = document.createElement("div");
   t.className = "toast " + type;
-  t.innerHTML = `<span>${type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"}</span><span>${htmlGuvenli(msg)}</span>`;
+  t.innerHTML = `<span class="toast-ik">${ikon(type === "success" ? "check" : type === "error" ? "alert" : "info", 16)}</span><span>${htmlGuvenli(msg)}</span>`;
   $("toast-container").appendChild(t);
   if (type === "error") t.setAttribute("role", "alert");
   t.addEventListener("click", () => t.remove());
