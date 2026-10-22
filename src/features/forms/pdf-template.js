@@ -41,12 +41,13 @@ export function sablonHTML(d, _logoKullanilmiyor, o = {}) {
 .pf table{width:100%;border-collapse:collapse;table-layout:fixed}
 .pf td{border-top:1px solid #777;padding:3px 6px;vertical-align:middle;overflow-wrap:break-word;word-wrap:break-word;word-break:normal;min-width:0;font-size:12px}
 .pf tr:first-child td{border-top:none}
-.pf .lb{text-align:right;color:#333;font-size:11.5px;border-left:1px solid #777;white-space:nowrap}
+.pf .lb{text-align:right;color:#555;font-size:11px;border-left:1px solid #777;white-space:nowrap}
+.pf td:not(.lb):not(.ck):not(.fl){color:#111;font-weight:500}
 .pf .lb:first-child{border-left:none}
 .pf .bx{border:1.5px solid #444}
-.pf .bh{text-align:center;font-weight:700;font-size:11.5px;padding:2px 0;border-bottom:1px solid #777}
+.pf .bh{text-align:center;font-weight:700;font-size:11px;letter-spacing:.3px;padding:3px 0;border-bottom:1px solid #777;background:#f3f3f3;color:#222}
 .pf .sec{margin-top:13px}
-.pf .b{display:inline-block;width:13px;height:13px;border:1.4px solid #c0504d;border-radius:3px;vertical-align:-3px;text-align:center;font:700 10px/10px Arial;color:#c0504d;font-style:normal;overflow:hidden}
+.pf .b{display:inline-block;width:13px;height:13px;border:1.4px solid #c0504d;background:#fff;border-radius:3px;vertical-align:-3px;text-align:center;font:700 10px/10px Arial;color:#c0504d;font-style:normal;overflow:hidden}
 .pf .t2 tr:first-child td{border-top:1px solid #777}
 .pf .ck{text-align:center;white-space:nowrap;font-size:11.5px;color:#333;padding:4px 2px}
 .pf .sr{text-align:right;padding-right:12px}
@@ -60,11 +61,15 @@ export function sablonHTML(d, _logoKullanilmiyor, o = {}) {
 .pf .hd-mt{flex:0 0 190px;border-left:1px solid #777}
 .pf .hd-mt td{padding:0 6px;height:19.4px;font-size:10.5px;border-top:1px solid #777}
 .pf .hd-mt td:first-child{color:#333;border-right:1px solid #777}
-.pf .grid{flex:1 1 0;min-height:60px;overflow:hidden;border:1.5px solid #444;padding:0 6px;white-space:pre-wrap;overflow-wrap:break-word;word-wrap:break-word;line-height:20px;background-color:#fff;background-image:linear-gradient(#c8c8c8 1px,transparent 1px),linear-gradient(90deg,#c8c8c8 1px,transparent 1px);background-size:10px 10px}
+.pf .grid-kutu{flex:1 1 0;min-height:80px;display:flex;flex-direction:column;border:1.5px solid #444;overflow:hidden}
+.pf .grid-kutu .bh{flex:0 0 auto}
+.pf .grid{flex:1 1 0;min-height:60px;overflow:hidden;padding:4px 10px;white-space:pre-wrap;overflow-wrap:break-word;word-wrap:break-word;line-height:20px;color:#111;background-color:#fff;background-image:linear-gradient(#e2e2e2 1px,transparent 1px),linear-gradient(90deg,#ececec 1px,transparent 1px);background-size:10px 10px;background-position:0 3px}
 .pf .bx2{border:1.5px solid #444;border-radius:0 0 15px 15px;display:flex;flex-direction:column;min-height:122px}
 .pf .sg{display:flex;flex:1 1 auto}
 .pf .sg > div{flex:1 1 0;min-width:0;text-align:center;padding:8px 6px 0;color:#333;font-size:11.5px;line-height:1.35}
-.pf .sg .v{color:#222;font-size:12px;margin-top:6px;overflow-wrap:break-word}
+.pf .sg .v{color:#111;font-weight:600;font-size:12px;margin-top:6px;overflow-wrap:break-word}
+.pf .imza-alan{height:46px;margin:4px 14px 0;border-bottom:1px dashed #999;display:flex;align-items:flex-end;justify-content:center}
+.pf .imza-alan img{max-height:42px;max-width:100%;object-fit:contain}
 .pf .ft{display:flex;justify-content:center;align-items:center;gap:6px;padding:4px 0 9px}
 </style>
 
@@ -120,7 +125,7 @@ export function sablonHTML(d, _logoKullanilmiyor, o = {}) {
   </table>
 </div>
 
-<div class="grid sec" style="font-size:${fs}px">${kir(ac, 16)}</div>
+<div class="grid-kutu sec"><div class="bh">Yapılan İşlemler / Açıklama</div><div class="grid" style="font-size:${fs}px">${kir(ac, 16)}</div></div>
 
 <div class="bx sec">
   <div class="bh">Personeller</div>
@@ -133,9 +138,9 @@ export function sablonHTML(d, _logoKullanilmiyor, o = {}) {
 
 <div class="bx2 sec">
   <div class="sg">
-    <div>Servis Sorumlusu<br>Ad, Soyad, İmza<div class="v">${kir(d.sorumlu)}</div>${d.imzaSorumlu ? `<img src="${d.imzaSorumlu}" style="max-height:40px;max-width:100%;margin-top:3px;object-fit:contain">` : ""}</div>
+    <div>Servis Sorumlusu<br>Ad, Soyad, İmza<div class="v">${kir(d.sorumlu)}</div><div class="imza-alan">${d.imzaSorumlu ? `<img src="${d.imzaSorumlu}" alt="">` : ""}</div></div>
     <div>Tarih<div class="v">${tr}</div></div>
-    <div>Müşteri / Firma<br>Ad, Soyad, Tarih, İmza<div class="v">${kir(d.musteri)}</div>${d.imza ? `<img src="${d.imza}" style="max-height:40px;max-width:100%;margin-top:3px;object-fit:contain">` : ""}</div>
+    <div>Müşteri / Firma<br>Ad, Soyad, Tarih, İmza<div class="v">${kir(d.musteri)}</div><div class="imza-alan">${d.imza ? `<img src="${d.imza}" alt="">` : ""}</div></div>
   </div>
   <div class="ft">
     <img src="${ENORPA_LOGO_YAZISIZ_URI}" style="width:92px;display:block" alt="">

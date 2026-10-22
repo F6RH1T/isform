@@ -5,8 +5,17 @@ import { auth, db } from "../firebase/init.js";
 import { $ } from "../lib/dom.js";
 import { tarihiInputaCevir } from "../lib/dates.js";
 import { duzenleyebilirMi, yoneticiMi } from "./session.js";
+import { disaridanKapat, temizSay } from "../ui/modal.js";
+
+/* Açılış ekranı: ilk karar verilince (giriş ekranı ya da ana uygulama) yumuşakça kaybolur */
+const acilisBitir = () => {
+  const a = $("acilisEkrani"); if (!a || a.classList.contains("bitti")) return;
+  a.classList.add("bitti"); setTimeout(() => a.remove(), 400);
+};
+setTimeout(acilisBitir, 6000);   // ağ çok yavaşsa kullanıcı beklemesin
 
 onAuthStateChanged(auth, user => {
+  if (!user) acilisBitir();
   if (user) {
     state.aktifKullaniciMail = (user.email || "").toLowerCase();
     state.rolHazir = (async () => {
@@ -25,6 +34,7 @@ onAuthStateChanged(auth, user => {
       }
     })();
     state.rolHazir.then(ok => {
+      acilisBitir();
       if (!ok) { showToast("Hesabınız yetkilendirilmemiş. Lütfen yöneticiyle görüşün.", "error"); signOut(auth); return; }
       $("loginScreen").style.display = "none";
       $("mainApp").style.display = "block";
@@ -65,7 +75,7 @@ $("logoutBtn").addEventListener("click", () => signOut(auth));
 
 $("forgotPasswordLink").addEventListener("click", (e) => {
     e.preventDefault();
-    $("resetPasswordModal").style.display = "flex";
+    temizSay($("resetPasswordModal")); $("resetPasswordModal").style.display = "flex";
 });
 
 $("btnResetCancel").addEventListener("click", () => {
@@ -95,3 +105,5 @@ $("btnResetSend").addEventListener("click", () => {
     .catch(() => { })
     .finally(() => { btn.innerText = "Gönder"; btn.disabled = false; });
 });
+
+disaridanKapat($("resetPasswordModal"), () => { $("resetPasswordModal").style.display = "none"; $("resetEmail").value = ""; });

@@ -9,10 +9,12 @@ import { db } from "../../firebase/init.js";
 import { raporKayitSil, raporKayitYenile } from "../reports/rapor-veri.js";
 import { logYaz, yoneticiMi } from "../../core/session.js";
 import { sessizAra } from "../search/sessiz-ara.js";
+import { disaridanKapat, temizSay } from "../../ui/modal.js";
 
 window.modaliKapatEdit = () => { $("editModal").style.display = "none"; state.guncellenecekDocId = null; };
 
 $("btnEditCancel").addEventListener("click", window.modaliKapatEdit);
+disaridanKapat($("editModal"), window.modaliKapatEdit);
 
 document.addEventListener("keydown", e => { if (e.key === "Escape") { window.modaliKapat(); window.modaliKapatEdit(); } });
 
@@ -27,7 +29,7 @@ window.formDuzenle = function (docId, eskiFirma, eskiSehir, eskiIslem, eskiAcikl
   const onceki = (window.formCache || {})[docId];
   $("editAralik").value = onceki && onceki.bakimAralik ? String(onceki.bakimAralik) : "";
   $("editBakim").value = onceki && onceki.sonrakiBakim ? tarihiInputaCevir(onceki.sonrakiBakim) : "";
-  $("editModal").style.display = "flex";
+  temizSay($("editModal")); $("editModal").style.display = "flex";
 };
 
 $("btnEditSave").addEventListener("click", async () => {

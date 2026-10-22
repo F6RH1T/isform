@@ -287,6 +287,7 @@ async function aiResim(f) {
     const f = inp.files[0]; if (!f) return; showToast("Kartvizit okunuyor…", "info");
     try {
       const r = await gemini([{ inlineData: { mimeType: "image/jpeg", data: await aiResim(f) } }, { text: AI_PROMPT.kartvizit }], { json: true, sema: AI_SEMA.kartvizit });
+      if (window.fkDuzenleModu) window.fkDuzenleModu();   // okunanlar formda görünsün, kullanıcı kontrol edip kaydetsin
       if (r.yetkili) $("fkYetkili").value = r.yetkili;
       if (r.telefon) { $("fkTelefon").value = r.telefon; olay($("fkTelefon"), "input"); }
       if (r.adres) { $("fkAdres").value = r.adres; olay($("fkAdres"), "input"); }
