@@ -32,6 +32,19 @@ export async function formNoAyir(aramaFirma, adet = 1) {
     const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
     return { firmaKodu, ilkNo: sonNo + 1, cevrimdisi: true };
   }
+  try { return await sayacliNoAyir(aramaFirma, adet); }
+  catch (e) {
+    /* Yeni Firestore kuralları (sayaclar / firmaKodlari) henüz yayınlanmadıysa eski yöntem kullanılır; kayıt engellenmez. */
+    if (e && (e.code === "permission-denied" || /permission/i.test(e.message || ""))) {
+      console.warn("Sayaç kuralları yayınlı değil, eski numaralandırma kullanılıyor (firebase deploy --only firestore:rules)");
+      const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
+      return { firmaKodu, ilkNo: sonNo + 1 };
+    }
+    throw e;
+  }
+}
+
+async function sayacliNoAyir(aramaFirma, adet) {
   const sayacRef = doc(db, "sayaclar", sayacId(aramaFirma));
   let taban = null;   // sayaç yoksa formlar koleksiyonundan hesaplanan başlangıç (ilk kurulum / eski veri)
   for (let deneme = 0; deneme < 6; deneme++) {
