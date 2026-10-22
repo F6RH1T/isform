@@ -6,6 +6,9 @@ import { $ } from "../../lib/dom.js";
 import { bakimRozeti, gunFarki } from "../search/search.js";
 import { htmlGuvenli, jsGuvenliMetin, metniNormalizeEt } from "../../lib/text.js";
 import { duzenleyebilirMi } from "../../core/session.js";
+import { ikon } from "../../lib/ikon.js";
+import { sehirGoster } from "../../lib/sehirler.js";
+import { tipSinif } from "../../lib/tip.js";
 import { tarihiInputaCevir } from "../../lib/dates.js";
 import { aciklamaNotu } from "../forms/yeni-kayit.js";
 
@@ -22,12 +25,16 @@ function yaklasanBaslat() {
     window.bakimVeri = {}; let gec = 0, hafta = 0, h2 = "";
     snap.forEach(d => {
       const v = d.data(); window.bakimVeri[d.id] = v; const f = gunFarki(v.sonrakiBakim); if (f < 0) gec++; else if (f <= 7) hafta++;
-      h2 += `<div class="bakim-satir" onclick="yaklasanAc('${jsGuvenliMetin(v.firmaAdi || "")}')"><span><b>${htmlGuvenli((v.firmaAdi || "").toLocaleUpperCase("tr-TR"))}</b> · ${htmlGuvenli(v.sehir || "")}<br><small style="color:var(--text-muted)">${htmlGuvenli(v.islemTipi || "")} · #${htmlGuvenli(v.formKodu || "")}${v.bakimAralik ? " · 🔁" + v.bakimAralik + " ay" : ""}</small></span><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${bakimRozeti(v.sonrakiBakim)}${duzenleyebilirMi() ? `<button type="button" class="btn-firma" title="Bakım yapıldı" onclick="event.stopPropagation();bakimYapildi('${d.id}')">✔ Yapıldı</button>` : ""}<button type="button" class="btn-firma" title="Takvime ekle" onclick="event.stopPropagation();bakimIcs('${d.id}')">📅</button></span></div>`;
+      const meta = [`${ikon("pin", 12)} ${htmlGuvenli(sehirGoster(v.sehir))}`, htmlGuvenli(v.islemTipi || ""), "#" + htmlGuvenli(v.formKodu || ""), v.bakimAralik ? `${ikon("repeat", 12)} ${v.bakimAralik} ay` : ""].filter(Boolean).join('<i aria-hidden="true">·</i>');
+      h2 += `<div class="bakim-satir" onclick="yaklasanAc('${jsGuvenliMetin(v.firmaAdi || "")}')">
+        <div class="bs-bilgi"><b>${htmlGuvenli((v.firmaAdi || "").toLocaleUpperCase("tr-TR"))}</b><small>${meta}</small></div>
+        <div class="bs-sag">${bakimRozeti(v.sonrakiBakim)}<div class="bs-eylem">${duzenleyebilirMi() ? `<button type="button" class="btn-firma" title="Bakım yapıldı: yeni bakım formu aç" onclick="event.stopPropagation();bakimYapildi('${d.id}')">${ikon("check", 13)} Yapıldı</button>` : ""}<button type="button" class="btn-firma btn-ik" title="Takvime ekle" aria-label="Takvime ekle" onclick="event.stopPropagation();bakimIcs('${d.id}')">${ikon("calendar", 14)}</button></div></div>
+      </div>`;
     });
     window.dispatchEvent(new CustomEvent("bakimOzet", { detail: { gec, hafta, toplam: snap.size } }));
     if (gec && !window.gecUyarildi) { window.gecUyarildi = true; showToast("⚠ " + gec + " gecikmiş bakım var", "error"); }
-    let h = '<div class="card-title" style="font-size:1.1rem;margin-bottom:8px">📅 Yaklaşan bakımlar</div>' +
-      `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span class="bakim-rozet gec">⚠ ${gec} gecikmiş</span><span class="bakim-rozet yakin">🔧 ${hafta} bu hafta</span><span class="bakim-rozet">${snap.size >= BAKIM_LIMIT ? "ilk " + BAKIM_LIMIT : snap.size + " toplam"}</span><button type="button" class="btn-firma" style="margin:0" onclick="gunRotasi()">🧭 Günün rotası</button></div>` + h2;
+    let h = `<div class="bakim-ust"><div class="card-title bakim-baslik">${ikon("calendar", 20)} Yaklaşan bakımlar</div><button type="button" class="btn-firma" onclick="gunRotasi()">${ikon("compass", 14)} Günün rotası</button></div>` +
+      `<div class="bakim-ozet">${gec ? `<span class="bakim-rozet gec">${ikon("alert", 12)} ${gec} gecikmiş</span>` : ""}${hafta ? `<span class="bakim-rozet yakin">${ikon("wrench", 12)} ${hafta} bu hafta</span>` : ""}<span class="bakim-rozet sade">${snap.size >= BAKIM_LIMIT ? "ilk " + BAKIM_LIMIT : snap.size + " toplam"}</span></div>` + h2;
     kutu.innerHTML = h; kutu.style.display = "block";
   }, err => { bakimDinleyici = null; console.error("Bakım listesi hatası:", err); });
 }
@@ -76,7 +83,7 @@ window.fkIstGuncelle = function (fl) {
 
 window.fkZamanCiz = function (L) {
   L = L.slice().sort((a, b) => new Date(b.tarih || 0) - new Date(a.tarih || 0)).slice(0, 8);
-  $("fkZaman").innerHTML = L.length ? '<div class="alt-baslik">🕒 Son işlemler</div>' + L.map(v => `<div class="bakim-satir" style="cursor:default"><span>${htmlGuvenli(v.islemTipi || "")}<br><small style="color:var(--text-muted)">#${htmlGuvenli(v.formKodu || "")}${v.aciklama ? " · " + htmlGuvenli(String(v.aciklama).slice(0, 40)) : ""}</small></span><small>${v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : ""}</small></div>`).join("") : "";
+  $("fkZaman").innerHTML = L.length ? `<div class="alt-baslik">${ikon("history", 14)} Son işlemler</div>` + L.map(v => `<div class="bakim-satir zaman-satir tip-${tipSinif(v.islemTipi)}"><div class="bs-bilgi"><b>${htmlGuvenli(v.islemTipi || "")}</b><small>#${htmlGuvenli(v.formKodu || "")}${v.aciklama ? " · " + htmlGuvenli(String(v.aciklama).slice(0, 60)) : ""}</small></div><small class="zs-tarih">${v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : ""}</small></div>`).join("") : "";
 };
 
 

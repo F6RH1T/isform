@@ -6,6 +6,7 @@ import { raporTamYenile, raporVerisi } from "./rapor-veri.js";
 import { csvIndir, htmlGuvenli, metniNormalizeEt } from "../../lib/text.js";
 import { formSatirlari } from "../search/search.js";
 import { tarihiInputaCevir } from "../../lib/dates.js";
+import { sehirGoster } from "../../lib/sehirler.js";
 
 let sonMobil = window.innerWidth < 1024;
 
@@ -28,7 +29,7 @@ $("btnRaporOlustur").addEventListener("click", async () => {
       const x = d.data(); state.tumFormlarGlobal.push(x);
       const sk = metniNormalizeEt(x.sehir || "belirsiz"); (state.raporSehirVeri[sk] = state.raporSehirVeri[sk] || []).push({ id: d.id, v: x });
       firmaSet.add(x.aramaFirma || metniNormalizeEt(x.firmaAdi));
-      const s = (x.sehir || "Belirsiz").toLocaleUpperCase("tr-TR"); sehirler[s] = (sehirler[s] || 0) + 1;
+      const s = sehirGoster(x.sehir || "Belirsiz").toLocaleUpperCase("tr-TR"); sehirler[s] = (sehirler[s] || 0) + 1;
       const i = (x.islemTipi || "Belirtilmemiş").toLocaleUpperCase("tr-TR"); islemler[i] = (islemler[i] || 0) + 1;
       const p = x.ekleyen ? x.ekleyen.split("@")[0] : "Bilinmiyor"; kisiler[p] = (kisiler[p] || 0) + 1;
     });

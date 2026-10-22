@@ -9,6 +9,7 @@ import { db } from "../../firebase/init.js";
 import { inputtanIsoYap, tarihiInputaCevir } from "../../lib/dates.js";
 import { vektorHazirla } from "../ai/embeddings.js";
 import { logYaz } from "../../core/session.js";
+import { ikon } from "../../lib/ikon.js";
 
 $("olusturFormu").addEventListener("submit", async e => {
   e.preventDefault();
@@ -108,13 +109,12 @@ window.pdfPaylasKartiAc = function (dosya, firma) {
   const paylasilabilir = !!(navigator.canShare && navigator.canShare({ files: [dosya] }));
   const k = document.createElement("div");
   k.id = "pdfPaylasKarti";
-  k.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px);max-width:420px;z-index:10000;background:var(--surface);color:var(--text-main);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:0 14px 40px -8px rgba(0,0,0,.4);padding:16px";
-  k.innerHTML = `<div style="font-weight:700;margin-bottom:4px">📄 PDF hazır</div>
-    <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">${htmlGuvenli(firma)} · ${htmlGuvenli(dosya.name)}</div>
-    <div style="display:flex;gap:8px">
-      ${paylasilabilir ? '<button type="button" id="btnPdfPaylas" class="btn btn-primary" style="flex:1">📤 Paylaş / WhatsApp</button>'
-        : '<div style="flex:1;font-size:.8rem;color:var(--text-muted)">Bu tarayıcı dosya paylaşımını desteklemiyor; PDF cihaza indirildi, WhatsApp’tan elle ekleyebilirsiniz.</div>'}
-      <button type="button" id="btnPdfKapat" class="btn" style="background:var(--border);color:var(--text-main)">Kapat</button>
+  k.className = "paylas-karti"; k.setAttribute("role", "dialog"); k.setAttribute("aria-label", "PDF hazır");
+  k.innerHTML = `<div class="pk-ust"><span class="pk-ik">${ikon("file", 20)}</span><div><b>PDF hazır</b><small>${htmlGuvenli(firma)} · ${htmlGuvenli(dosya.name)}</small></div></div>
+    <div class="pk-eylem">
+      ${paylasilabilir ? `<button type="button" id="btnPdfPaylas" class="btn btn-primary">${ikon("share", 18)} Paylaş / WhatsApp</button>`
+        : '<p class="pk-not">Bu tarayıcı dosya paylaşımını desteklemiyor; PDF cihaza indirildi, WhatsApp’tan elle ekleyebilirsiniz.</p>'}
+      <button type="button" id="btnPdfKapat" class="btn btn-ikincil">Kapat</button>
     </div>`;
   document.body.appendChild(k);
   $("btnPdfKapat").onclick = () => k.remove();

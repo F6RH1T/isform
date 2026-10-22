@@ -13,7 +13,11 @@ npm run test:smoke   # tarayıcı duman testi (ilk kez: npx playwright install c
 npm run test:rules   # Firestore kural testleri (Java + firebase-tools gerekir: npm i -g firebase-tools)
 ```
 
-Node 22 önerilir (en az 20.19). Ayarlar için `.env.example` dosyasına bakın; boş bırakırsanız
+Node 22 önerilir (en az 20.19).
+
+**Demo modu (Firebase'e bağlanmadan):** `npm run demo` → http://localhost:5174. Uydurma örnek verilerle çalışır;
+herhangi bir e-posta ve şifreyle yönetici olarak girilir, yapılan değişiklikler sayfa yenilenince sıfırlanır.
+Görünümü denemek ve ekran görüntüsü almak içindir (`demo/` klasörü). Ayarlar için `.env.example` dosyasına bakın; boş bırakırsanız
 `src/firebase/config.js` içindeki varsayılan Firebase değerleri kullanılır.
 
 ## Klasör yapısı

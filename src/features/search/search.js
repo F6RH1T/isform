@@ -5,6 +5,7 @@ import { $ } from "../../lib/dom.js";
 import { sessizAra } from "./sessiz-ara.js";
 import { csvIndir, htmlGuvenli, jsGuvenliMetin, metniNormalizeEt } from "../../lib/text.js";
 import { tumSehirler } from "../firms/benzer-firma.js";
+import { sehirGoster } from "../../lib/sehirler.js";
 import { db } from "../../firebase/init.js";
 import { koddanNo } from "../../lib/firma-kodu.js";
 import { tarihKarsilastir, tarihiInputaCevir } from "../../lib/dates.js";
@@ -16,7 +17,7 @@ export let SIRA_YONU = 1;
 export function formSatirlari(formlar) {
   const satirlar = [["Form Kodu", "Firma", "Şehir", "İşlem Tipi", "Ekleyen", "Tarih", "Sonraki Bakım", "Açıklama", "Enlem", "Boylam"]];
   const tr = iso => iso && !isNaN(new Date(iso)) ? new Date(iso).toLocaleDateString("tr-TR") : "";
-  formlar.forEach(v => satirlar.push([v.formKodu, v.firmaAdi, v.sehir, v.islemTipi, v.ekleyen, tr(v.tarih), tr(v.sonrakiBakim), v.aciklama, v.konum?.lat ?? "", v.konum?.lng ?? ""]));
+  formlar.forEach(v => satirlar.push([v.formKodu, v.firmaAdi, sehirGoster(v.sehir), v.islemTipi, v.ekleyen, tr(v.tarih), tr(v.sonrakiBakim), v.aciklama, v.konum?.lat ?? "", v.konum?.lng ?? ""]));
   return satirlar;
 }
 
@@ -52,7 +53,7 @@ aramaKutusu.addEventListener("input", function () {
   autoList.innerHTML = "";
   if (!val) return;
   const oneriler = new Map();
-  tumSehirler.forEach(s => { if (s.startsWith(na)) oneriler.set("sehir-" + s, { deger: s.toUpperCase(), tip: "📍 Şehir" }); });
+  tumSehirler.forEach(s => { if (s.startsWith(na)) oneriler.set("sehir-" + s, { deger: sehirGoster(s).toLocaleUpperCase("tr-TR"), tip: "Şehir" }); });
 
   const ciz = () => {
     autoList.innerHTML = "";
@@ -90,11 +91,11 @@ aramaKutusu.addEventListener("input", function () {
 
       const [sFirma, sFKod, sKod] = await Promise.all([q1, q2, q3]);
       let eklendi = false;
-      sFirma.forEach(d => { const x = d.data(); if (x.firmaAdi) { oneriler.set("firma-" + x.aramaFirma, { deger: x.firmaAdi.toUpperCase(), ek: x.firmaKodu || "", tip: "🏢 Firma" }); eklendi = true; } });
-      sFKod.forEach(d => { const x = d.data(); if (x.firmaKodu) { oneriler.set("fkod-" + x.firmaKodu, { deger: x.firmaKodu, ek: (x.firmaAdi || "").toUpperCase(), tip: "🏢 Firma kodu" }); eklendi = true; } });
+      sFirma.forEach(d => { const x = d.data(); if (x.firmaAdi) { oneriler.set("firma-" + x.aramaFirma, { deger: x.firmaAdi.toUpperCase(), ek: x.firmaKodu || "", tip: "Firma" }); eklendi = true; } });
+      sFKod.forEach(d => { const x = d.data(); if (x.firmaKodu) { oneriler.set("fkod-" + x.firmaKodu, { deger: x.firmaKodu, ek: (x.firmaAdi || "").toUpperCase(), tip: "Firma kodu" }); eklendi = true; } });
       const kodlar = []; sKod.forEach(d => kodlar.push(d.data()));
       kodlar.filter(x => x.formKodu).sort((p, q) => (q.formNo || koddanNo(q.formKodu)) - (p.formNo || koddanNo(p.formKodu))).slice(0, 6)
-        .forEach(x => { oneriler.set("kod-" + x.formKodu, { deger: x.formKodu, ek: (x.firmaAdi || "").toUpperCase(), tip: "🏷️ Ürün kodu" }); eklendi = true; });
+        .forEach(x => { oneriler.set("kod-" + x.formKodu, { deger: x.formKodu, ek: (x.firmaAdi || "").toUpperCase(), tip: "Ürün kodu" }); eklendi = true; });
 
       if (eklendi) ciz();
     } catch (err) { console.error("Öneri hatası:", err); }
@@ -136,35 +137,37 @@ function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, 
   const codeDisplay = formKodu || "FRM-" + docId.substring(0, 5).toUpperCase();
   let admin = "";
   if (isAdmin) admin = `
-    <button class="btn-icon btn-duzenle" onclick="formDuzenle('${docId}','${jsGuvenliMetin(firma)}','${jsGuvenliMetin(sehir)}','${jsGuvenliMetin(islem)}','${jsGuvenliMetin(aciklama || "")}','${tarihHam || ""}')" title="Düzenle" aria-label="Düzenle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+    <button class="btn-icon btn-duzenle" onclick="formDuzenle('${docId}','${jsGuvenliMetin(firma)}','${jsGuvenliMetin(sehir)}','${jsGuvenliMetin(islem)}','${jsGuvenliMetin(aciklama || "")}','${tarihHam || ""}')" title="Düzenle" aria-label="Düzenle">${ikon("pen", 16)}</button>
     <button class="btn-icon btn-sil" onclick="formSil('${docId}',${fotoParam})" title="Sil" aria-label="Sil">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>`;
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>`;
   const aciklamaHTML = aciklama ? `<div class="aciklama-kutusu">${htmlGuvenli(aciklama)}</div>` : "";
-  const konumHTML = konum && konum.lat && konum.lng ? `<a href="https://maps.google.com/?q=${konum.lat},${konum.lng}" target="_blank" rel="noopener" class="badge-konum" onclick="event.stopPropagation()">${ikon("pin", 13)} Haritada gör</a>` : "";
+  const il = htmlGuvenli(sehirGoster(sehir));
+  /* Şehir rozeti: konum varsa haritada açan bağlantıdır */
+  const sehirHTML = konum && konum.lat && konum.lng
+    ? `<a href="https://maps.google.com/?q=${konum.lat},${konum.lng}" target="_blank" rel="noopener" class="badge badge-konum" title="Haritada gör" onclick="event.stopPropagation()">${ikon("pin", 13)} ${il}</a>`
+    : `<span class="badge">${ikon("pin", 13)} ${il}</span>`;
   return `
-    <div class="liste-karti tip-${tipSinif(islem)}" id="kart-${docId}">
+    <article class="liste-karti tip-${tipSinif(islem)}" id="kart-${docId}">
       <div class="karti-ust">
         <span class="kart-avatar" aria-hidden="true">${bashar(firma)}</span>
-        <div class="liste-karti-bilgi" onclick="resmiAc('${docId}',${fotoParam})">
-          <h4>${htmlGuvenli(firma.toLocaleUpperCase("tr-TR"))} · ${htmlGuvenli(sehir.toLocaleUpperCase("tr-TR"))}</h4>
-          <div class="detay-satiri">
-            <span class="badge" style="background:var(--primary);color:#fff;">#${htmlGuvenli(codeDisplay)}</span>
-            <span class="badge badge-tip">${ikon("wrench", 13)} ${htmlGuvenli(islem)}</span>
-            <span class="badge">${ikon("user", 13)} ${htmlGuvenli(ekleyen)}</span>
-            ${konumHTML}
-          </div>
-          ${ek}
-          <p class="kart-tarih">${ikon("clock", 13)} ${htmlGuvenli(tarih)}</p>
+        <div class="kart-baslik" onclick="resmiAc('${docId}',${fotoParam})">
+          <h4>${htmlGuvenli(firma.toLocaleUpperCase("tr-TR"))}</h4>
+          <div class="kart-alt"><span class="kart-kod">#${htmlGuvenli(codeDisplay)}</span><span class="kart-tarih">${ikon("clock", 13)} ${htmlGuvenli(tarih)}</span></div>
         </div>
         <div class="liste-karti-butonlar">
           <button class="btn-icon btn-gor" onclick="resmiAc('${docId}',${fotoParam})" title="Fotoğrafı gör" aria-label="Fotoğrafı gör">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
           ${admin}
         </div>
       </div>
+      <div class="detay-satiri">
+        <span class="badge badge-tip">${ikon("wrench", 13)} ${htmlGuvenli(islem)}</span>
+        ${sehirHTML}
+        <span class="badge">${ikon("user", 13)} ${htmlGuvenli(ekleyen)}</span>
+        ${ek}
+      </div>
       ${aciklamaHTML}
-    </div>`;
+    </article>`;
 }
 
 export const gunFarki = iso => { const g = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); return Math.round((g(new Date(iso)) - g(new Date())) / 864e5); };
@@ -172,16 +175,16 @@ export const gunFarki = iso => { const g = d => new Date(d.getFullYear(), d.getM
 export function bakimRozeti(iso, blok) {
   const f = gunFarki(iso);
   const sinif = f < 0 ? "gec" : f <= 7 ? "yakin" : "";
-  const yazi = f < 0 ? `⚠ Bakım ${-f} gün gecikti` : f === 0 ? "🔧 Bakım bugün" : `🔧 Bakıma ${f} gün (${new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })})`;
-  return `<span class="bakim-rozet ${sinif}"${blok ? ' style="display:inline-block;margin-bottom:6px"' : ""}>${yazi}</span>`;
+  const yazi = f < 0 ? `${ikon("alert", 12)} Bakım ${-f} gün gecikti` : f === 0 ? `${ikon("wrench", 12)} Bakım bugün` : `${ikon("wrench", 12)} Bakıma ${f} gün (${new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })})`;
+  return `<span class="bakim-rozet ${sinif}">${yazi}</span>`;
 }
 
 export function kartDokumuHTML(docId, v, tarihSecenek, isAdmin) {
   let tarih = "Tarih yok";
   if (v.tarih && !isNaN(new Date(v.tarih).getTime())) tarih = new Date(v.tarih).toLocaleDateString("tr-TR", tarihSecenek);
   (window.formCache = window.formCache || {})[docId] = v;
-  const ek = (v.sonrakiBakim ? bakimRozeti(v.sonrakiBakim, true) + " " : "") +
-    (duzenleyebilirMi() ? `<button type="button" class="btn-firma" style="margin:0 0 6px 0" onclick="event.stopPropagation();kaydiKopyala('${docId}')">⎘ Kopyala</button>` : "");
+  const ek = (v.sonrakiBakim ? bakimRozeti(v.sonrakiBakim, true) : "") +
+    (duzenleyebilirMi() ? `<button type="button" class="btn-firma btn-kopyala" title="Bu kaydı yeni form olarak kopyala" aria-label="Kopyala" onclick="event.stopPropagation();kaydiKopyala('${docId}')">${ikon("copy", 13)}<span class="bk-yazi">Kopyala</span></button>` : "");
   return kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum, v.formKodu, v.tarih, ek);
 }
 
@@ -249,7 +252,7 @@ $("aramaButonu").addEventListener("click", async () => {
     const sinirda = (s1.size || 0) >= SEHIR_LIMIT || (s3.size || 0) >= SEHIR_LIMIT;
 
     if (!sonuc.length) {
-      div.innerHTML = `<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display='none'"><p>"${htmlGuvenli(ham)}" için form bulunamadı.</p><button type="button" class="btn btn-primary" onclick="yeniKayitAc('${jsGuvenliMetin(ham)}')">➕ Bu firmayı yeni kayıt olarak ekle</button></div>`;
+      div.innerHTML = `<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display='none'"><p>"${htmlGuvenli(ham)}" için form bulunamadı.</p><button type="button" class="btn btn-primary" onclick="yeniKayitAc('${jsGuvenliMetin(ham)}')">${ikon("plus", 18)} Bu firmayı yeni kayıt olarak ekle</button></div>`;
       return;
     }
 
@@ -270,7 +273,7 @@ $("aramaButonu").addEventListener("click", async () => {
 
     siraliGruplar.sort((a, b) => SIRA_YONU * (a.ilkTarih - b.ilkTarih));
 
-    let htmlOut = `<div class="sonuc-bilgisi" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>${sonuc.length} Form (${siraliGruplar.length} Firma) listelendi${sinirda ? ` · en yeni ${SEHIR_LIMIT} kayıt gösteriliyor, daha eskiler için tarih filtresi verin` : ""}</span><button type="button" class="btn-siralama" onclick="sonuclariCsvIndir()">⬇ Excel (CSV)</button></div>`;
+    let htmlOut = `<div class="sonuc-bilgisi sonuc-ozet"><span>${sonuc.length} Form (${siraliGruplar.length} Firma) listelendi${sinirda ? ` · en yeni ${SEHIR_LIMIT} kayıt gösteriliyor, daha eskiler için tarih filtresi verin` : ""}</span><button type="button" class="btn-siralama" onclick="sonuclariCsvIndir()">${ikon("download", 14)} Excel (CSV)</button></div>`;
 
     const SAYFA_BOYU = 20;                       // bir seferde gösterilecek firma sayısı
     const grupHTML = grup => {
@@ -278,8 +281,8 @@ $("aramaButonu").addEventListener("click", async () => {
       return `
       <div class="firma-grup">
         <div class="firma-baslik" onclick="this.parentElement.classList.toggle('acik')">
-          <span class="fb-sol"><span class="fb-av" aria-hidden="true">${bashar(grup.firmaAd)}</span><span class="fb-ad">${htmlGuvenli(grup.firmaAd)}</span>${grup.firmaKodu ? `<span class="badge" style="font-size:.7rem">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}<span class="badge" style="background:var(--primary); color:#fff; border:none; padding: 2px 8px;">${grup.formlar.length}</span></span>
-          <button type="button" class="btn-firma" onclick="event.stopPropagation();firmaKartiAc('${jsGuvenliMetin(grup.formlar[0].v.aramaFirma || metniNormalizeEt(grup.firmaAd))}','${jsGuvenliMetin(grup.firmaAd)}','${jsGuvenliMetin(grup.formlar[0].v.sehir || "")}')">ℹ Firma kartı</button>
+          <span class="fb-sol"><span class="fb-av" aria-hidden="true">${bashar(grup.firmaAd)}</span><span class="fb-ad">${htmlGuvenli(grup.firmaAd)}</span>${grup.firmaKodu ? `<span class="badge fb-kod">${htmlGuvenli(grup.firmaKodu)}</span>` : ""}<span class="fb-sayi" title="Form sayısı">${grup.formlar.length}</span></span>
+          <button type="button" class="btn-firma" onclick="event.stopPropagation();firmaKartiAc('${jsGuvenliMetin(grup.formlar[0].v.aramaFirma || metniNormalizeEt(grup.firmaAd))}','${jsGuvenliMetin(grup.firmaAd)}','${jsGuvenliMetin(grup.formlar[0].v.sehir || "")}')">${ikon("building", 13)} Firma kartı</button>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
         <div class="firma-icerik" onclick="event.stopPropagation()">

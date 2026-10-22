@@ -6,6 +6,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { logYaz, yoneticiMi } from "../../core/session.js";
 import { SIRA_YONU, kartDokumuHTML } from "../search/search.js";
 import { tarihKarsilastir } from "../../lib/dates.js";
+import { sehirGoster } from "../../lib/sehirler.js";
+import { ikon } from "../../lib/ikon.js";
+import { htmlGuvenli } from "../../lib/text.js";
 
 /* ===== FİRMA KARTI ===== */
 let fkId = "";
@@ -21,7 +24,7 @@ const fkLinkler = () => {
 window.firmaKartiAc = async function (aramaFirma, firmaAdi, sehir) {
   fkId = encodeURIComponent(aramaFirma);
   $("fkBaslik").textContent = firmaAdi; $("fkAlt").textContent = (firmaAdi + " " + sehir).trim();
-  $("fkSehir").textContent = sehir ? "📍 " + sehir : ""; $("fkSehir").style.display = sehir ? "inline-block" : "none";
+  $("fkSehir").innerHTML = sehir ? ikon("pin", 13) + " " + htmlGuvenli(sehirGoster(sehir)) : ""; $("fkSehir").style.display = sehir ? "inline-flex" : "none";
   $("fkAvatar").textContent = firmaAdi.split(/\s+/).filter(Boolean).slice(0, 2).map(k => k[0]).join("").toLocaleUpperCase("tr-TR") || "F";
   fkIstGuncelle(Object.values(window.formCache || {}).filter(v => v.aramaFirma === aramaFirma)); $("fkZaman").innerHTML = "";
   ["fkYetkili", "fkEtiket", "fkTelefon", "fkAdres", "fkNot"].forEach(i => $(i).value = "");

@@ -37,3 +37,13 @@ test("csvHucre: tırnak ve formül enjeksiyonu", () => {
   assert.equal(csvHucre("=HYPERLINK(1)"), "\"'=HYPERLINK(1)\"");
   assert.equal(csvHucre(null), '""');
 });
+
+test("sehirGoster: sadeleştirilmiş şehir adını doğru yazımla gösterir", async () => {
+  const { sehirGoster } = await import("../../src/lib/sehirler.js");
+  assert.equal(sehirGoster("mugla"), "Muğla");
+  assert.equal(sehirGoster("istanbul"), "İstanbul");
+  assert.equal(sehirGoster("ANTALYA"), "Antalya");
+  assert.equal(sehirGoster("belirsiz"), "Belirsiz");
+  assert.equal(sehirGoster(""), "");
+  assert.equal(sehirGoster("bilinmeyen"), "Bilinmeyen");
+});
