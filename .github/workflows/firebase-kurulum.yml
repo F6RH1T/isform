@@ -1,0 +1,107 @@
+name: Firebase kurulum
+
+# Elle çalıştırılır: Actions → "Firebase kurulum" → Run workflow.
+# Gerekli depo sırları (Settings → Secrets and variables → Actions → Secrets):
+#   FIREBASE_SERVICE_ACCOUNT : hizmet hesabı anahtarı (JSON). Roller README → "Otomatik kurulum" bölümünde.
+#   GEMINI_API_KEY           : (fonksiyonlar için) YENİ bir Gemini API anahtarı
+#   SHORTCUT_TOKEN           : (isteğe bağlı) Siri asistanı anahtarları, "ad:anahtar,ad:anahtar"
+on:
+  workflow_dispatch:
+    inputs:
+      kurallar:
+        description: "Firestore kuralları ve indeksleri (önce emülatör testleri çalışır)"
+        type: boolean
+        default: true
+      fonksiyonlar:
+        description: "Cloud Functions (aiProxy, asistan) + gizli anahtarlar"
+        type: boolean
+        default: true
+      yedek:
+        description: "Günlük Firestore yedeği (14 gün saklanır) kur"
+        type: boolean
+        default: true
+      eski_anahtari_sil:
+        description: "ayarlar/gemini belgesini sil (yalnızca AI proxy çalıştığını doğruladıktan sonra)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-kurulum
+  cancel-in-progress: false
+
+env:
+  PROJE: isform-b284d
+
+jobs:
+  kurulum:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm install -g firebase-tools@15
+
+      - name: Hizmet hesabı ile oturum aç
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Kural testleri (emülatör)
+        if: inputs.kurallar
+        run: npm run test:rules
+
+      - name: Firestore kuralları ve indeksleri
+        if: inputs.kurallar
+        run: firebase deploy --only firestore:rules,firestore:indexes --project "$PROJE" --non-interactive
+
+      - name: Fonksiyon bağımlılıkları
+        if: inputs.fonksiyonlar
+        working-directory: functions
+        run: npm ci
+
+      - name: Gizli anahtarlar (Secret Manager)
+        if: inputs.fonksiyonlar
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SHORTCUT_TOKEN: ${{ secrets.SHORTCUT_TOKEN }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then echo "::error::GEMINI_API_KEY sırrı tanımlı değil"; exit 1; fi
+          printf '%s' "$GEMINI_API_KEY" | firebase functions:secrets:set GEMINI_API_KEY --data-file=- --project "$PROJE" --non-interactive
+          if [ -z "$SHORTCUT_TOKEN" ]; then
+            # Siri kullanılmayacaksa bile fonksiyon bu sırrı ister: kimsenin bilmediği rastgele bir değer yazılır
+            SHORTCUT_TOKEN="kapali:$(openssl rand -hex 32)"
+          fi
+          printf '%s' "$SHORTCUT_TOKEN" | firebase functions:secrets:set SHORTCUT_TOKEN --data-file=- --project "$PROJE" --non-interactive
+
+      - name: Cloud Functions
+        if: inputs.fonksiyonlar
+        run: firebase deploy --only functions --project "$PROJE" --non-interactive --force
+
+      - name: Firestore günlük yedek
+        if: inputs.yedek
+        uses: google-github-actions/setup-gcloud@v2
+      - if: inputs.yedek
+        run: |
+          if gcloud firestore backups schedules list --database='(default)' --project "$PROJE" --format='value(name)' | grep -q .; then
+            echo "Yedek zamanlaması zaten var:"; gcloud firestore backups schedules list --database='(default)' --project "$PROJE"
+          else
+            gcloud firestore backups schedules create --database='(default)' --recurrence=daily --retention=14d --project "$PROJE"
+          fi
+
+      - name: Eski tarayıcı anahtarını sil (ayarlar/gemini)
+        if: inputs.eski_anahtari_sil
+        working-directory: functions
+        run: |
+          npm ci
+          cp ../scripts/eski-anahtari-sil.mjs ./eski-anahtari-sil.mjs
+          node eski-anahtari-sil.mjs
