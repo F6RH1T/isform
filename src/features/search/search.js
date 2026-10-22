@@ -1,16 +1,24 @@
 import { ikon } from "../../lib/ikon.js";
 import { bashar, tipSinif } from "../../lib/tip.js";
-import { collection, getDocs, limit, query, where } from "firebase/firestore";
+import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 import { $ } from "../../lib/dom.js";
 import { sessizAra } from "./sessiz-ara.js";
-import { htmlGuvenli, jsGuvenliMetin, metniNormalizeEt } from "../../lib/text.js";
+import { csvIndir, htmlGuvenli, jsGuvenliMetin, metniNormalizeEt } from "../../lib/text.js";
 import { tumSehirler } from "../firms/benzer-firma.js";
 import { db } from "../../firebase/init.js";
 import { koddanNo } from "../../lib/firma-kodu.js";
 import { tarihKarsilastir, tarihiInputaCevir } from "../../lib/dates.js";
-import { yoneticiMi } from "../../core/session.js";
+import { duzenleyebilirMi, yoneticiMi } from "../../core/session.js";
 
 export let SIRA_YONU = 1;
+
+/* Arama ve rapor dışa aktarımı aynı sütunları kullanır */
+export function formSatirlari(formlar) {
+  const satirlar = [["Form Kodu", "Firma", "Şehir", "İşlem Tipi", "Ekleyen", "Tarih", "Sonraki Bakım", "Açıklama", "Enlem", "Boylam"]];
+  const tr = iso => iso && !isNaN(new Date(iso)) ? new Date(iso).toLocaleDateString("tr-TR") : "";
+  formlar.forEach(v => satirlar.push([v.formKodu, v.firmaAdi, v.sehir, v.islemTipi, v.ekleyen, tr(v.tarih), tr(v.sonrakiBakim), v.aciklama, v.konum?.lat ?? "", v.konum?.lng ?? ""]));
+  return satirlar;
+}
 
 $("btnSiraYeni").addEventListener("click", function() {
     SIRA_YONU = 1;
@@ -124,7 +132,7 @@ aramaKutusu.addEventListener("keydown", e => {
   }
 });
 
-function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, isAdmin, aciklama, konum, formKodu, tarihHam) {
+function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, isAdmin, aciklama, konum, formKodu, tarihHam, ek = "") {
   const codeDisplay = formKodu || "FRM-" + docId.substring(0, 5).toUpperCase();
   let admin = "";
   if (isAdmin) admin = `
@@ -146,6 +154,7 @@ function kartHTMLOlustur(docId, fotoParam, firma, sehir, islem, ekleyen, tarih, 
             <span class="badge">${ikon("user", 13)} ${htmlGuvenli(ekleyen)}</span>
             ${konumHTML}
           </div>
+          ${ek}
           <p class="kart-tarih">${ikon("clock", 13)} ${htmlGuvenli(tarih)}</p>
         </div>
         <div class="liste-karti-butonlar">
@@ -171,10 +180,9 @@ export function kartDokumuHTML(docId, v, tarihSecenek, isAdmin) {
   let tarih = "Tarih yok";
   if (v.tarih && !isNaN(new Date(v.tarih).getTime())) tarih = new Date(v.tarih).toLocaleDateString("tr-TR", tarihSecenek);
   (window.formCache = window.formCache || {})[docId] = v;
-  const kartHtml = kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum, v.formKodu, v.tarih);
   const ek = (v.sonrakiBakim ? bakimRozeti(v.sonrakiBakim, true) + " " : "") +
-    `<button type="button" class="btn-firma" style="margin:0 0 6px 0" onclick="event.stopPropagation();kaydiKopyala('${docId}')">⎘ Kopyala</button>`;
-  return kartHtml.replace("<p>🕒", () => ek + "<p>🕒");
+    (duzenleyebilirMi() ? `<button type="button" class="btn-firma" style="margin:0 0 6px 0" onclick="event.stopPropagation();kaydiKopyala('${docId}')">⎘ Kopyala</button>` : "");
+  return kartHTMLOlustur(docId, v.fotoId ? `'${v.fotoId}'` : "null", v.firmaAdi || "İSİMSİZ FİRMA", v.sehir || "belirsiz", v.islemTipi || "Belirtilmemiş", v.ekleyen ? v.ekleyen.split("@")[0] : "Bilinmiyor", tarih, isAdmin, v.aciklama, v.konum, v.formKodu, v.tarih, ek);
 }
 
 (function () {
@@ -193,18 +201,22 @@ async function onbellekliSorgu(k, fn) {
 window.sonuclariCsvIndir = function () {
   const liste = window.sonAramaSonuclari || [];
   if (!liste.length) { showToast("Dışa aktarılacak sonuç yok.", "error"); return; }
-  const h = x => '"' + String(x == null ? "" : x).replace(/"/g, '""').replace(/[\r\n]+/g, " ") + '"';
-  const satirlar = [["Form Kodu", "Firma", "Şehir", "İşlem Tipi", "Ekleyen", "Tarih", "Açıklama", "Konum"]];
-  liste.forEach(({ v }) => satirlar.push([v.formKodu, v.firmaAdi, v.sehir, v.islemTipi, v.ekleyen,
-    v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : "", v.aciklama, v.konum && v.konum.lat ? v.konum.lat + "," + v.konum.lng : ""]));
-  const csv = "\ufeff" + satirlar.map(r => r.map(h).join(";")).join("\r\n");
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  a.download = "enorpa_formlar_" + tarihiInputaCevir() + ".csv";
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  csvIndir(formSatirlari(liste.map(x => x.v)), "enorpa_formlar_" + tarihiInputaCevir() + ".csv");
 };
 
+/* Şehir / e-posta araması bir şehirdeki tüm kayıtları okumasın diye en yeni SEHIR_LIMIT kayıtla sınırlıdır.
+   Tarih filtresi verilirse sunucuda uygulanır (firestore.indexes.json: sehir+tarih, ekleyen+tarih). */
+const SEHIR_LIMIT = 300;
+const tarihliSorgu = (alan, deger, bas, bit) => {
+  const k = [where(alan, "==", deger)];
+  if (bas) k.push(where("tarih", ">=", new Date(bas + "T00:00:00").toISOString()));
+  if (bit) k.push(where("tarih", "<=", new Date(bit + "T23:59:59").toISOString()));
+  return getDocs(query(collection(db, "formlar"), ...k, orderBy("tarih", "desc"), limit(SEHIR_LIMIT))).catch(e => {
+    if (e.code !== "failed-precondition") throw e;   // bileşik indeks henüz yayınlanmadıysa eski (sırasız) sorguya düş
+    console.warn("İndeks eksik (firebase deploy --only firestore:indexes):", e.message);
+    return getDocs(query(collection(db, "formlar"), where(alan, "==", deger), limit(SEHIR_LIMIT)));
+  });
+};
 $("aramaButonu").addEventListener("click", async () => {
   const kaydir = !window._aramaSessiz;   // kullanıcı kendisi aradıysa sonuçlara in
   const ham = aramaKutusu.value.trim(), arama = metniNormalizeEt(ham), div = $("sonuclar");
@@ -217,23 +229,24 @@ $("aramaButonu").addEventListener("click", async () => {
     const bos = { empty: true, forEach() {} };
     const aramaBuyuk = ham.toUpperCase().replace("FRM-","").trim();
 
-    const [s1, s2, s3, s4, s5] = await onbellekliSorgu(ham.toLowerCase(), () => Promise.all([
-      getDocs(query(collection(db, "formlar"), where("sehir", "==", arama))),
+    const fBas = $("fltBaslangic").value, fBit = $("fltBitis").value, fIsl = $("fltIslem").value;
+    const [s1, s2, s3, s4, s5] = await onbellekliSorgu([ham.toLowerCase(), fBas, fBit].join("|"), () => Promise.all([
+      tumSehirler.includes(arama) ? tarihliSorgu("sehir", arama, fBas, fBit) : Promise.resolve(bos),
       getDocs(query(collection(db, "formlar"), where("aramaFirma", ">=", arama), where("aramaFirma", "<=", arama + hi), limit(30))),
-      ham.includes("@") ? getDocs(query(collection(db, "formlar"), where("ekleyen", "==", ham.toLowerCase()))) : Promise.resolve(bos),
-      getDocs(query(collection(db, "formlar"), where("formKodu", "==", aramaBuyuk))),
-      getDocs(query(collection(db, "formlar"), where("firmaKodu", "==", aramaBuyuk)))
+      ham.includes("@") ? tarihliSorgu("ekleyen", ham.toLowerCase(), fBas, fBit) : Promise.resolve(bos),
+      getDocs(query(collection(db, "formlar"), where("formKodu", "==", aramaBuyuk), limit(20))),
+      getDocs(query(collection(db, "formlar"), where("firmaKodu", "==", aramaBuyuk), limit(300)))
     ]));
 
     let sonuc = [], gorulen = new Set();
     [s4, s5, s1, s2, s3].forEach(snap => snap.forEach(d => { if (!gorulen.has(d.id)) { gorulen.add(d.id); sonuc.push({ id: d.id, v: d.data() }); } }));
 
-    const fBas = $("fltBaslangic").value, fBit = $("fltBitis").value, fIsl = $("fltIslem").value;
     if (fBas || fBit || fIsl) sonuc = sonuc.filter(x => {
       const t = tarihiInputaCevir(x.v.tarih);
       return (!fBas || t >= fBas) && (!fBit || t <= fBit) && (!fIsl || x.v.islemTipi === fIsl);
     });
     window.sonAramaSonuclari = sonuc;
+    const sinirda = (s1.size || 0) >= SEHIR_LIMIT || (s3.size || 0) >= SEHIR_LIMIT;
 
     if (!sonuc.length) {
       div.innerHTML = `<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display='none'"><p>"${htmlGuvenli(ham)}" için form bulunamadı.</p><button type="button" class="btn btn-primary" onclick="yeniKayitAc('${jsGuvenliMetin(ham)}')">➕ Bu firmayı yeni kayıt olarak ekle</button></div>`;
@@ -257,7 +270,7 @@ $("aramaButonu").addEventListener("click", async () => {
 
     siraliGruplar.sort((a, b) => SIRA_YONU * (a.ilkTarih - b.ilkTarih));
 
-    let htmlOut = `<div class="sonuc-bilgisi" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>${sonuc.length} Form (${siraliGruplar.length} Firma) listelendi</span><button type="button" class="btn-siralama" onclick="sonuclariCsvIndir()">⬇ Excel (CSV)</button></div>`;
+    let htmlOut = `<div class="sonuc-bilgisi" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>${sonuc.length} Form (${siraliGruplar.length} Firma) listelendi${sinirda ? ` · en yeni ${SEHIR_LIMIT} kayıt gösteriliyor, daha eskiler için tarih filtresi verin` : ""}</span><button type="button" class="btn-siralama" onclick="sonuclariCsvIndir()">⬇ Excel (CSV)</button></div>`;
 
     const SAYFA_BOYU = 20;                       // bir seferde gösterilecek firma sayısı
     const grupHTML = grup => {

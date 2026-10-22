@@ -44,7 +44,8 @@ async function senaryo(ad, girisli) {
     await sayfa.fill("#aramaKutusu", "test").catch(() => {});
     await sayfa.waitForTimeout(500);
   }
-  const gorunur = await sayfa.evaluate(() => ({ giris: getComputedStyle(document.getElementById("loginScreen")).display, ana: getComputedStyle(document.getElementById("mainApp")).display }));
+  const gorunur = await sayfa.evaluate(() => ({ giris: getComputedStyle(document.getElementById("loginScreen")).display, ana: getComputedStyle(document.getElementById("mainApp")).display,
+    akis: document.getElementById("canliAkanlar").textContent, bakim: document.getElementById("yaklasanKart").textContent }));
   await sayfa.close();
   assert.deepEqual(hatalar, [], `${ad}: konsol hataları`);
   return gorunur;
@@ -57,5 +58,13 @@ try {
   const auth = await senaryo("oturumlu", true);
   assert.equal(auth.giris, "none", "oturumlu: giriş ekranı gizlenmeli");
   assert.notEqual(auth.ana, "none", "oturumlu: ana uygulama görünmeli");
+  // Gerileme: kesme işareti ve ters bölü olduğu gibi görünmeli (eskiden "Ali\\'nin" çıkıyordu)
+  assert.match(auth.akis, /ALİ'NİN SERASI/, "akış: firma adı kesme işaretiyle görünmeli");
+  assert.match(auth.akis, /Kazan'ın basıncı düşüktü \\ ayarlandı/, "akış: açıklama bozulmadan görünmeli");
+  assert.doesNotMatch(auth.akis + auth.bakim, /\\'/, "hiçbir yerde \\' görünmemeli");
+  // Gerileme: kartta bakım rozeti ve Kopyala butonu (eskiden hiç çıkmıyordu)
+  assert.match(auth.akis, /Bakıma 3 gün/, "akış kartı: bakım rozeti");
+  assert.match(auth.akis, /Kopyala/, "akış kartı: Kopyala butonu");
+  assert.match(auth.bakim, /Yaklaşan bakımlar/, "bakım listesi görünmeli");
   console.log("✔ duman testi geçti (oturumsuz + oturumlu, sekmeler gezildi, konsol temiz)");
 } finally { await tarayici.close(); sunucu.close(); }

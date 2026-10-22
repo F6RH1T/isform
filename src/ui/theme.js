@@ -1,11 +1,16 @@
 import { $ } from "../lib/dom.js";
 
-let isDark = localStorage.getItem("theme") === "dark";
+/* Kullanıcı seçim yapmadıysa cihazın açık/koyu ayarı izlenir; seçim yaparsa o hatırlanır. */
+const kayitli = () => { try { return localStorage.getItem("theme"); } catch { return null; } };
+const sistem = matchMedia("(prefers-color-scheme: dark)");
+const uygula = koyu => { if (koyu) document.documentElement.setAttribute("data-theme", "dark"); else document.documentElement.removeAttribute("data-theme"); };
 
-if (isDark) document.documentElement.setAttribute("data-theme", "dark");
+let isDark = kayitli() ? kayitli() === "dark" : sistem.matches;
+uygula(isDark);
+sistem.addEventListener("change", e => { if (!kayitli()) { isDark = e.matches; uygula(isDark); } });
 
 $("btnTheme").addEventListener("click", () => {
   isDark = !isDark;
-  if (isDark) document.documentElement.setAttribute("data-theme", "dark"); else document.documentElement.removeAttribute("data-theme");
-  localStorage.setItem("theme", isDark ? "dark" : "light");
+  uygula(isDark);
+  try { localStorage.setItem("theme", isDark ? "dark" : "light"); } catch { /* özel sekme */ }
 });

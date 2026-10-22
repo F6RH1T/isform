@@ -1,9 +1,9 @@
-import { deleteDoc, deleteField, doc, updateDoc } from "firebase/firestore";
+import { deleteField, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { state } from "../../core/state.js";
 import { $ } from "../../lib/dom.js";
 import { metniNormalizeEt } from "../../lib/text.js";
 import { ayEkle, inputtanIsoYap, tarihiInputaCevir } from "../../lib/dates.js";
-import { firmaKodunuBul } from "../firms/firma-kodu-servis.js";
+import { formNoAyir } from "../firms/firma-kodu-servis.js";
 import { vektorHazirla } from "../ai/embeddings.js";
 import { db } from "../../firebase/init.js";
 import { raporKayitSil, raporKayitYenile } from "../reports/rapor-veri.js";
@@ -42,8 +42,8 @@ $("btnEditSave").addEventListener("click", async () => {
     const g = { firmaAdi: firma, aramaFirma: yeniArama, sehir, islemTipi: islem, aciklama, tarih: inputtanIsoYap(editTarih), bakimAralik: $("editAralik").value ? Number($("editAralik").value) : deleteField(),
       sonrakiBakim: $("editBakim").value ? inputtanIsoYap($("editBakim").value) : ($("editAralik").value ? ayEkle(inputtanIsoYap(editTarih), $("editAralik").value) : deleteField()) };
     if (yeniArama !== state.guncellenecekEskiAramaFirma) {
-      const { firmaKodu, sonNo } = await firmaKodunuBul(yeniArama);
-      g.firmaKodu = firmaKodu; g.formNo = sonNo + 1; g.formKodu = `${firmaKodu}${sonNo + 1}`;
+      const { firmaKodu, ilkNo } = await formNoAyir(yeniArama);
+      g.firmaKodu = firmaKodu; g.formNo = ilkNo; g.formKodu = `${firmaKodu}${ilkNo}`;
     }
     const eskiKayit = (window.formCache || {})[state.guncellenecekDocId] || {};
     const alanAdlari = { firmaAdi: "firma", sehir: "şehir", islemTipi: "işlem tipi", aciklama: "açıklama", tarih: "tarih" };
@@ -66,9 +66,13 @@ window.formSil = async function (docId, fotoId) {
   if (!yoneticiMi()) { showToast("Yetkiniz yok!", "error"); return; }
   if (!confirm("Bu formu kalıcı olarak silmek istediğinize emin misiniz?")) return;
   try {
-    if (fotoId && fotoId !== "null" && fotoId !== "undefined") await deleteDoc(doc(db, "formFotograflari", fotoId));
     const silinen = (window.formCache || {})[docId] || {};
-    await deleteDoc(doc(db, "formlar", docId));
+    /* Form ve bağlı tüm görseller (ana fotoğraf, PDF'in ek sayfaları, imzalar) tek seferde silinir */
+    const b = writeBatch(db);
+    const ekler = [fotoId, ...(silinen.ekFotoIdler || []), silinen.imzaId].filter(x => x && x !== "null" && x !== "undefined");
+    new Set(ekler).forEach(id => b.delete(doc(db, "formFotograflari", id)));
+    b.delete(doc(db, "formlar", docId));
+    await b.commit();
     raporKayitSil(docId);
     logYaz("Form silindi", `${silinen.formKodu || docId} · ${silinen.firmaAdi || ""}`, [silinen.islemTipi, (silinen.tarih || "").slice(0, 10), (silinen.aciklama || "").slice(0, 120)].filter(Boolean).join(" · "));
     const k = $("kart-" + docId); if (k) k.style.display = "none";

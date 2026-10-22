@@ -1,14 +1,18 @@
 /* ENORPA İş Formları - service worker
-   Uygulama kabuğunu önbelleğe alır; Firestore, Auth ve Gemini istekleri her zaman doğrudan ağa gider. */
-const SURUM = "enorpa-v4";
-const TEMEL = ["./", "manifest.webmanifest","logo-enorpa.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "logo.png"];
-const STATIK = /(^|\.)gstatic\.com$|^fonts\.googleapis\.com$|^cdnjs\.cloudflare\.com$|^cdn\.jsdelivr\.net$/;
+   Uygulama kabuğunu önbelleğe alır; Firestore, Auth ve Gemini istekleri her zaman doğrudan ağa gider.
+   SURUM ve DERLEME değerleri `vite build` sırasında doldurulur (vite.config.js → swSurumu): her derleme yeni sürümdür,
+   eski önbellek kendiliğinden silinir. Geliştirme sunucusunda yer tutucular olduğu gibi kalır. */
+const SURUM = "enorpa-__SURUM__";
+const DERLEME = self.__DERLEME__ || [];
+const TEMEL = ["./", "manifest.webmanifest", "logo-enorpa.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "logo.png", ...DERLEME];
+const STATIK = /(^|\.)gstatic\.com$|^fonts\.googleapis\.com$/;
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(SURUM)
-    .then(c => Promise.all(TEMEL.map(u => c.add(u).catch(() => { }))))
-    .then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(SURUM).then(c => Promise.all(TEMEL.map(u => c.add(u).catch(() => { })))));
+  // skipWaiting burada çağrılmaz: sayfa "Yeni sürüm" bildirimini gösterir, kullanıcı onaylayınca geçilir.
 });
+
+self.addEventListener("message", e => { if (e.data === "guncelle") self.skipWaiting(); });
 
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys()
@@ -34,14 +38,14 @@ self.addEventListener("fetch", e => {
         ]);
         if (ag && ag.ok) c.put(r, ag.clone());
         return ag;
-      } catch (err) {
+      } catch {
         return (await c.match(r)) || (await c.match("./")) || Response.error();
       }
     })());
     return;
   }
 
-  // Diğer dosyalar (ikon, Firebase SDK, yazı tipi): önce önbellek, arkada yenile
+  // Diğer dosyalar (derlenmiş JS/CSS, ikon, yazı tipi): önce önbellek, arkada yenile
   e.respondWith((async () => {
     const c = await caches.open(SURUM);
     const eski = await c.match(r);

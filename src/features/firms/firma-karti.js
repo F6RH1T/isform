@@ -1,7 +1,8 @@
 import { collection, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, setDoc, where } from "firebase/firestore";
 import { state } from "../../core/state.js";
 import { $ } from "../../lib/dom.js";
-import { db } from "../../firebase/init.js";
+import { auth, db } from "../../firebase/init.js";
+import { onAuthStateChanged } from "firebase/auth";
 import { logYaz, yoneticiMi } from "../../core/session.js";
 import { SIRA_YONU, kartDokumuHTML } from "../search/search.js";
 import { tarihKarsilastir } from "../../lib/dates.js";
@@ -54,18 +55,27 @@ $("fkKaydet").addEventListener("click", async () => {
   } catch (e) { showToast("Kaydedilemedi: " + e.message, "error"); }
 });
 
-onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), { includeMetadataChanges: true }, snapshot => {
-  const div = $("canliAkanlar"), bar = $("bekleyenBar"); let bekleyen = 0;
-  snapshot.forEach(d => { if (d.metadata.hasPendingWrites) bekleyen++; });
-  bar.textContent = `📡 ${bekleyen} kayıt gönderilmeyi bekliyor`; bar.style.display = bekleyen ? "inline-block" : "none";
-  if (snapshot.empty) {
-    div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display=\'none\'"><p>Henüz form eklenmemiş.</p></div>';
-    return;
-  }
-  const isAdmin = yoneticiMi();
-  const opt = { day: "numeric", month: "short", year: "numeric" };
-  const docs = []; snapshot.forEach(d => docs.push({ id: d.id, v: d.data() }));
-  docs.sort((a, b) => SIRA_YONU * tarihKarsilastir(a.v, b.v));
-  let html = docs.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("");
-  div.innerHTML = html;
-}, err => console.error("Canlı akış hatası:", err));
+/* Akış: son 10 kayıt canlı. Oturum ve rol hazır olunca başlar, çıkışta kapanır (oturumsuz dinleyici kuralda reddedilir). */
+let akisDinleyici = null;
+function akisBaslat() {
+  if (akisDinleyici) return;
+  akisDinleyici = onSnapshot(query(collection(db, "formlar"), orderBy("tarih", "desc"), limit(10)), { includeMetadataChanges: true }, snapshot => {
+    const div = $("canliAkanlar"), bar = $("bekleyenBar"); let bekleyen = 0;
+    snapshot.forEach(d => { if (d.metadata.hasPendingWrites) bekleyen++; });
+    bar.textContent = `📡 ${bekleyen} kayıt gönderilmeyi bekliyor`; bar.style.display = bekleyen ? "inline-block" : "none";
+    if (snapshot.empty) {
+      div.innerHTML = '<div class="empty-state"><img src="logo.png" alt="" onerror="this.style.display=\'none\'"><p>Henüz form eklenmemiş.</p></div>';
+      return;
+    }
+    const isAdmin = yoneticiMi();
+    const opt = { day: "numeric", month: "short", year: "numeric" };
+    const docs = []; snapshot.forEach(d => docs.push({ id: d.id, v: d.data() }));
+    docs.sort((a, b) => SIRA_YONU * tarihKarsilastir(a.v, b.v));
+    let html = docs.map(x => kartDokumuHTML(x.id, x.v, opt, isAdmin)).join("");
+    div.innerHTML = html;
+  }, err => { akisDinleyici = null; console.error("Canlı akış hatası:", err); });
+}
+onAuthStateChanged(auth, u => {
+  if (u) state.rolHazir.then(ok => { if (ok) akisBaslat(); });
+  else if (akisDinleyici) { akisDinleyici(); akisDinleyici = null; }
+});

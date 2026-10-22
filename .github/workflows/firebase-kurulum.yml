@@ -3,7 +3,7 @@ name: Firebase kurulum
 # Elle çalıştırılır: Actions → "Firebase kurulum" → Run workflow.
 # Gerekli depo sırları (Settings → Secrets and variables → Actions → Secrets):
 #   FIREBASE_SERVICE_ACCOUNT : hizmet hesabı anahtarı (JSON). Roller README → "Otomatik kurulum" bölümünde.
-#   GEMINI_API_KEY           : (fonksiyonlar için) YENİ bir Gemini API anahtarı
+#   GEMINI_API_KEY           : (yalnızca fonksiyonlar için, Blaze) YENİ bir Gemini API anahtarı
 #   SHORTCUT_TOKEN           : (isteğe bağlı) Siri asistanı anahtarları, "ad:anahtar,ad:anahtar"
 on:
   workflow_dispatch:
@@ -13,15 +13,15 @@ on:
         type: boolean
         default: true
       fonksiyonlar:
-        description: "Cloud Functions (aiProxy, asistan) + gizli anahtarlar"
+        description: "Cloud Functions (aiProxy, asistan) + gizli anahtarlar. Blaze planı GEREKİR; ücretsiz (Spark) planda kapalı bırakın"
         type: boolean
-        default: true
+        default: false
       yedek:
-        description: "Günlük Firestore yedeği (14 gün saklanır) kur"
+        description: "Günlük Firestore yedeği (14 gün saklanır) kur. Blaze planı GEREKİR; ücretsiz planda kapalı bırakın"
         type: boolean
-        default: true
+        default: false
       eski_anahtari_sil:
-        description: "ayarlar/gemini belgesini sil (yalnızca AI proxy çalıştığını doğruladıktan sonra)"
+        description: "ayarlar/gemini belgesini sil (yalnızca bir AI proxy çalıştığını doğruladıktan sonra; yoksa AI çalışmaz)"
         type: boolean
         default: false
 

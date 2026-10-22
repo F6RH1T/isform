@@ -10,10 +10,6 @@ let aiModel = localStorage.getItem("gemini_model2") || "gemini-3.1-flash-lite";
 
 const AI_YEDEK = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-2.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"];
 
-const aiAnahtar = () => {
-  if (AI_ANAHTAR_SABIT) return AI_ANAHTAR_SABIT;
-  return localStorage.getItem("gemini_key");
-};
 
 let aiBulutAtla = false;   // kayıtlı anahtar geçersiz çıktıysa buluttan tekrar çekme, yeni anahtar sor
 

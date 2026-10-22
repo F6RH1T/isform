@@ -24,10 +24,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - run: npm install
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
       - run: npm test
       - run: npm run build
+        env:
+          # Varsayılan: boş (AI, eski modda çalışır: anahtar Firestore'dan okunur). Bir AI proxy kurduysanız (Cloud Function
+          # veya Cloudflare Worker) adresini depo Variables altına VITE_AI_PROXY_URL adıyla ekleyin; site onu kullanır.
+          VITE_AI_PROXY_URL: ${{ vars.VITE_AI_PROXY_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

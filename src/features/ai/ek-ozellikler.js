@@ -3,9 +3,11 @@ import { deleteField, doc, getDoc, updateDoc } from "firebase/firestore";
 import { $ } from "../../lib/dom.js";
 import { aiButon, aiKutu, bugun, olay } from "./ui.js";
 import { aiAnahtarHazirla, gemini, geminiAkis } from "./gemini.js";
+import { proxyAktif } from "./transport.js";
 import { AI_PROMPT, AI_SEMA } from "./prompts.js";
 import { raporKayitYama, raporKayitYenile, raporVerisi } from "../reports/rapor-veri.js";
 import { metniNormalizeEt } from "../../lib/text.js";
+import { tarihiInputaCevir } from "../../lib/dates.js";
 import { levenshtein } from "../../lib/levenshtein.js";
 import { embedYap, vektorHazirla } from "./embeddings.js";
 import { VEKTOR_SURUM, kosinus, vektorAc, vektorMetni, vektorPaketle } from "../../lib/vektor.js";
@@ -33,7 +35,6 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
 {
   const zaman = $("fkZaman"), kutu = aiKutu(zaman, "beforebegin");
   const son = () => (window._fkSon || []).sort((a, b) => (b.tarih || "").localeCompare(a.tarih || "")).slice(0, 25).map(v => ({ tarih: (v.tarih || "").slice(0, 10), islem: v.islemTipi, not: (v.aciklama || "").slice(0, 300), sonrakiBakim: (v.sonrakiBakim || "").slice(0, 10) }));
-  const kap = $("fkZaman").parentElement;
   const satir = document.createElement("div"); satir.style.cssText = "padding:0 18px"; zaman.insertAdjacentElement("beforebegin", satir);
   aiButon(satir, "beforeend", "✨ Firma özeti", async () => {
     const L = son(); if (!L.length) throw new Error("Bu firmada kayıt yok");
@@ -55,7 +56,7 @@ for (const id of ["aciklamaNotu", "ofAciklama"]) {
     const veri = { toplam: snap.size, sehir: say(v => v.sehir), islem: say(v => v.islemTipi), personel: say(v => v.ekleyen), aylik: say(v => (v.tarih || "").slice(0, 7)) };
     kutu.style.display = "block"; kutu.textContent = await gemini([{ text: AI_PROMPT.raporYorum(veri) }], { sistem: AI_PROMPT.sistem });
   });
-  aiButon(yenile, "afterend", "🔑 Gemini anahtarını değiştir", async () => { localStorage.removeItem("gemini_key"); await aiAnahtarHazirla(true); }, "background:var(--border);color:var(--text-main);border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;text-shadow:none;font-size:.8rem;");
+  if (!proxyAktif()) aiButon(yenile, "afterend", "🔑 Gemini anahtarını değiştir", async () => { localStorage.removeItem("gemini_key"); await aiAnahtarHazirla(true); }, "background:var(--border);color:var(--text-main);border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;text-shadow:none;font-size:.8rem;");
 }
 
 /* ===== AI EK ÖZELLİKLER ===== */
@@ -155,7 +156,7 @@ async function aiResim(f) {
   }
   function asFiltrele(snap, p) {
     const kel = (p.anahtar || []).map(nrm).filter(Boolean), bg = bugun(), out = [];
-    const lim = p.bakim === "yaklasan" ? new Date(Date.now() + (Number(p.yaklasanGun) || 7) * 864e5).toISOString().slice(0, 10) : "";
+    const lim = p.bakim === "yaklasan" ? tarihiInputaCevir(new Date(Date.now() + (Number(p.yaklasanGun) || 7) * 864e5)) : "";
     snap.forEach(d => {
       const v = d.data(), t = (v.tarih || "").slice(0, 10), sb = (v.sonrakiBakim || "").slice(0, 10);
       if (p.firma && !nrm(v.firmaAdi || v.aramaFirma).includes(nrm(p.firma))) return;
