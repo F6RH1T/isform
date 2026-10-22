@@ -34,6 +34,28 @@ functions/     Cloud Functions: aiProxy, asistan
 tests/         unit (node:test), rules (Firestore emülatörü), smoke (Playwright, sahte Firebase)
 ```
 
+## Otomatik kurulum (GitHub Actions)
+
+Kurallar, indeksler, Cloud Functions, gizli anahtarlar ve günlük yedek tek iş akışıyla yayınlanır:
+**Actions → Firebase kurulum → Run workflow**. Bilgisayarınıza bir şey kurmanız gerekmez.
+
+**Bir kerelik hazırlık**
+1. Firebase projesi **Blaze** (kullandıkça öde) planında olmalı (Cloud Functions için).
+2. Google Cloud Console → IAM → Service Accounts → `isform-b284d` projesinde yeni hizmet hesabı. Rolleri:
+   *Firebase Admin*, *Cloud Functions Admin*, *Service Account User*, *Secret Manager Admin*, *Cloud Datastore Owner*,
+   *Service Usage Admin*. Hesabın **Keys → Add key → JSON** ile anahtarını indirin.
+3. GitHub → Settings → Secrets and variables → Actions → **Secrets**:
+   - `FIREBASE_SERVICE_ACCOUNT`: indirdiğiniz JSON dosyasının tamamı
+   - `GEMINI_API_KEY`: Google AI Studio'da oluşturduğunuz **yeni** anahtar (eskisi tarayıcılara inmiş olabilir)
+   - `SHORTCUT_TOKEN` (isteğe bağlı): Siri asistanı anahtarları (aşağıya bakın)
+
+**Sıra**
+1. İş akışını varsayılan seçeneklerle çalıştırın (kurallar + fonksiyonlar + yedek).
+2. Hemen ardından `iyilestirmeler` dalını `main`'e birleştirin; site AI isteklerini fonksiyon üzerinden göndermeye başlar.
+3. Uygulamada AI'ın çalıştığını görünce iş akışını yalnızca **eski_anahtari_sil** seçili olarak bir kez daha çalıştırın,
+   sonra eski Gemini anahtarını AI Studio'da silin.
+4. Yönetici olarak uygulamaya girip ⋯ menüsü → **Eski kayıtları optimize et** (öncesinde ⋯ → Tam yedek).
+
 ## AI proxy ve Siri/Gemini uç noktası
 
 > ⚠ **Önemli:** Proxy kurulmadıysa Gemini anahtarı Firestore'da (`ayarlar/gemini`) durur ve **her aktif kullanıcı

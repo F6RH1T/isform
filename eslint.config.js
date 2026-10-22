@@ -25,7 +25,7 @@ export default [
       "no-constant-condition": ["error", { checkLoops: false }]
     }
   },
-  { files: ["functions/**/*.js", "tests/**/*.{js,mjs}", "*.config.js"], languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals.node } },
+  { files: ["functions/**/*.js", "scripts/**/*.{js,mjs}", "tests/**/*.{js,mjs}", "*.config.js"], languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals.node } },
   // Playwright'ın tarayıcıda çalıştırdığı kod parçaları ve sahte Firebase modülleri
   { files: ["tests/smoke/**/*.{js,mjs}"], languageOptions: { globals: { ...globals.node, ...globals.browser } } },
   { files: ["public/sw.js"], languageOptions: { ecmaVersion: 2022, sourceType: "script", globals: globals.serviceworker } }

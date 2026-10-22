@@ -31,8 +31,9 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          # Depo ayarları → Secrets and variables → Actions → Variables. Boşsa src/firebase/config.js varsayılanları kullanılır.
-          VITE_AI_PROXY_URL: ${{ vars.VITE_AI_PROXY_URL }}
+          # AI istekleri Cloud Function üzerinden gider (anahtar tarayıcıya inmez). Başka bir adres için depo
+          # Variables altına VITE_AI_PROXY_URL ekleyin. Önce "Firebase kurulum" iş akışıyla fonksiyonları yayınlayın.
+          VITE_AI_PROXY_URL: ${{ vars.VITE_AI_PROXY_URL || 'https://europe-west1-isform-b284d.cloudfunctions.net/aiProxy' }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
