@@ -101,7 +101,7 @@ async function yukle() {
   try {
     const kol = collection(db, "personel");
     let snap = await getDocs(kol);
-    if (snap.empty && yoneticiMi()) {
+    if (snap.empty && yoneticiMi() && VARSAYILAN_PERSONEL.length) {
       const b = writeBatch(db), simdi = new Date().toISOString();
       VARSAYILAN_PERSONEL.forEach(ad => b.set(doc(kol), { ad, adNorm: metniNormalizeEt(ad), aktif: true, ekleyen: state.aktifKullaniciMail, eklenme: simdi }));
       await b.commit(); snap = await getDocs(kol);

@@ -1,3 +1,4 @@
+import { tarihiInputaCevir } from "../../lib/dates.js";
 /* AI düğme görünümü: src/styles/ai-cam.css (cam efektli, içi mavi ışıltılı) */
 const temiz = t => String(t).replace(/^✨\s*/, "");
 
@@ -20,6 +21,7 @@ export const aiKutu = (hedef, yer) => { const d = document.createElement("div");
 
 export const aiSis = "Sen bir teknik servis firmasının yardımcısısın. Türkçe yaz. Verilmeyen bilgiyi asla uydurma.";
 
-export const bugun = () => new Date().toISOString().slice(0, 10);
+/* Yerel takvim günü (YYYY-MM-DD). toISOString UTC verir; Türkiye'de 00:00–03:00 arası bir önceki günü gösterirdi. */
+export const bugun = () => tarihiInputaCevir();
 
 export const olay = (el, t) => el.dispatchEvent(new Event(t, { bubbles: true }));

@@ -80,11 +80,18 @@ $("btnResetSend").addEventListener("click", () => {
     btn.innerText = "⏳..."; btn.disabled = true;
 
     sendPasswordResetEmail(auth, email)
+    /* Hesabın var olup olmadığı belli edilmez (e-posta taraması yapılamasın): bulunamasa da aynı mesaj gösterilir */
+    .catch(error => {
+        if (error.code === "auth/user-not-found") return;
+        if (error.code === "auth/invalid-email") { showToast("E-posta adresi geçersiz.", "error"); throw error; }
+        if (error.code === "auth/too-many-requests") { showToast("Çok fazla deneme yapıldı, biraz sonra tekrar deneyin.", "error"); throw error; }
+        console.error("Şifre sıfırlama:", error.code); showToast("Gönderilemedi, bağlantınızı kontrol edip tekrar deneyin.", "error"); throw error;
+    })
     .then(() => {
-        showToast("Şifre sıfırlama bağlantısı e-postanıza gönderildi!", "success");
+        showToast("Bu adres kayıtlıysa şifre sıfırlama bağlantısı gönderildi.", "success");
         $("resetPasswordModal").style.display = "none";
         $("resetEmail").value = "";
     })
-    .catch((error) => { showToast("Hata: " + error.message, "error"); })
+    .catch(() => { })
     .finally(() => { btn.innerText = "Gönder"; btn.disabled = false; });
 });

@@ -18,4 +18,10 @@ export const tarihKarsilastir = (a, b) => {
   return tB - tA; 
 };
 
-export const ayEkle = (iso, n) => { const d = new Date(iso); d.setMonth(d.getMonth() + Number(n)); return d.toISOString(); };
+/* n ay sonrası; hedef ay daha kısaysa ayın son gününe sabitlenir (31 Ocak + 1 ay → 28/29 Şubat) */
+export const ayEkle = (iso, n) => {
+  const d = new Date(iso), gun = d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth() + Number(n));
+  d.setDate(Math.min(gun, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()));
+  return d.toISOString();
+};

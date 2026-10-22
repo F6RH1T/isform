@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { ReCaptchaEnterpriseProvider, initializeAppCheck } from "firebase/app-check";
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import { collection, doc, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { firebaseConfig, recaptchaSiteKey } from "./config.js";
 
@@ -20,7 +20,15 @@ export let db;
 try { db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
 catch (e) { console.warn("Çevrimdışı önbellek açılamadı:", e); db = getFirestore(app); }
 
-/* Çevrimdışıyken yazma sunucu onayını beklemez; bağlantı gelince Firestore kendisi gönderir */
-export const kuyrugaAl = p => { if (navigator.onLine) return p; p.catch(console.error); return Promise.resolve({ id: "offline-" + Date.now() + Math.random().toString(36).slice(2, 7) }); };
+/* Çevrimdışıyken yazma sunucu onayını beklemez; bağlantı gelince Firestore kendisi gönderir.
+   Çevrimiçiyken onayı bekler (hata varsa kullanıcı görsün). */
+export const kuyrugaAl = p => { if (navigator.onLine) return p; p.catch(console.error); return Promise.resolve(); };
+
+/* Yeni belge: kimlik yerelde üretilir, böylece çevrimdışıyken de gerçek kimlik döner (başka belgeden ona bağlanılabilir). */
+export async function belgeEkle(koleksiyon, veri) {
+  const ref = doc(collection(db, koleksiyon));
+  await kuyrugaAl(setDoc(ref, veri));
+  return ref;
+}
 
 export const auth = getAuth(app);

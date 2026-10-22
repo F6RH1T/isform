@@ -29,8 +29,9 @@ test("ayEkle: ay ekler", () => {
   assert.equal(ayEkle("2026-01-15T12:00:00.000Z", "3"), "2026-04-15T12:00:00.000Z");
 });
 
-/* Karakterizasyon testi: 31 Ocak + 1 ay, JavaScript taşması yüzünden Şubat'ı atlayıp 3 Mart olur.
-   Bakım hatırlatma tarihlerini etkileyebilir; düzeltilirse bu testi güncelleyin. */
-test("ayEkle (mevcut davranış): ay sonlarında taşar", () => {
-  assert.equal(ayEkle("2026-01-31T12:00:00.000Z", 1), "2026-03-03T12:00:00.000Z");
+test("ayEkle: ay sonunda taşmaz, ayın son gününe sabitlenir", () => {
+  assert.equal(ayEkle("2026-01-31T12:00:00.000Z", 1), "2026-02-28T12:00:00.000Z");
+  assert.equal(ayEkle("2028-01-31T12:00:00.000Z", 1), "2028-02-29T12:00:00.000Z");
+  assert.equal(ayEkle("2026-08-31T12:00:00.000Z", 1), "2026-09-30T12:00:00.000Z");
+  assert.equal(ayEkle("2026-11-30T12:00:00.000Z", 3), "2027-02-28T12:00:00.000Z");
 });

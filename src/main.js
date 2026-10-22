@@ -19,7 +19,6 @@ import "./features/reports/rapor-veri.js";
 import "./features/forms/form-ui.js";
 import "./features/forms/imza.js";
 import "./features/forms/ekle-modu.js";
-import "./features/forms/pdf-template.js";
 import "./features/forms/olustur.js";
 import "./features/forms/personel.js";
 import "./features/firms/benzer-firma.js";

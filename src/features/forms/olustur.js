@@ -4,8 +4,7 @@ import { $, v } from "../../lib/dom.js";
 import { imzaVarMi, imzalariTemizle } from "./imza.js";
 import { htmlGuvenli, metniNormalizeEt } from "../../lib/text.js";
 import { getLocation } from "../../lib/konum.js";
-import { firmaKodunuBul } from "../firms/firma-kodu-servis.js";
-import { aciklamayiSayfala, gorselleriBekle, sablonHTML } from "./pdf-template.js";
+import { formNoAyir } from "../firms/firma-kodu-servis.js";
 import { db } from "../../firebase/init.js";
 import { inputtanIsoYap, tarihiInputaCevir } from "../../lib/dates.js";
 import { vektorHazirla } from "../ai/embeddings.js";
@@ -36,12 +35,12 @@ $("olusturFormu").addEventListener("submit", async e => {
     const aramaFirma = metniNormalizeEt(d.firma);
     const konum = await getLocation();
     
-    const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
-    const no = sonNo + 1;
+    const { firmaKodu, ilkNo: no } = await formNoAyir(aramaFirma);
     d.no = `${firmaKodu}${no}`;
 
     const logoHTML = "";
 
+    const { aciklamayiSayfala, gorselleriBekle, sablonHTML } = await import("./pdf-template.js");   // gömülü logolarla birlikte ayrı dosya
     const { fs, parcalar } = await aciklamayiSayfala(d, logoHTML);
     await pdfKutuphaneleri();
     const pdf = new window.jspdf.jsPDF("p", "mm", "a4");
@@ -77,11 +76,17 @@ $("olusturFormu").addEventListener("submit", async e => {
       const r = await addDoc(collection(db, "formFotograflari"), { base64: kucult(canvaslar[i]) });
       ekIdler.push(r.id);
     }
+    /* İmzalar form belgesine gömülmez (her okumada indirilmesin); ayrı bir görsel belgesinde durur */
+    let imzaId = "";
+    if (d.imza || d.imzaSorumlu) imzaId = (await addDoc(collection(db, "formFotograflari"), { imza: d.imza, imzaSorumlu: d.imzaSorumlu, tur: "imza" })).id;
+    const { imza: _i, imzaSorumlu: _is, ...formVerisi } = d;
+    formVerisi.imzaVar = { musteri: !!d.imza, sorumlu: !!d.imzaSorumlu };
     const islemTipi = ["Bakım","Arıza","Kurulum","Keşif"].find(x => d.servis.includes(x)) || "Diğer";
     const payload = { firmaAdi: d.firma, aramaFirma, sehir: d.sehir, islemTipi, aciklama: d.aciklama, ekleyen: state.aktifKullaniciMail,
       fotoId: fotoRef.id, firmaKodu, formNo: no, formKodu: `${firmaKodu}${no}`, tarih: inputtanIsoYap(d.tarih),
-      eklenmeTarihi: new Date().toISOString(), olusturulan: true, formVerisi: d };
+      eklenmeTarihi: new Date().toISOString(), olusturulan: true, formVerisi };
     if (ekIdler.length) payload.ekFotoIdler = ekIdler;
+    if (imzaId) payload.imzaId = imzaId;
     Object.assign(payload, await vektorHazirla(payload.islemTipi, payload.aciklama));
     if (konum) payload.konum = konum;
     await addDoc(collection(db, "formlar"), payload);

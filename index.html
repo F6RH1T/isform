@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>ENORPA İş Formları</title>
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/png" href="icon-192.png">
@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="./src/styles/index.css">
 </head>
 <body>
-<div id="toast-container"></div>
+<div id="toast-container" role="status" aria-live="polite"></div>
 
 <div id="loginScreen">
   <div class="login-card">
@@ -242,7 +242,7 @@
   </div>
 
   <div id="imageModal">
-    <span class="modal-close" onclick="modaliKapat()">&times;</span>
+    <button type="button" class="modal-close" onclick="modaliKapat()" aria-label="Kapat">&times;</button>
     <p id="modalLoading" style="color:#fff;font-weight:700">Fotoğraf yükleniyor…</p>
     <div class="img-zoom-kutu" id="imgZoomKutu">
       <button type="button" class="zoom-btn" data-izoom="+" aria-label="Yakınlaştır">+</button>
@@ -312,12 +312,12 @@
     </div>
   </div>
 
-  <nav class="bottom-nav">
+  <nav class="bottom-nav" aria-label="Ana menü">
     <span class="nav-pill" aria-hidden="true"></span>
-    <div class="nav-item active" onclick="sekmeyiDegistir('ekle', this)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Yeni</span></div>
-    <div class="nav-item" onclick="sekmeyiDegistir('ara', this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Ara</span></div>
-    <div class="nav-item" onclick="sekmeyiDegistir('akis', this)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Akış</span></div>
-    <div class="nav-item" onclick="sekmeyiDegistir('rapor', this)"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Rapor</span></div>
+    <button type="button" class="nav-item active" data-sekme="ekle" aria-current="page" onclick="sekmeyiDegistir('ekle', this)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Yeni</span></button>
+    <button type="button" class="nav-item" data-sekme="ara" onclick="sekmeyiDegistir('ara', this)"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Ara</span></button>
+    <button type="button" class="nav-item" data-sekme="akis" onclick="sekmeyiDegistir('akis', this)"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Akış</span></button>
+    <button type="button" class="nav-item" data-sekme="rapor" onclick="sekmeyiDegistir('rapor', this)"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Rapor</span></button>
   </nav>
 </div>
 

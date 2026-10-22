@@ -21,9 +21,10 @@ const REGION = "europe-west1";
 const GEMINI = "https://generativelanguage.googleapis.com/v1beta/";
 const MODELLER = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-2.5-flash-lite", "gemini-3.5-flash"];
 const ROLLER = ["yonetici", "duzenleyen", "goruntuleyen"];
+const GOVDE_SINIRI = 4 * 1024 * 1024;   // uygulamanın en büyük isteği (fotoğraf okuma) ~1 MB
 
 /* Yalnızca uygulamanın kullandığı Gemini yöntemlerine izin verilir */
-const YOL_IZIN = /^models(\?pageSize=\d{1,3})?$|^models\/[A-Za-z0-9.\-]+:(generateContent|streamGenerateContent|batchEmbedContents|embedContent)(\?alt=sse)?$/;
+const YOL_IZIN = /^models(\?pageSize=\d{1,3})?$|^models\/[A-Za-z0-9.-]+:(generateContent|streamGenerateContent|batchEmbedContents|embedContent)(\?alt=sse)?$/;
 
 class HttpHata extends Error { constructor(kod, mesaj) { super(mesaj); this.kod = kod; } }
 
@@ -75,10 +76,12 @@ export const aiProxy = onRequest({ region: REGION, secrets: [GEMINI_API_KEY], ti
     if (!YOL_IZIN.test(yol)) throw new HttpHata(404, "Bu yola izin verilmiyor");
     const kul = await kullaniciDogrula(req);
     hizSiniri(kul.mail);
+    const govde = req.method === "POST" ? JSON.stringify(req.body ?? {}) : undefined;
+    if (govde && govde.length > GOVDE_SINIRI) throw new HttpHata(413, "İstek çok büyük");
     const r = await fetch(GEMINI + yol, {
       method: req.method,
       headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY.value() },
-      body: req.method === "POST" ? JSON.stringify(req.body) : undefined
+      body: govde
     });
     res.status(r.status);
     res.set("Content-Type", r.headers.get("content-type") || "application/json");
@@ -89,6 +92,17 @@ export const aiProxy = onRequest({ region: REGION, secrets: [GEMINI_API_KEY], ti
 
 /* ---------- 2) Siri / Gemini / otomasyon uç noktası ---------- */
 const guvenliKarsilastir = (a, b) => { const x = Buffer.from(a), y = Buffer.from(b); return x.length === y.length && timingSafeEqual(x, y); };
+
+/* SHORTCUT_TOKEN birden çok kişiye ayrı anahtar verilebilsin diye "etiket:anahtar,etiket:anahtar" biçimindedir
+   (eski tek anahtar biçimi de çalışır). Bir kişinin telefonu kaybolursa yalnızca onun anahtarı çıkarılır. */
+function anahtarSahibi(gelen) {
+  if (!gelen) return null;
+  for (const parca of SHORTCUT_TOKEN.value().split(",").map(x => x.trim()).filter(Boolean)) {
+    const i = parca.indexOf(":"), etiket = i > 0 ? parca.slice(0, i) : "varsayilan", anahtar = i > 0 ? parca.slice(i + 1) : parca;
+    if (anahtar.length >= 24 && guvenliKarsilastir(gelen, anahtar)) return etiket;
+  }
+  return null;
+}
 
 const SISTEM = "Sen bir teknik servis firmasının sesli yardımcısısın. Türkçe, kısa ve konuşma diliyle cevap ver; madde işareti, yıldız veya başlık kullanma. Yalnızca verilen servis kayıtlarına dayan, kayıtta olmayan bilgiyi asla uydurma; bilmiyorsan 'Kayıtlarda bulamadım' de.";
 
@@ -114,21 +128,24 @@ async function geminiSor(istem) {
 export const asistan = onRequest({ region: REGION, secrets: [GEMINI_API_KEY, SHORTCUT_TOKEN], timeoutSeconds: 60, memory: "512MiB", cors: false, maxInstances: 3 }, async (req, res) => {
   try {
     if (req.method !== "POST") throw new HttpHata(405, "POST kullanın");
-    const gelen = req.get("x-asistan-anahtari") || "";
-    if (!guvenliKarsilastir(gelen, SHORTCUT_TOKEN.value())) throw new HttpHata(401, "Yetkisiz");
-    hizSiniri("asistan", 30);
+    const sahip = anahtarSahibi(req.get("x-asistan-anahtari") || "");
+    if (!sahip) throw new HttpHata(401, "Yetkisiz");
+    hizSiniri("asistan:" + sahip, 30);
     const soru = String((req.body && req.body.soru) || req.query.soru || "").trim().slice(0, 500);
     if (!soru) throw new HttpHata(400, "Soru boş");
 
     /* v1: son 200 kayıt bağlam olarak verilir. Daha eski kayıtlar için uygulamadaki asistanın planlayıcısı buraya taşınabilir. */
-    const snap = await getFirestore().collection("formlar").orderBy("tarih", "desc").limit(200).get();
+    /* Yalnızca gereken alanlar okunur (fotoğraf, vektör, form verisi indirilmez) */
+    const snap = await getFirestore().collection("formlar").orderBy("tarih", "desc").limit(200)
+      .select("tarih", "firmaAdi", "sehir", "islemTipi", "aciklama").get();
     const satirlar = snap.docs.map(d => {
       const x = d.data();
       return [String(x.tarih || "").slice(0, 10), x.firmaAdi || "", x.sehir || "", x.islemTipi || "", String(x.aciklama || "").replace(/\s+/g, " ").slice(0, 160)].join(" | ");
     });
-    const bugun = new Date().toISOString().slice(0, 10);
+    const bugun = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Istanbul" });   // YYYY-MM-DD, Türkiye saatiyle
     const cevap = await geminiSor(`Bugün: ${bugun}\nServis kayıtları (tarih | firma | şehir | işlem | açıklama), yeniden eskiye:\n${satirlar.join("\n")}\n\nSoru: ${soru}`);
 
+    await getFirestore().collection("islemGecmisi").add({ zaman: new Date().toISOString(), kim: "asistan:" + sahip, islem: "Sesli asistan sorusu", hedef: "", detay: soru.slice(0, 200) }).catch(() => {});
     if (req.query.format === "text") return res.type("text/plain; charset=utf-8").send(cevap);
     res.json({ cevap });
   } catch (e) { hataYaz(res, e); }

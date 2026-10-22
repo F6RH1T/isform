@@ -3,6 +3,7 @@ import { tarihiInputaCevir } from "../../lib/dates.js";
 import { imzaKur } from "./imza.js";
 
 window.ekleModu = m => {
+  window.bakimKaynakId = null;   // "Bakım yapıldı" ile açılan form terk edilirse eski bakım yanlışlıkla kapanmasın
   $("ekleSecim").style.display = m ? "none" : "";
   $("kartTara").style.display = m === "tara" ? "" : "none";
   $("kartOlustur").style.display = m === "olustur" ? "" : "none";

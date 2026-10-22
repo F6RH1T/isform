@@ -19,11 +19,19 @@ ESLint yapılandırması bunları global olarak tanır. Uzun vadede `onclick` ye
 | Koleksiyon | İçerik | Okuma | Yazma |
 |---|---|---|---|
 | `kullanicilar/{e-posta}` | rol, aktif | kendi kaydı / yönetici | yönetici |
-| `formlar` | servis kayıtları | tüm aktif roller | ekleme: düzenleyen+, düzenleme/silme: yönetici |
-| `formFotograflari` | base64 fotoğraf | tüm aktif roller | ekleme: düzenleyen+, silme: yönetici |
+| `formlar` | servis kayıtları (`fotoId`, `ekFotoIdler`, `imzaId` görsel belgelerine bağlanır) | tüm aktif roller | ekleme: düzenleyen+, düzenleme/silme: yönetici |
+| `formFotograflari` | base64 fotoğraf, PDF sayfası veya imza (`tur: "imza"`) | tüm aktif roller | ekleme: düzenleyen+, silme: yönetici |
+| `sayaclar/{firma}` | firma kodu + son form numarası (transaction ile artar) | düzenleyen+ | düzenleyen+ (yalnızca ileri) |
+| `firmaKodlari/{kod}` | kodun hangi firmaya ait olduğu | düzenleyen+ | ekleme: düzenleyen+ |
+| `personel` | iş formundaki isim listesi | tüm aktif roller | ekleme: düzenleyen+, düzenleme/silme: yönetici |
 | `firmalar` | firma kartı | tüm aktif roller | düzenleyen+ |
 | `islemGecmisi` | denetim kaydı | yönetici | herkes ekler, kimse değiştirmez |
 | `ayarlar/gemini` | eski anahtar modu | aktif | yönetici |
+
+## Form numarası
+`features/firms/firma-kodu-servis.js → formNoAyir()` numarayı `sayaclar` belgesinde transaction ile ayırır; iki kişi aynı
+anda kayıt girse de numara tekrarlanmaz. Sayaç yoksa (ilk kayıt / eski veri) mevcut formlardan hesaplanır. Çevrimdışıyken
+eski yönteme düşer ve verilen numarayı bağlantı gelince sayaca işler.
 
 ## AI
 `ai/gemini.js` (model seçimi, yedekleme, akış) → `ai/transport.js` (proxy veya doğrudan) → Gemini.

@@ -6,7 +6,7 @@ const imzaBlok = (id, baslik, ekler = "") => `
 <div class="tam" style="margin-top:10px;">
   <div class="alt-baslik">${baslik}</div>
   <div style="border:1.5px solid var(--border); border-radius:var(--r-md); background:#fff; overflow:hidden;">
-    <canvas id="${id}" height="150" style="width:100%; display:block; touch-action:none; cursor:crosshair;"></canvas>
+    <canvas id="${id}" height="150" role="img" aria-label="${baslik} alanı" style="width:100%; display:block; touch-action:none; cursor:crosshair;"></canvas>
     <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; padding:6px; background:var(--surface-2); border-top:1px solid var(--border);">
       ${ekler}
       <button type="button" data-imza-temizle="${id}" style="background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;">Temizle</button>
@@ -22,6 +22,9 @@ $("ofImza").innerHTML = fa("ofSorumlu", "Servis sorumlusu / firma yetkilisi (ad,
 
 const imzaDurum = {};
 
+/* Tuval, ekranın piksel yoğunluğuyla (en fazla 2x) çizilir: retina ekranda imza bulanık çıkmaz.
+   Pointer Events: parmak, fare ve kalem aynı kodla çalışır. Çizim koordinatları CSS pikselidir. */
+const IMZA_YUKSEKLIK = 150;
 function imzaKurTek(id) {
   const c = document.getElementById(id);
   if (!c) return;
@@ -31,27 +34,32 @@ function imzaKurTek(id) {
   const stil = () => { st.ctx.strokeStyle = "#000"; st.ctx.lineWidth = 2.5; st.ctx.lineCap = "round"; st.ctx.lineJoin = "round"; };
   if (!st.hazir) {
     st.ctx = c.getContext("2d");
-    const getP = (e) => {
-      const r = c.getBoundingClientRect();
-      const ev = e.touches ? e.touches[0] : e;
-      return { x: (ev.clientX - r.left) * (c.width / r.width), y: (ev.clientY - r.top) * (c.height / r.height) };
-    };
+    c.style.height = IMZA_YUKSEKLIK + "px";
+    const getP = e => { const r = c.getBoundingClientRect(); return { x: (e.clientX - r.left) * (st.w / r.width), y: (e.clientY - r.top) * (IMZA_YUKSEKLIK / r.height) }; };
     let ciziyor = false;
-    const bsl = (e) => { e.preventDefault(); ciziyor = true; st.cizildi = true; const p = getP(e); st.ctx.beginPath(); st.ctx.moveTo(p.x, p.y); };
-    const cz = (e) => { if (!ciziyor) return; e.preventDefault(); const p = getP(e); st.ctx.lineTo(p.x, p.y); st.ctx.stroke(); };
-    const btr = (e) => { if (e) e.preventDefault(); ciziyor = false; };
-    c.addEventListener("mousedown", bsl); c.addEventListener("mousemove", cz);
-    c.addEventListener("mouseup", btr); c.addEventListener("mouseout", btr);
-    c.addEventListener("touchstart", bsl, { passive: false });
-    c.addEventListener("touchmove", cz, { passive: false });
-    c.addEventListener("touchend", btr);
+    c.addEventListener("pointerdown", e => {
+      e.preventDefault(); c.setPointerCapture(e.pointerId);
+      ciziyor = true; st.cizildi = true; const p = getP(e); st.ctx.beginPath(); st.ctx.moveTo(p.x, p.y); st.ctx.lineTo(p.x + 0.01, p.y); st.ctx.stroke();
+    });
+    c.addEventListener("pointermove", e => {
+      if (!ciziyor) return; e.preventDefault();
+      for (const ev of (e.getCoalescedEvents ? e.getCoalescedEvents() : [e])) { const p = getP(ev); st.ctx.lineTo(p.x, p.y); }
+      st.ctx.stroke();
+    });
+    const btr = () => { ciziyor = false; };
+    c.addEventListener("pointerup", btr); c.addEventListener("pointercancel", btr);
     document.querySelector(`[data-imza-temizle="${id}"]`).addEventListener("click", () => {
-      st.ctx.clearRect(0, 0, c.width, c.height);
+      st.ctx.setTransform(1, 0, 0, 1, 0, 0); st.ctx.clearRect(0, 0, c.width, c.height); st.ctx.setTransform(st.dpr, 0, 0, st.dpr, 0, 0);
       st.cizildi = false;
     });
     st.hazir = true;
   }
-  if (!st.cizildi && c.width !== w) { c.width = w; }
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (!st.cizildi && (st.w !== w || st.dpr !== dpr)) {   // boyut değiştiyse (ve henüz imza yoksa) yeniden ölçekle
+    st.w = w; st.dpr = dpr;
+    c.width = Math.round(w * dpr); c.height = Math.round(IMZA_YUKSEKLIK * dpr);
+    st.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
   stil();
 }
 
@@ -73,14 +81,15 @@ const IMZA_ANAHTAR = "enorpa_yetkili_imza";
     let veri = null; try { veri = localStorage.getItem(IMZA_ANAHTAR); } catch (_) {}
     if (!veri) { showToast("Kayıtlı imza yok. Önce imzalayıp “Bu imzayı kaydet”e basın.", "error"); return; }
     imzaKurTek(id);
-    const c = document.getElementById(id), st = imzaDurum[id];
+    const st = imzaDurum[id];
     if (!st || !st.ctx) { showToast("Önce formu açın.", "error"); return; }
     const img = new Image();
     img.onload = () => {
-      st.ctx.clearRect(0, 0, c.width, c.height);
-      const oran = Math.min(c.width / img.width, c.height / img.height);
+      const W = st.w, H = IMZA_YUKSEKLIK;
+      st.ctx.clearRect(0, 0, W, H);
+      const oran = Math.min(W / img.width, H / img.height);
       const w = img.width * oran, h = img.height * oran;
-      st.ctx.drawImage(img, (c.width - w) / 2, (c.height - h) / 2, w, h);
+      st.ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
       st.cizildi = true;
     };
     img.src = veri;

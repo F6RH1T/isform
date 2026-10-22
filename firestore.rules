@@ -1,8 +1,9 @@
 rules_version = '2';
 
-/* ENORPA — Firestore güvenlik kuralları (TASLAK: yayınlamadan önce Emülatörde deneyin, bkz. README).
+/* ENORPA — Firestore güvenlik kuralları. Yayınlamadan önce: npm run test:rules (emülatörde otomatik testler).
    Roller: kullanicilar/{e-posta} belgesindeki  rol = yonetici | duzenleyen | goruntuleyen  ve  aktif = true.
-   Uygulamadaki davranışla eşleşir: kayıt ekleme → düzenleyen+, kayıt düzenleme/silme → yönetici, okuma → tüm aktif roller. */
+   Kayıt ekleme → düzenleyen+, kayıt düzenleme/silme → yönetici, okuma → tüm aktif roller.
+   Yazılan belgelerin alan adları, tipleri ve boyutları da denetlenir (bozuk/şişirilmiş veri girilemesin). */
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -15,37 +16,95 @@ service cloud.firestore {
     function duzenleyen() { return aktif() && ben().rol in ['yonetici', 'duzenleyen']; }
     function okuyan()     { return aktif() && ben().rol in ['yonetici', 'duzenleyen', 'goruntuleyen']; }
 
+    function yeni() { return request.resource.data; }
+    function metin(x, en)  { return x is string && x.size() <= en; }
+    function dolu(x, en)   { return x is string && x.size() > 0 && x.size() <= en; }
+    function istegeBagliMetin(alan, en) { return !(alan in yeni()) || metin(yeni()[alan], en); }
+
+    /* Servis kaydı alanları (eski kayıtlardaki 'fotograf' yalnızca optimize sırasında silinir) */
+    function formAlanlari() {
+      return ['firmaAdi', 'aramaFirma', 'sehir', 'islemTipi', 'aciklama', 'ekleyen', 'fotoId', 'firmaKodu', 'formNo',
+              'formKodu', 'tarih', 'eklenmeTarihi', 'konum', 'bakimAralik', 'sonrakiBakim', 'vektor', 'vektorSurum',
+              'olusturulan', 'formVerisi', 'ekFotoIdler', 'imzaId', 'numaraCevrimdisi', 'fotograf'];
+    }
+    function gecerliForm() {
+      return yeni().keys().hasOnly(formAlanlari())
+        && dolu(yeni().firmaAdi, 200) && dolu(yeni().aramaFirma, 200) && dolu(yeni().sehir, 60)
+        && metin(yeni().islemTipi, 40) && dolu(yeni().tarih, 40)
+        && istegeBagliMetin('aciklama', 20000) && istegeBagliMetin('formKodu', 40) && istegeBagliMetin('firmaKodu', 20)
+        && istegeBagliMetin('sonrakiBakim', 40) && istegeBagliMetin('vektor', 2000)
+        && (!('formNo' in yeni()) || yeni().formNo is int)
+        && (!('bakimAralik' in yeni()) || (yeni().bakimAralik is number && yeni().bakimAralik > 0 && yeni().bakimAralik <= 120))
+        && (!('konum' in yeni()) || (yeni().konum.lat is number && yeni().konum.lng is number))
+        && (!('formVerisi' in yeni()) || yeni().formVerisi is map)
+        && !('fotograf' in yeni());
+    }
+
     // Kullanıcı listesi: herkes yalnızca kendi kaydını (rolünü öğrenmek için) okur; liste ve yazma yalnızca yönetici.
     match /kullanicilar/{kullaniciMail} {
-      allow get: if request.auth != null && request.auth.token.email != null && mail() == kullaniciMail || yonetici();
-      allow list, create, update, delete: if yonetici();
+      allow get: if (request.auth != null && request.auth.token.email != null && mail() == kullaniciMail) || yonetici();
+      allow list: if yonetici();
+      // Yönetici kendi kaydını değiştiremez/silemez (yanlışlıkla kendini kilitlemesin)
+      allow create: if yonetici() && kullaniciMail != mail()
+        && yeni().keys().hasOnly(['rol', 'aktif', 'guncelleyen'])
+        && yeni().rol in ['yonetici', 'duzenleyen', 'goruntuleyen'] && yeni().aktif is bool;
+      allow update: if yonetici() && kullaniciMail != mail()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rol', 'aktif', 'guncelleyen'])
+        && yeni().rol in ['yonetici', 'duzenleyen', 'goruntuleyen'] && yeni().aktif is bool;
+      allow delete: if yonetici() && kullaniciMail != mail();
     }
 
     match /formlar/{id} {
       allow read: if okuyan();
-      allow create: if duzenleyen();
+      allow create: if duzenleyen() && gecerliForm() && yeni().ekleyen == mail();
       // düzenleyen yalnızca bakım hatırlatmasını kapatabilir (yeni kayıt akışı); diğer her değişiklik yönetici işi
       allow update: if yonetici()
         || (duzenleyen() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sonrakiBakim']));
       allow delete: if yonetici();
     }
 
+    // Form fotoğrafları ve imzalar (base64). Belge sınırı 1 MiB; uygulama ~200 KB üretir.
     match /formFotograflari/{id} {
       allow read: if okuyan();
-      allow create: if duzenleyen();
+      allow create: if duzenleyen() && yeni().keys().hasOnly(['base64', 'imza', 'imzaSorumlu', 'tur'])
+        && istegeBagliMetin('base64', 1040000) && istegeBagliMetin('imza', 300000) && istegeBagliMetin('imzaSorumlu', 300000);
       allow update: if false;
       allow delete: if yonetici();
     }
 
     match /firmalar/{id} {
       allow read: if okuyan();
-      allow create, update: if duzenleyen();
+      allow create, update: if duzenleyen()
+        && yeni().keys().hasOnly(['yetkili', 'telefon', 'adres', 'notlar', 'etiketler', 'guncelleyen', 'guncellemeTarihi'])
+        && yeni().guncelleyen == mail()
+        && istegeBagliMetin('yetkili', 200) && istegeBagliMetin('telefon', 40) && istegeBagliMetin('adres', 500)
+        && istegeBagliMetin('notlar', 5000) && istegeBagliMetin('etiketler', 500);
       allow delete: if yonetici();
+    }
+
+    // Form numarası sayacı (firma başına). Sayaç yalnızca ileri gider; yönetici (optimize) yeniden kurabilir.
+    match /sayaclar/{id} {
+      allow read: if duzenleyen();
+      allow create: if duzenleyen() && yeni().keys().hasOnly(['firmaKodu', 'sonNo', 'aramaFirma'])
+        && dolu(yeni().firmaKodu, 20) && yeni().sonNo is int && yeni().sonNo >= 0;
+      allow update: if yonetici()
+        || (duzenleyen() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sonNo'])
+            && yeni().sonNo is int && yeni().sonNo > resource.data.sonNo);
+      allow delete: if yonetici();
+    }
+
+    // Firma kodu rezervasyonu: bir kod tek firmaya aittir.
+    match /firmaKodlari/{kod} {
+      allow read: if duzenleyen();
+      allow create: if duzenleyen() && yeni().keys().hasOnly(['aramaFirma']) && dolu(yeni().aramaFirma, 200);
+      allow update, delete: if yonetici();
     }
 
     // İşlem geçmişi: herkes kendi adına ekleyebilir, yalnızca yönetici okur, kimse değiştiremez/silemez.
     match /islemGecmisi/{id} {
-      allow create: if aktif() && request.resource.data.kim == mail();
+      allow create: if aktif() && yeni().kim == mail()
+        && yeni().keys().hasOnly(['zaman', 'kim', 'islem', 'hedef', 'detay'])
+        && metin(yeni().islem, 200) && istegeBagliMetin('hedef', 200) && istegeBagliMetin('detay', 500);
       allow read: if yonetici();
       allow update, delete: if false;
     }
@@ -53,11 +112,14 @@ service cloud.firestore {
     // Personel listesi (iş formundaki isim seçenekleri): okuma tüm aktif roller, ekleme düzenleyen+, düzenleme/silme yönetici.
     match /personel/{id} {
       allow read: if okuyan();
-      allow create: if duzenleyen();
-      allow update, delete: if yonetici();
+      allow create: if duzenleyen() && yeni().keys().hasOnly(['ad', 'adNorm', 'aktif', 'ekleyen', 'eklenme'])
+        && dolu(yeni().ad, 100) && yeni().ekleyen == mail();
+      allow update: if yonetici() && yeni().keys().hasOnly(['ad', 'adNorm', 'aktif', 'ekleyen', 'eklenme']) && dolu(yeni().ad, 100);
+      allow delete: if yonetici();
     }
 
-    // Eski tarayıcı-anahtarı modu için. AI proxy'ye geçtikten sonra bu belge silinip kural `if false` yapılmalıdır.
+    /* Eski tarayıcı-anahtarı modu. AI proxy (VITE_AI_PROXY_URL) yayına alındıktan sonra bu belge silinmeli ve
+       'allow read' satırı 'if false' yapılmalıdır; aksi halde her aktif kullanıcı anahtarı okuyabilir (bkz. README). */
     match /ayarlar/gemini {
       allow read: if aktif();
       allow write: if yonetici();

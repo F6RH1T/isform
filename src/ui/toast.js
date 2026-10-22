@@ -7,5 +7,7 @@ window.showToast = function (msg, type = "info") {
   t.className = "toast " + type;
   t.innerHTML = `<span>${type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"}</span><span>${htmlGuvenli(msg)}</span>`;
   $("toast-container").appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  if (type === "error") t.setAttribute("role", "alert");
+  t.addEventListener("click", () => t.remove());
+  setTimeout(() => t.remove(), type === "error" ? 6000 : 3000);   // hata mesajları okunabilsin diye daha uzun
 };

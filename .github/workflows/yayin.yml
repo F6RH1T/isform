@@ -24,10 +24,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - run: npm install
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
       - run: npm test
       - run: npm run build
+        env:
+          # Depo ayarları → Secrets and variables → Actions → Variables. Boşsa src/firebase/config.js varsayılanları kullanılır.
+          VITE_AI_PROXY_URL: ${{ vars.VITE_AI_PROXY_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

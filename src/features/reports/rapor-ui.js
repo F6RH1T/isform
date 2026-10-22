@@ -3,7 +3,9 @@ import { state } from "../../core/state.js";
 import { $ } from "../../lib/dom.js";
 import { ilPaneliniCiz, raporHaritasiniCiz, secilenIl } from "./harita.js";
 import { raporTamYenile, raporVerisi } from "./rapor-veri.js";
-import { htmlGuvenli, metniNormalizeEt } from "../../lib/text.js";
+import { csvIndir, htmlGuvenli, metniNormalizeEt } from "../../lib/text.js";
+import { formSatirlari } from "../search/search.js";
+import { tarihiInputaCevir } from "../../lib/dates.js";
 
 let sonMobil = window.innerWidth < 1024;
 
@@ -49,15 +51,6 @@ $("btnRaporOlustur").addEventListener("click", async () => {
 
 $("btnExcelIndir").addEventListener("click", () => {
   if (!state.tumFormlarGlobal.length) { showToast("Önce verileri analiz edin!", "error"); return; }
-  const h = t => String(t || "").replace(/;/g, ",").replace(/[\r\n]+/g, " ");
-  let csv = String.fromCharCode(0xFEFF) + "Firma Adi;Sehir;Islem Tipi;Form Kodu;Ekleyen;Tarih;Enlem;Boylam;Aciklama" + String.fromCharCode(10);
-  state.tumFormlarGlobal.forEach(v => {
-    const t = v.tarih ? new Date(v.tarih).toLocaleDateString("tr-TR") : "";
-    csv += [h(v.firmaAdi), h(v.sehir), h(v.islemTipi), h(v.formKodu), h(v.ekleyen), t, v.konum?.lat ?? "", v.konum?.lng ?? "", h(v.aciklama)].join(";") + String.fromCharCode(10);
-  });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-  link.download = `ENORPA_Form_Raporu_${new Date().toLocaleDateString("tr-TR")}.csv`;
-  link.click();
+  csvIndir(formSatirlari(state.tumFormlarGlobal), `ENORPA_Form_Raporu_${tarihiInputaCevir()}.csv`);
   showToast("Excel dosyası indiriliyor", "success");
 });

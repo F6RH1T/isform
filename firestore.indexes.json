@@ -1,1 +1,12 @@
-{ "indexes": [], "fieldOverrides": [] }
+{
+  "indexes": [
+    { "collectionGroup": "formlar", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "sehir", "order": "ASCENDING" }, { "fieldPath": "tarih", "order": "DESCENDING" }] },
+    { "collectionGroup": "formlar", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "ekleyen", "order": "ASCENDING" }, { "fieldPath": "tarih", "order": "DESCENDING" }] }
+  ],
+  "fieldOverrides": [
+    { "collectionGroup": "formlar", "fieldPath": "vektor", "indexes": [] },
+    { "collectionGroup": "formlar", "fieldPath": "formVerisi", "indexes": [] },
+    { "collectionGroup": "formlar", "fieldPath": "aciklama", "indexes": [] },
+    { "collectionGroup": "formFotograflari", "fieldPath": "base64", "indexes": [] }
+  ]
+}

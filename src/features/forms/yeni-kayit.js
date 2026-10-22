@@ -1,12 +1,12 @@
-import { addDoc, collection, deleteField, doc, updateDoc } from "firebase/firestore";
+import { deleteField, doc, updateDoc } from "firebase/firestore";
 import { state } from "../../core/state.js";
 import { $ } from "../../lib/dom.js";
 import { metniNormalizeEt } from "../../lib/text.js";
 import { ayEkle, inputtanIsoYap, tarihiInputaCevir } from "../../lib/dates.js";
 import { getLocation } from "../../lib/konum.js";
-import { firmaKodunuBul } from "../firms/firma-kodu-servis.js";
+import { cevrimdisiNoBildir, formNoAyir } from "../firms/firma-kodu-servis.js";
 import { vektorHazirla } from "../ai/embeddings.js";
-import { db, kuyrugaAl } from "../../firebase/init.js";
+import { belgeEkle, db, kuyrugaAl } from "../../firebase/init.js";
 import { logYaz } from "../../core/session.js";
 
 export const btnMic = $("btnMic"), aciklamaNotu = $("aciklamaNotu");
@@ -95,14 +95,14 @@ $("isFormu").addEventListener("submit", async e => {
       return;
     }
     const konum = await getLocation();
-    const { firmaKodu, sonNo } = await firmaKodunuBul(aramaFirma);
-    const siradakiNo = sonNo + 1;
+    const { firmaKodu, ilkNo: siradakiNo, cevrimdisi } = await formNoAyir(aramaFirma, dosyalar.length || 1);
+    if (cevrimdisi) cevrimdisiNoBildir(aramaFirma, firmaKodu, siradakiNo + dosyalar.length - 1);
     const vk = await vektorHazirla(islemTipi, aciklama);   // anlamsal arama vektörü (en fazla ~2 sn bekler, olmazsa kayıt yine eklenir)
 
     for (let i = 0; i < dosyalar.length; i++) {
       btn.innerText = `Yükleniyor (${i + 1}/${dosyalar.length})…`;
       const foto = await compressImage(dosyalar[i]);
-      const fotoRef = await kuyrugaAl(addDoc(collection(db, "formFotograflari"), { base64: foto }));
+      const fotoRef = await belgeEkle("formFotograflari", { base64: foto });
       const payload = {
           firmaAdi,
           aramaFirma,
@@ -118,11 +118,12 @@ $("isFormu").addEventListener("submit", async e => {
           eklenmeTarihi: new Date().toISOString()
       };
       Object.assign(payload, vk);
+      if (cevrimdisi) payload.numaraCevrimdisi = true;   // çevrimdışı verilen numara: nadiren çakışabilir, yönetici görebilsin
       if (konum) payload.konum = konum;
       const aralik = $("bakimAralik").value; if (aralik) payload.bakimAralik = Number(aralik);
       if ($("bakimTarihi").value) payload.sonrakiBakim = inputtanIsoYap($("bakimTarihi").value);
       else if (aralik) payload.sonrakiBakim = ayEkle(tarihIso, aralik);
-      await kuyrugaAl(addDoc(collection(db, "formlar"), payload));
+      await belgeEkle("formlar", payload);
       logYaz("Form eklendi", payload.formKodu || "", [payload.firmaAdi, payload.islemTipi].filter(Boolean).join(" · "));
     }
     if (window.bakimKaynakId) { try { await kuyrugaAl(updateDoc(doc(db, "formlar", window.bakimKaynakId), { sonrakiBakim: deleteField() })); } catch (e) { console.error(e); } window.bakimKaynakId = null; }
