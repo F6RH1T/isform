@@ -32,7 +32,7 @@ function yaklasanBaslat() {
       </div>`;
     });
     window.dispatchEvent(new CustomEvent("bakimOzet", { detail: { gec, hafta, toplam: snap.size } }));
-    if (gec && !window.gecUyarildi) { window.gecUyarildi = true; showToast("⚠ " + gec + " gecikmiş bakım var", "error"); }
+    if (gec && !window.gecUyarildi) { window.gecUyarildi = true; showToast(gec + " gecikmiş bakım var", "error"); }
     let h = `<div class="bakim-ust"><div class="card-title bakim-baslik">${ikon("calendar", 20)} Yaklaşan bakımlar</div><button type="button" class="btn-firma" onclick="gunRotasi()">${ikon("compass", 14)} Günün rotası</button></div>` +
       `<div class="bakim-ozet">${gec ? `<span class="bakim-rozet gec">${ikon("alert", 12)} ${gec} gecikmiş</span>` : ""}${hafta ? `<span class="bakim-rozet yakin">${ikon("wrench", 12)} ${hafta} bu hafta</span>` : ""}<span class="bakim-rozet sade">${snap.size >= BAKIM_LIMIT ? "ilk " + BAKIM_LIMIT : snap.size + " toplam"}</span></div>` + h2;
     kutu.innerHTML = h; kutu.style.display = "block";

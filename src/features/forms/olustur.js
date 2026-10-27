@@ -82,7 +82,7 @@ $("olusturFormu").addEventListener("submit", async e => {
     if (d.imza || d.imzaSorumlu) imzaId = (await addDoc(collection(db, "formFotograflari"), { imza: d.imza, imzaSorumlu: d.imzaSorumlu, tur: "imza" })).id;
     const { imza: _i, imzaSorumlu: _is, ...formVerisi } = d;
     formVerisi.imzaVar = { musteri: !!d.imza, sorumlu: !!d.imzaSorumlu };
-    const islemTipi = ["Bakım","Arıza","Kurulum","Keşif"].find(x => d.servis.includes(x)) || "Diğer";
+    const islemTipi = ["Bakım","Arıza","Kurulum","Keşif","Müşteri Ziyareti"].find(x => d.servis.includes(x)) || "Diğer";
     const payload = { firmaAdi: d.firma, aramaFirma, sehir: d.sehir, islemTipi, aciklama: d.aciklama, ekleyen: state.aktifKullaniciMail,
       fotoId: fotoRef.id, firmaKodu, formNo: no, formKodu: `${firmaKodu}${no}`, tarih: inputtanIsoYap(d.tarih),
       eklenmeTarihi: new Date().toISOString(), olusturulan: true, formVerisi };

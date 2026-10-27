@@ -5,7 +5,7 @@ import { sehirGoster } from "../../lib/sehirler.js";
 
 /* Rapor görselleri: işlem halka grafiği, aylık çubuk grafik, en çok form olan 5 il, sayaç animasyonu */
 const AYLAR = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
-const TIP_AD = { bakim: "Bakım", ariza: "Arıza", kurulum: "Kurulum", kesif: "Keşif", diger: "Diğer", yok: "Belirtilmemiş" };
+const TIP_AD = { bakim: "Bakım", ariza: "Arıza", kurulum: "Kurulum", kesif: "Keşif", ziyaret: "Müşteri ziyareti", diger: "Diğer", yok: "Belirtilmemiş" };
 
 export function sayacAnimasyonu(id) {
   const el = $(id); if (!el) return;

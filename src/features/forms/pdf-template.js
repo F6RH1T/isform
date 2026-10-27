@@ -122,6 +122,7 @@ export function sablonHTML(d, _logoKullanilmiyor, o = {}) {
     ${cols("14%", "14%", "14%", "30%", "")}
     <tr>${servisHucre("Arıza")}${servisHucre("Keşif")}${servisHucre("Ücretli")}${alan("Başlama Saati", d.basla)}${alan("Gidiş Km", d.gidis)}</tr>
     <tr>${servisHucre("Kurulum")}${servisHucre("Bakım")}${servisHucre("Garantili")}${alan("Bitiş Saati", d.bitis)}${alan("Dönüş Km", d.donus)}</tr>
+    ${d.servis.includes("Müşteri Ziyareti") ? `<tr><td class="ck sr" colspan="3">Müşteri Ziyareti ${kutuHTML(true)}</td><td></td><td></td></tr>` : ""}
   </table>
 </div>
 
