@@ -49,7 +49,7 @@ button.btn:active,.btn-icon:active,.btn-firma:active,.btn-siralama:active,.nav-i
 /* Kayıt kartları: işlem tipine göre renk, avatar, ikonlu rozetler */
 .liste-karti{--tip:var(--primary)}
 .liste-karti.tip-bakim{--tip:#16a34a}.liste-karti.tip-ariza{--tip:#e5484d}.liste-karti.tip-kurulum{--tip:#3b82f6}
-.liste-karti.tip-kesif{--tip:#d97706}.liste-karti.tip-diger{--tip:#8b5cf6}.liste-karti.tip-yok{--tip:#a8a29e}
+.liste-karti.tip-kesif{--tip:#d97706}.liste-karti.tip-ziyaret{--tip:#0d9488}.liste-karti.tip-diger{--tip:#8b5cf6}.liste-karti.tip-yok{--tip:#a8a29e}
 .liste-karti,.firma-icerik .liste-karti{border-left-color:var(--tip)}
 .kart-avatar,.fb-av{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:800;letter-spacing:.3px}
 .kart-avatar{width:40px;height:40px;font-size:.82rem;margin-top:2px;color:var(--tip);background:color-mix(in srgb,var(--tip) 14%,transparent)}

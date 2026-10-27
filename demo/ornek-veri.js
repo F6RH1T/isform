@@ -21,6 +21,7 @@ const NOTLAR = {
   "Arıza": ["Brülör ateşleme yapmıyordu. Ateşleme elektrodu ve trafosu değiştirildi, test edildi, çalışıyor.", "Kazan basıncı düşüyordu. Genleşme tankı ön basıncı ayarlandı, kaçak bulunmadı.",
     "Pompa ses yapıyordu; rulman arızası. Pompa değiştirildi, müşteriye bilgi verildi.", "Alev sensörü kirli olduğu için kilitleme yapıyordu, temizlendi. 2 hafta sonra tekrar kontrol önerildi."],
   "Kurulum": ["Yeni Kalsedon kazan kurulumu tamamlandı. Devreye alma ve müşteri eğitimi yapıldı.", "Has Turbo sistem montajı, baca bağlantısı ve otomasyon panosu kurulumu yapıldı."],
+  "Müşteri Ziyareti": ["Müşteri ziyaret edildi; kazan performansından memnun. Gelecek sezon için bakım planı konuşuldu.", "Tanışma ziyareti: yeni sera yatırımı hakkında bilgi alındı, katalog bırakıldı."],
   "Keşif": ["Sera ısıtma ihtiyacı için keşif yapıldı. 4 dönüm cam sera, mevcut sistem eski. Teklif hazırlanacak.", "Kazan dairesi yer tespiti ve yakıt hattı güzergâhı incelendi."]
 };
 const PERSONEL = ["Ahmet Yılmaz", "Mehmet Demir", "Ayşe Kaya", "Can Öztürk", "Elif Şahin", "Burak Arslan", "Zeynep Çelik", "Emre Koç"];
@@ -56,7 +57,7 @@ export function ornekVeri() {
     const arama = metniNormalizeEt(ad), kod = firmaKodTaban(arama) + (fi === 14 ? "A" : "");
     const adet = 2 + Math.floor(rnd() * 5);
     for (let n = 1; n <= adet; n++) {
-      const tip = n === 1 && rnd() < .4 ? "Kurulum" : sec(["Bakım", "Bakım", "Arıza", "Arıza", "Keşif"]);
+      const tip = n === 1 && rnd() < .4 ? "Kurulum" : sec(["Bakım", "Bakım", "Arıza", "Arıza", "Müşteri Ziyareti", "Keşif"]);
       const once = -Math.floor(rnd() * 200) - (adet - n) * 18;
       const not = sec(NOTLAR[tip]), formKodu = kod + n, fotoId = "foto" + (++fotoNo);
       fotolar.set(fotoId, { base64: fotoSvg(ad, formKodu, not) });

@@ -3,7 +3,7 @@ import { $ } from "../../lib/dom.js";
 /* ===== İŞ FORMU OLUŞTUR ===== */
 export const CIHAZ = ["Has","Ha NG","Kalsedon","Akuamarin","Ametist","Kuvars","Jasper","Has Turbo","Turkuaz","Oniks","Obsidyen","Ametrin","Turmalin","Diğer"];
 
-const SERVIS = ["Arıza","Keşif","Ücretli","Kurulum","Bakım","Garantili"];
+const SERVIS = ["Arıza","Keşif","Ücretli","Kurulum","Bakım","Garantili","Müşteri Ziyareti"];
 
 export const fa = (id, et, tip = "text", ek = "") => `<div class="form-floating ${ek}"><input type="${tip}" id="${id}" placeholder=" " autocomplete="off"><label for="${id}">${et}</label></div>`;
 
